@@ -1,0 +1,78 @@
+<div>
+  <div class="card mb-2">
+    <div class="card-body">
+        <div class="form-group row">
+
+          <!-- 品牌 -->
+          <div class="col-4">
+            <label class="col-form-label">{{ 'brand' | translate }}</label>
+            <input class="form-control" type="text" [(ngModel)]="brandDatas.name" *ngIf="mode === 'add'">
+            <!-- <select class="custom-select pt-2" formControlName="brand" *ngIf="!brandName">
+              <option *ngFor="let brand of brandDropdownDatas" [ngValue]="brand.brandId">{{ brand.name }}</option>
+            </select> -->
+
+            <p style="font-size: 24px;" *ngIf="mode === 'edit'"> {{brandName}}</p>
+          </div>
+          <!-- 狀態 -->
+
+          <div class="col-12 col-sm-6 col-md-4 col-lg-3" *appPermissionIf="'layout.iam.adminInput'">
+            <label>{{ 'status' | translate }}</label>
+            <div class="custom-control custom-switch ">
+              <input type="checkbox" class="custom-control-input" id="{{ 'status'}}" [disabled]="!editStatus"
+                (change)="filterStatus ? filterStatus = 0 : filterStatus = 1;" [checked]="filterStatus">
+              <label class="custom-control-label" for="{{ 'status'}}">{{ (filterStatus === 1 ? 'effective': 'invalid') |
+                translate | titlecase }}</label>
+            </div>
+          </div>
+      </div> <!-- form-group -->
+
+
+    </div> <!-- card-body -->
+  </div> <!-- card -->
+
+
+
+  <mat-tab-group [selectedIndex]="selected.value"
+                 (selectedIndexChange)="selected.setValue($event)">
+    <mat-tab label="Payer ID">
+      <app-brands-payer-id
+        [payerIdDatas]="brandDatas.payers"
+        (outPutPayerId)="syncPayerId($event)"
+        (requiredStatus)="handlePayerRequired($event)" ></app-brands-payer-id>
+    </mat-tab>
+    <!-- 授權經銷商列表 -->
+    <mat-tab label="{{'list of authorized dealers'| translate}}">
+      <app-dealer-products></app-dealer-products>
+    </mat-tab>
+    <!-- 商品分類 -->
+    <mat-tab label="{{ 'goods category' | translate }}">
+      <app-classification></app-classification>
+    </mat-tab>
+    <!-- 商品屬性管理 -->
+    <mat-tab label="{{ 'commodity attribute management' | translate }}" *appPermissionIf="'brand-v1.getProductAttributes'">
+      <app-attribute></app-attribute>
+    </mat-tab>
+    <!-- 方案管理 -->
+    <mat-tab label="{{'solution management'| translate}}" *appPermissionIf="'brand-v1.addSolution'">
+      <app-solution-list [brandId]="brandDatas.brandId"></app-solution-list>
+    </mat-tab>
+  </mat-tab-group>
+  <div class="card-footer z-index " style="background-color: rgb(241 239 239);">
+    <div class="text-right">
+      <a *ngIf="selected.value !== 2"
+         class="btn btn-secondary"
+         [routerLink]="mode === 'add' ? '../' : '../../'">
+        <i class="fas fa-undo"></i>
+        {{'back to last page' | translate}}
+      </a>
+      <button *ngIf="editStatus && selected.value !== 2"
+              class="btn btn-primary m-2"
+              (click)="saveBrandApi()"
+              [disabled]="payerIdRequiredStatus">
+        <i class="fas fa-save"></i>
+        {{ (mode === 'add' ? 'add' : 'save') | translate | titlecase }}
+        {{ 'brand' | translate | titlecase }}
+      </button>
+    </div>
+  </div>
+</div>

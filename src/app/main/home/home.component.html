@@ -1,0 +1,18 @@
+<div class="container mt-2">
+  <div class="row">
+    <ng-container *ngFor="let list of menu; let idx = index;">
+      <div class="col-md-4 mb-4">
+        <a [routerLink]="'../' + list.route" routerLinkActive="active" [routerLinkActiveOptions]="{'exact': true}">
+          <div class="card p-3">
+            <h3>
+              <i [ngClass]="list.icon"></i> {{ list.label | translate }}
+            </h3>
+            <!-- <p>
+              品牌相關狀況
+            </p> -->
+          </div>
+        </a>
+      </div>
+    </ng-container>
+  </div>
+</div>

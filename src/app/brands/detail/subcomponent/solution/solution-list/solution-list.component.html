@@ -1,0 +1,56 @@
+<div class="bg-white">
+  <div class="mb-3">
+    <ng-container>
+      <in-table [data]="solutionDatas"
+        [listViewClass]="'d-none d-md-block'" [cardViewClass]="'d-block d-md-none'" [isLoading]="ui.isLoading"
+        [shownodata]="solutionDatas.length === 0 ? true : false || ui.isLoading" [inTableTranslate]="{
+                  'no data found': 'No Data Found' | translate,
+                  'items per page': 'items per page' | translate
+                }">
+
+        <in-table-column label="#">
+          <ng-template #tpl let-index="rowIndex">
+            {{ ( pageConfig.currentPage -1 ) * pageConfig.itemsPerPage + index + 1 }}
+          </ng-template>
+        </in-table-column>
+        <!-- 狀態 -->
+        <in-table-column  class="text-truncate ml-1 mr-1" prop="status"
+        label="{{ 'status' | translate }}">
+        <ng-template #tpl let-secrets="item" let-i>
+          <i *ngIf="secrets.status === 'enable'" class="fa fa-circle text-success"></i>
+          <i *ngIf="secrets.status === 'disable'" class="fa fa-circle text-danger"></i>
+          <span class="ml-2">{{secrets.status === 'enable' ? '有效' : '無效'}}</span>
+        </ng-template>
+      </in-table-column>
+        <!-- 名稱 -->
+        <in-table-column  class="text-truncate ml-1 mr-1" prop="name" label="{{ 'name' | translate }}">
+          <ng-template #tpl let-solution="item" let-i>
+            {{solution.name}}
+          </ng-template>
+        </in-table-column>
+        <!-- 更新日期 -->
+        <in-table-column  class="text-truncate ml-1 mr-1" prop="modifyDate"
+          label="{{ 'modify time' | translate }}">
+          <ng-template #tpl let-solution="item">
+            {{ solution.modifyDate | date:'yyyy-MM-dd HH:mm:ss' }}
+          </ng-template>
+        </in-table-column>
+
+        <in-table-column  label="{{ 'operation' | translate }}"
+         >
+          <ng-template #tpl let-solution="item" let-i>
+            <div class="btn btn-sm text-primary" [routerLink]="'solution/' + solution.solutionId">
+              <i class="fas fa-edit fa-lg"></i>
+            </div>
+          </ng-template>
+        </in-table-column>
+
+      </in-table>
+    </ng-container>
+
+
+      <div [routerLink]="['solution/add']" routerLinkActive="router-link-active" style="cursor: pointer; height: 40px;"class="d-flex  justify-content-between align-items-center bg-success">
+        <p class="col-12 text-center" style="margin:0px; color:rgb(255, 255, 255)"><i class="fas fa-plus"></i> {{ 'add new solution' | translate | titlecase }}</p>
+      </div>
+  </div>
+</div>

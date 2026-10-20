@@ -1,0 +1,430 @@
+<ng-template #typeaheadItemTemplate
+             let-product="item"
+             let-index="index">
+  <div>
+    <label *ngIf="!product.notValue">{{product.brand.name + '/' + product.originalSku + '/' + product.productSku + '/' +
+      product.productName}}</label>
+    <label *ngIf="product.notValue">查無資料</label>
+  </div>
+</ng-template>
+
+<div class="mb-3 d-flex">
+  <label class="bodyFont">{{ 'order product list' | translate | titlecase }}</label>
+  <button *ngIf="checkCanEdit()"
+          type="button"
+          class="btn btn-success flex-shrink-0 ml-3"
+          (click)="addProduct()">
+    <i class="fas fa-plus"></i><span class="d-none d-sm-inline">
+      {{ 'add product subscription' | translate | titlecase }}</span>
+  </button>
+</div>
+<div class="card"
+     style="border-top: none">
+  <div class="card-body">
+    <div style="max-height: 500px; overflow-y: auto;">
+      <in-table [data]="intableDatas"
+                [listViewClass]="'d-none d-md-block'"
+                [cardViewClass]="'d-block d-md-none'"
+                [shownodata]="intableDatas.length === 0 ? true : false"
+                [enableHorizontalScroll]="true"
+                [listHeaderClass]="'bg-primary text-white'"
+                [config]="intableConfig"
+                [inTableTranslate]="{
+                        'no data found': 'No Data Found' | translate,
+                        'items per page': 'items per page' | translate
+                      }"
+                #inTable>
+        <in-table-column [styleColumn]="{'max-width': '30px'}"
+                         classValue="text-wrap"
+                         label="#">
+          <ng-template #tpl
+                       let-index="rowIndex"
+                       let-xxx
+                       let-brand="item">
+            {{ index + 1}}
+            <div style="height:25px;"
+                 *ngIf="!brand.value"></div>
+          </ng-template>
+        </in-table-column>
+
+        <!-- 料號 -->
+        <in-table-column [styleColumn]="{'min-width': '150px'}"
+                         class="text-truncate ml-1 mr-1 "
+                         prop="originalSku"
+                         label="原廠{{ 'part no' | translate }}">
+          <ng-template #tpl
+                       let-product="item"
+                       let-i>
+            <!-- <input class="form-control" type="text" [(ngModel)]="product.partNo"> -->
+            <label [popover]="product.originalSku"
+                   triggers="mouseenter:mouseleave"
+                   placement="top"
+                   *ngIf="!checkCanEdit() && product.id !== ''">{{product.originalSkuName}}</label>
+
+            <input type="text"
+                   autocomplete="off"
+                   class="form-control p-1 m-0 test inputBorder"
+                   container="body"
+                   [(ngModel)]="product.originalSkuName"
+                   [typeahead]="autoComFigSet(i)"
+                   [typeaheadAsync]="true"
+                   [typeaheadItemTemplate]="typeaheadItemTemplate"
+                   [typeaheadOptionsLimit]="10"
+                   [typeaheadWaitMs]="1000"
+                   [typeaheadMinLength]="2"
+                   [typeaheadOptionsInScrollableView]="10"
+                   [typeaheadScrollable]="true"
+                   (typeaheadOnSelect)="setPoNumber($event, i)"
+                   *ngIf="checkCanEdit() || product.id === ''"
+                   >
+            <div style="height:25px;"
+                 *ngIf="itemRequired(product)">
+              <p class="help-block text-danger"
+                 *ngIf="!product.originalSku && status !== 'DRAFT'">請輸入並選擇資料
+              </p>
+            </div>
+          </ng-template>
+        </in-table-column>
+
+        <!-- 名稱 -->
+        <in-table-column [styleColumn]="{'min-width': '150px'}"
+                         class="text-truncate ml-1 mr-1 "
+                         prop="name"
+                         label="{{ 'name' | translate }}">
+          <ng-template #tpl
+                       let-product="item"
+                       let-i>
+            <input *ngIf="checkCanEdit() || product.id === ''"
+                   type="text"
+                   autocomplete="off"
+                   class="form-control p-1 m-0 test inputBorder"
+                   container="body"
+                   [(ngModel)]="product.name"
+                   [typeahead]="searchProductName(i)"
+                   [typeaheadAsync]="true"
+                   [typeaheadItemTemplate]="typeaheadItemTemplate"
+                   [typeaheadOptionsLimit]="10"
+                   [typeaheadWaitMs]="1000"
+                   [typeaheadMinLength]="2"
+                   [typeaheadOptionsInScrollableView]="10"
+                   [typeaheadScrollable]="true"
+                   (typeaheadOnSelect)="setPoNumber($event, i)">
+            <div style="height:25px;"
+                 *ngIf="itemRequired(product)">
+            </div>
+          </ng-template>
+        </in-table-column>
+
+        <!-- 計價單位 -->
+        <in-table-column class="text-truncate ml-1 mr-1 "
+                         [styleColumn]="{'min-width': '100px'}"
+                         prop="unit"
+                         label="{{ 'sales unit' | translate }}">
+          <ng-template #tpl
+                       let-product="item"
+                       let-i>
+            <label>{{product.unit}}</label>
+            <div style="height:25px;"
+                 *ngIf="itemRequired(product)">
+            </div>
+          </ng-template>
+        </in-table-column>
+
+        <!-- 數量 -->
+        <in-table-column class="text-truncate ml-1 mr-1 "
+                         [styleColumn]="{'min-width': '100px'}"
+                         prop="quantity"
+                         label="{{ 'quantity' | translate }}">
+          <ng-template #tpl
+                       let-product="item"
+                       let-i>
+            <input class="form-control"
+                   type="number"
+                   [(ngModel)]="product.quantity"
+                   [disabled]="!checkCanEdit()"
+                   (change)="calculationFunc(product); calculateTotal(product); handleRequired()">
+            <div style="height:25px;"
+                 *ngIf="itemRequired(product)">
+              <p class="help-block text-danger"
+                 *ngIf="!product.quantity && status !== 'DRAFT'">{{ 'this field is required' | translate }}
+              </p>
+            </div>
+          </ng-template>
+        </in-table-column>
+
+        <!-- 計價週期 -->
+        <in-table-column class="text-truncate ml-1 mr-1 "
+                         [styleColumn]="{'min-width': '150px'}"
+                         prop="leaseModeName"
+                         label="{{ 'pricing cycle' | translate }}">
+          <ng-template #tpl
+                       let-product="item"
+                       let-i>
+            <label>{{product.leaseModeName | translate}}</label>
+            <div style="height:25px;"
+                 *ngIf="itemRequired(product)">
+            </div>
+          </ng-template>
+        </in-table-column>
+
+        <!-- 時間 -->
+        <in-table-column class="text-truncate ml-1 mr-1 "
+                         [styleColumn]="{'min-width': '100px'}"
+                         prop="time"
+                         label="{{ 'time' | translate }}">
+          <ng-template #tpl
+                       let-product="item"
+                       let-i>
+            <input class="form-control"
+                   type="number"
+                   [(ngModel)]="product.times"
+                   [disabled]="!checkCanEdit()"
+                   (change)="calculationFunc(product)">
+            <div style="height:25px;"
+                 *ngIf="itemRequired(product)">
+              <p class="help-block text-danger"
+                 *ngIf="!product.times && status !== 'DRAFT'">{{ 'this field is required' | translate }}
+              </p>
+            </div>
+          </ng-template>
+        </in-table-column>
+
+        <!-- 售價計算方式 -->
+        <in-table-column class="text-truncate ml-1 mr-1 "
+                         [styleColumn]="{'min-width': '150px'}"
+                         prop="calculateMethod"
+                         label="{{ 'price calculation method' | translate }}">
+          <ng-template #tpl
+                       let-product="item"
+                       let-i>
+            <select class="custom-select pt-2"
+                    [(ngModel)]="product.calculateMethod"
+                    [disabled]="!checkCanEdit()"
+                    (change)="calculationFunc(product);handleRequired()">
+              <option disabled
+                      [ngValue]="''">請選擇售價計算方式</option>
+              <option *ngFor="let calculation of calculationDropdown"
+                      [ngValue]="calculation.value">{{
+                calculation.name | translate}}</option>
+            </select>
+            <div style="height:25px;"
+                 *ngIf="itemRequired(product)">
+              <p class="help-block text-danger"
+                 *ngIf="!product.calculateMethod && status !== 'DRAFT'">{{ 'this field is required' | translate }}
+              </p>
+            </div>
+          </ng-template>
+        </in-table-column>
+
+        <!-- 費用計算方式 -->
+        <in-table-column class="text-truncate ml-1 mr-1 "
+                         [styleColumn]="{'min-width': '150px'}"
+                         prop="calculateMethod"
+                         label="{{ 'billing method' | translate }}">
+          <ng-template #tpl
+                       let-product="item"
+                       let-i>
+            <select class="custom-select pt-2"
+                    [(ngModel)]="product.billingMethod"
+                    [disabled]="!checkCanEdit() || product.category !== 'EXPENSE'">
+              <option [ngValue]="''"
+                      [disabled]="product.category === 'EXPENSE'">{{ 'no extra charge' | translate }}</option>
+              <option *ngFor="let billingMethod of billingMethodDropdown"
+                      [ngValue]="billingMethod.value">{{
+                billingMethod.name | translate}}</option>
+            </select>
+            <div style="height:25px;"
+                 *ngIf="itemRequired(product)">
+            </div>
+          </ng-template>
+        </in-table-column>
+
+        <!-- 乘數 -->
+        <in-table-column class="text-truncate ml-1 mr-1 "
+                         [styleColumn]="{'min-width': '100px'}"
+                         prop="multiplier"
+                         label="{{ 'multiplier' | translate }}">
+          <ng-template #tpl
+                       let-product="item"
+                       let-i>
+            <input class="form-control"
+                   [(ngModel)]="product.multiplier"
+                   [disabled]="!checkCanEdit()"
+                   (change)="calculationFunc(product); handleRequired()">
+            <div style="height:25px;"
+                 *ngIf="itemRequired(product)">
+              <p class="help-block text-danger"
+                 *ngIf="!product.multiplier && status !== 'DRAFT'">{{ 'this field is required' | translate }}
+              </p>
+            </div>
+          </ng-template>
+        </in-table-column>
+
+        <!-- 成本幣別 -->
+        <in-table-column class="text-truncate ml-1 mr-1 "
+                         [styleColumn]="{'min-width': '100px'}"
+                         prop="originalCurrency"
+                         label="{{ 'cost currency' | translate }}">
+          <ng-template #tpl
+                       let-product="item"
+                       let-i>
+            <label>{{product.originalCurrency | translate}}</label>
+            <div style="height:25px;"
+                 *ngIf="itemRequired(product)">
+            </div>
+          </ng-template>
+        </in-table-column>
+
+        <!-- 下單成本 -->
+        <in-table-column class="text-truncate ml-1 mr-1 "
+                         [styleColumn]="{'min-width': '100px'}"
+                         prop="originalPrice"
+                         label="{{ 'order cost' | translate }}">
+          <ng-template #tpl
+                       let-product="item"
+                       let-i>
+            <label>{{product.originalPrice}}</label>
+            <div style="height:25px;"
+                 *ngIf="itemRequired(product)">
+            </div>
+          </ng-template>
+        </in-table-column>
+
+        <!-- 原廠定價 -->
+        <in-table-column class="text-truncate ml-1 mr-1 "
+                         [styleColumn]="{'min-width': '100px'}"
+                         prop="listPrice"
+                         label="{{'vendor' | translate}}{{ 'list price' | translate }}">
+          <ng-template #tpl
+                       let-product="item"
+                       let-i>
+            <label>{{product.listPrice}}</label>
+            <div style="height:25px;"
+                 *ngIf="itemRequired(product)">
+            </div>
+          </ng-template>
+        </in-table-column>
+
+        <!-- 售價 -->
+        <in-table-column class="text-truncate ml-1 mr-1 "
+                         [styleColumn]="{'min-width': '150px'}"
+                         prop="sellingPrice"
+                         label="{{ 'sell' | translate }}">
+          <ng-template #tpl
+                       let-product="item"
+                       let-i>
+            <input class="form-control"
+                   [(ngModel)]="product.sellingPrice"
+                   [disabled]="!checkCanEdit()"
+                   (change)="handleRequired()">
+            <div style="height:25px;"
+                 *ngIf="itemRequired(product)">
+              <p class="help-block text-danger"
+                 *ngIf="!product.sellingPrice && status !== 'DRAFT'">{{ '此欄位必填且價格不能為零' | translate }}
+              </p>
+            </div>
+          </ng-template>
+        </in-table-column>
+
+        <!-- 最低消費 -->
+        <in-table-column class="text-truncate ml-1 mr-1 "
+                         [styleColumn]="{'min-width': '100'}"
+                         prop="minimum"
+                         label="{{ 'minimum consumption' | translate }}">
+          <ng-template #tpl
+                       let-product="item"
+                       let-i>
+            <input class="form-control"
+                   [(ngModel)]="product.minimum"
+                   [disabled]="!checkCanEdit() || product.category !== 'EXPENSE'"
+                   (change)="handleRequired()">
+            <div style="height:25px;"
+                 *ngIf="itemRequired(product)">
+              <!-- <p class="help-block text-danger" *ngIf="!product.minimum">{{ 'this field is required' | translate }}</p> -->
+            </div>
+          </ng-template>
+        </in-table-column>
+
+        <!-- 啟用日 -->
+        <in-table-column class="text-truncate ml-1 mr-1 "
+                         [styleColumn]="{'min-width': '130px'}"
+                         prop="startDate"
+                         label="{{ 'enable date' | translate }}">
+          <ng-template #tpl
+                       let-product="item"
+                       let-i>
+            <input class="form-control"
+                   #dp="bsDatepicker"
+                   bsDatepicker
+                   [(ngModel)]="product.startDate"
+                   (ngModelChange)="handleStartDate($event,i);calculateEndDate(product)"
+                   [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD'}"
+                   autocomplete="off"
+                   [disabled]="!checkCanEdit()">
+            <div style="height:25px;"
+                 *ngIf="itemRequired(product)">
+              <p class="help-block text-danger"
+                 *ngIf="!product.startDate && status !== 'DRAFT'">{{ 'this field is required' | translate }}
+              </p>
+            </div>
+          </ng-template>
+        </in-table-column>
+
+        <!-- 到期日 -->
+        <in-table-column class="text-truncate ml-1 mr-1 "
+                         [styleColumn]="{'min-width': '100px'}"
+                         prop="endDate"
+                         label="{{ 'expiry date' | translate }}">
+          <ng-template #tpl
+                       let-product="item"
+                       let-i>
+            <label>{{product.endDate | translate}}</label>
+
+            <div style="height:25px;"
+                 *ngIf="itemRequired(product)">
+            </div>
+          </ng-template>
+        </in-table-column>
+
+        <!-- 試算金額 -->
+        <in-table-column class="text-truncate ml-1 mr-1 "
+                         [styleColumn]="{'min-width': '80px'}"
+                         prop="total"
+                         label="{{ 'trial amount' | translate }}">
+          <ng-template #tpl
+                       let-product="item"
+                       let-i>
+            <label>{{product.total}}</label>
+            <div style="height:25px;"
+                 *ngIf="itemRequired(product)">
+            </div>
+          </ng-template>
+        </in-table-column>
+
+        <!-- 動作-->
+        <in-table-column class="text-truncate ml-1 mr-1 "
+                         label="{{ 'operation' | translate }}"
+                         *ngIf="checkCanEdit()">
+          <ng-template #tpl
+                       let-product="item"
+                       let-i>
+            <div class="d-flex align-items-center m-0"
+                 style="height: 80px;">
+              <i class="fas fa-lg fa-times text-danger"
+                 [popover]="'刪除'"
+                 triggers="mouseenter:mouseleave"
+                 placement="top"
+                 style="cursor: pointer;"
+                 (click)="deleteProduct(i,product)"></i>
+            </div>
+            <div style="height:25px;"
+                 *ngIf="itemRequired(product)">
+            </div>
+          </ng-template>
+        </in-table-column>
+
+      </in-table>
+    </div>
+
+  </div>
+</div>

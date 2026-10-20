@@ -1,0 +1,312 @@
+<div class="row bg-white p-3 m-0">
+
+  <!---------------------------- 左側 ---------------------------->
+  <div class="col-9 px-0">
+    <div class="row border mb-4 no-gutters">
+      <div class="col-4 pt-2 px-3 pb-1 border-right">
+        <h3 class="text-dark border-bottom font-weight-bold pb-2 mb-2">
+          <i [ngClass]="{'fas fa-spin fa-spinner fa-xs': ui.isLoading}"></i>
+          <span [hidden]="ui.isLoading">US${{ riSummary?.estimatedAnnualSavings ?? 0 | number: '1.2-2' }}</span>
+        </h3>
+        <span class="text-sm">{{ 'estimated annual savings' | translate }}*</span>
+      </div>
+      <div class="col-4 pt-2 px-3 pb-1 border-right">
+        <h3 class="text-dark border-bottom font-weight-bold pb-2 mb-2">
+          <i [ngClass]="{'fas fa-spin fa-spinner fa-xs': ui.isLoading}"></i>
+          <span [hidden]="ui.isLoading">{{ riSummary?.savingsVSOnDemand ?? 0 }}%</span>
+        </h3>
+        <span class="text-sm">{{ 'savings vs. on-Demand' | translate }}</span>
+      </div>
+      <div class="col-4 pt-2 px-3 pb-1">
+        <h3 class="text-dark border-bottom font-weight-bold pb-2 mb-2">
+          <i [ngClass]="{'fas fa-spin fa-spinner fa-xs': ui.isLoading}"></i>
+          <span [hidden]="ui.isLoading"> {{ riSummary?.purchaseRecommendation ?? 0 }}</span>
+        </h3>
+        <span class="text-sm">{{ 'purchase recommendations' | translate }}</span>
+      </div>
+    </div>
+
+    <div class="mb-4 text-sm">
+      根據您的過去
+      {{ getLookBackDaysName() | translate | titlecase }} 使用
+      {{ getServiceValue() }} 的情況，我們已確定
+      <strong>
+        {{ riSummary?.purchaseRecommendation ?? 0}}
+        {{ f['termInYear'].value.toLowerCase() }},
+        {{ f['paymentOption'].value.toLowerCase() }},
+      </strong>
+      <strong *ngIf="f['offeringClass'].value">{{ f['offeringClass'].value.toLowerCase() }} </strong>
+      <strong>RI purchase recommendations </strong>每年估計將節省&nbsp;
+      <strong>US${{ riSummary?.estimatedAnnualSavings ?? 0 | number: '1.2-2' }}</strong>，表示可節省&nbsp;
+      <strong>{{ riSummary?.savingsVSOnDemand ?? 0 }}％ (與隨需成本</strong> 相比)。您可以在這之中按照建議採取動作：
+    </div>
+
+    <div class="mb-3">
+      <div class="d-flex justify-content-between text-sm mb-2">
+        <div class="font-weight-bold">
+          <div class="mb-1">{{ 'generate recommendations based on' | translate | titlecase }}：</div>
+          <button class="btn btn-secondary btn-sm py-1 rounded-0 disabled">
+            {{ 'individual accounts' | translate | titlecase }}
+          </button>
+        </div>
+        <div class="font-weight-bold">
+          <div class="mb-1">{{ 'sort by' | translate | titlecase }}：</div>
+          <div>
+            <!-- 排序方式 -->
+            <div class="btn-group"
+                 dropdown
+                 #dropdown="bs-dropdown"
+                 [autoClose]="true">
+              <button type="button"
+                      dropdownToggle
+                      class="btn btn-secondary btn-sm py-1 rounded-0 mr-1 dropdown-toggle"
+                      [disabled]="ui.isLoading">
+                {{ 'sortOptions-' + sortBy | translate }}
+              </button>
+              <ul *dropdownMenu
+                  class="dropdown-menu"
+                  role="menu"
+                  style="z-index: 1001;">
+                <li role="menuitem"
+                    *ngFor="let opt of sortOptions">
+                  <button class="dropdown-item"
+                          [ngClass]="{'selected-dropdown': sortBy === opt}"
+                          (click)="$event.stopPropagation(); sort(opt); dropdown.hide()">
+                    {{ 'sortOptions-' + opt | translate }}
+                  </button>
+                </li>
+              </ul>
+            </div>
+            <!-- 下載 CSV -->
+            <button class="btn btn-secondary btn-sm py-1 rounded-0"
+                    (click)="excelDownLoad()"
+                    [disabled]="ui.isLoading || ui.isDownloading">
+              {{ "download" | translate }} EXCEL
+              <i [ngClass]="{'fas fa-spin fa-spinner': ui.isDownloading}"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!---------- in-Table ---------->
+      <div>
+        <in-table class="table table-hover"
+                  [data]="riTableDatas"
+                  [listViewClass]="'d-none d-md-block'"
+                  [cardViewClass]="'d-block d-md-none'"
+                  [listHeaderClass]="'thead-light sticky-header-color'"
+                  [enableHorizontalScroll]="true"
+                  [pageConfig]="pageConfig"
+                  (pageChanged)="setIntableTableData()"
+                  [isLoading]="ui.isLoading"
+                  [shownodata]="true"
+                  [config]="inTableConfig"
+                  [inTableTranslate]="{
+                    'no data found': 'no data found' | translate | titlecase,
+                    'items per page': 'items per page' | translate | titlecase }"
+                  #inTable>
+
+          <!------- Linked Account ------->
+          <in-table-column class="text-truncate mr-1 h-100"
+                           prop="accountId"
+                           label="Linked Account"
+                           [styleColumn]="{'max-width': '160px'}">
+            <ng-template #tplLabel>
+              <div class="font-weight-bold text-sm">Linked Account</div>
+            </ng-template>
+            <ng-template #tpl
+                         let-item="item"
+                         let-i>
+              <strong class="mb-2 text-md">{{ item.accountId }}</strong>
+            </ng-template>
+          </in-table-column>
+
+          <!---------- 購買建議 ---------->
+          <in-table-column class="ml-1 mr-1 h-100"
+                           prop="instanceDetail"
+                           label="">
+            <ng-template #tplLabel>
+              <div class="font-weight-bold text-sm">
+                {{ 'purchase recommendations' | translate | titlecase }} ({{ riSummary?.purchaseRecommendation ?? 0}})
+              </div>
+            </ng-template>
+            <ng-template #tpl
+                         let-item="item"
+                         let-i>
+              <div class="no-truncate">
+                <p class="font-weight-bold text-md d-flex align-items-center flex-wrap">購買&nbsp;
+                  <span class="mr-1">
+                    {{ item.recommendedNumberOfInstancesToPurchase }}
+                    {{ item.instanceType }}&nbsp;預留
+                    {{ (isInstance() ? 'instance' : 'node') | translate | titlecase }}</span>
+                  <span class="spanTag py-0 px-1 text-xs text-light font-weight-normal"
+                        *ngIf="isSizeFlexEligible() && item.instanceDetail?.sizeFlexEligible">
+                    {{ 'sizeFlexEligible' | translate | titlecase }} **</span>
+                </p>
+                <p class="mb-2 text-sm">{{ item.instanceDetail?.region }}
+                  <span *ngIf="item.instanceDetail?.platform">&nbsp;&nbsp;|&nbsp;&nbsp;{{ item.instanceDetail?.platform }}</span>
+                  <span *ngIf="item.instanceDetail?.tenancy ">&nbsp;&nbsp;|&nbsp;&nbsp;{{ item.instanceDetail?.tenancy }}</span>
+                </p>
+                <p class="font-italic mb-0 text-sm">根據您的過去
+                  {{ getLookBackDaysName() | translate | titlecase }}&nbsp;的隨需用量，我們建議您購買
+                  {{ item.recommendedNumberOfInstancesToPurchase }}
+                  {{ item.instanceType }}&nbsp;預留
+                  {{ (isInstance() ? 'instance' : 'node') | translate | titlecase }}
+                  <span *ngIf="isSizeFlexEligible() && item.instanceDetail?.sizeFlexEligible">以涵蓋每小時
+                    {{ item.recommendedNormalizedUnitsToPurchase }}
+                    {{ f['offeringClass'].value | translate }}化單位的&nbsp;
+                    {{ item.instanceDetail?.family }}&nbsp;家庭用量以節省最多成本
+                  </span>。
+                </p>
+              </div>
+            </ng-template>
+          </in-table-column>
+
+          <!---------- 詳細資訊 ---------->
+          <in-table-column class="text-truncate ml-1 mr-1 h-100"
+                           prop="estimatedMonthlySavingsAmount"
+                           label="{{ '詳細資訊' | translate }}"
+                           [styleColumn]="{'max-width': '220px'}">
+            <ng-template #tplLabel>
+              <div class="font-weight-bold text-sm">{{ 'details' | translate | titlecase }}</div>
+            </ng-template>
+            <ng-template #tpl
+                         let-item="item"
+                         let-i>
+              <p class="font-weight-bold text-md">{{ 'monthly savings' | translate }} US${{ item.estimatedMonthlySavingsAmount }}</p>
+              <p class="mb-2 text-sm">{{ 'upfront cost' | translate }}：US${{ item.upfrontCost }}</p>
+              <p class="mb-2 text-sm">{{ 'recurring monthly cost' | translate }}：US${{ item.recurringMonthlyCost }}</p>
+              <p class="mb-0 text-sm">{{ 'expected ri utilization' | translate }}：{{ item.expectedRIUtilization }}％</p>
+            </ng-template>
+          </in-table-column>
+
+        </in-table>
+      </div>
+    </div>
+
+    <!---------- 下方灰色小字註解 ---------->
+    <ul class="text-secondary list-unstyled text-xs">
+      <li>* 預估年度節省和購買建議基於您過去的用量歷程記錄和相關的
+        <a href="https://aws.amazon.com/ec2/pricing/">EC2</a>、
+        <a href="https://aws.amazon.com/rds/pricing/">RDS</a>、
+        <a href="https://aws.amazon.com/elasticache/pricing/">ElastiCache</a>、
+        <a href="https://aws.amazon.com/redshift/pricing/">Redshift</a>}&nbsp;或
+        <a href="https://aws.amazon.com/elasticsearch-service/pricing/">OpenSearch</a>
+        定價。如果您的使用模式變更，可能會影響預估的準確性和購買建議。
+      </li>
+      <li>** 為實現節省最大化，會自動偵測、分析並顯示與彈性 RI 大小相符的執行個體系列關聯的隨需用量，作為該執行個體系列中可用最小執行個體大小的購買建議。
+        <a href="https://aws.amazon.com/premiumsupport/knowledge-center/ri-size-flexibility/">進一步了解</a>
+      </li>
+      <li>** 請注意，對於 SQL 及 / 或 Oracle 資料庫引擎的 RDS 建議，Cost Explorer 會顯示相關的成本和用量，包括該資料庫引擎的所有資料庫版本及 / 或授權模式。</li>
+    </ul>
+  </div>
+
+
+
+  <!---------------------------- 右側 ---------------------------->
+  <div class="col-3 pl-5 pr-0">
+    <form [formGroup]="riForm"
+          #form="ngForm">
+      <!---- 選取建議類型 ---->
+      <div class="mb-4">
+        <label for="recommendType"
+               class="labelTitle">{{ 'select a service' | translate | titlecase }}</label>
+        <select class="form-control text-sm"
+                id="recommendType"
+                formControlName="service"
+                (change)="searchRi()">
+          <!-- <option selected></option> -->
+          <option *ngFor="let opt of service"
+                  [value]="opt.value">{{ opt.name | translate }}</option>
+        </select>
+      </div>
+
+      <!---- RI 推薦參數 ---->
+      <div class="mb-4">
+        <label for="recommendType"
+               class="labelTitle">{{ 'ri recommendation parameters' | translate }}</label>
+        <div class="mb-3">
+          <label class="font-weight-bold mb-2">{{ 'ri term' | translate }}</label>
+          <div class="form-check text-sm mb-1"
+               *ngFor="let opt of termInYear">
+            <input class="form-check-input"
+                   type="radio"
+                   formControlName="termInYear"
+                   [value]="opt.value"
+                   [id]="opt.value"
+                   [checked]="f['termInYear'].value === opt.value"
+                   (change)="searchRi()">
+            <label class="form-check-label"
+                   [for]="opt.value">{{ opt.value | translate | titlecase | titlecase }}</label>
+          </div>
+        </div>
+        <div class="mb-3"
+             *ngIf="f['service'].value === ServiceType.EC2">
+          <label class="font-weight-bold mb-2">{{ 'offering class' | translate }}</label>
+          <div class="form-check text-sm mb-1"
+               *ngFor="let opt of offeringClass">
+            <input class="form-check-input"
+                   type="radio"
+                   formControlName="offeringClass"
+                   [value]="opt.value"
+                   [id]="opt.value"
+                   [checked]="f['offeringClass'].value === opt.value"
+                   (change)="searchRi()">
+            <label class="form-check-label"
+                   [for]="opt.value">{{ opt.value | translate | titlecase }}</label>
+          </div>
+        </div>
+        <div class="mb-3">
+          <label class="font-weight-bold mb-2">{{ 'payment option' | translate | titlecase }}</label>
+          <div class="form-check text-sm mb-1"
+               *ngFor="let opt of paymentOption">
+            <input class="form-check-input"
+                   type="radio"
+                   formControlName="paymentOption"
+                   [value]="opt.value"
+                   [id]="opt.value"
+                   [checked]="f['paymentOption'].value === opt.value"
+                   (change)="searchRi()">
+            <label class="form-check-label"
+                   [for]="opt.value">{{ opt.value | translate | titlecase }}</label>
+          </div>
+        </div>
+        <div class="mb-3">
+          <label class="font-weight-bold mb-2">{{ 'based on the past' | translate | titlecase }}</label>
+          <div class="form-check text-sm mb-1"
+               *ngFor="let opt of lookBackPeriodInDays">
+            <input class="form-check-input"
+                   type="radio"
+                   formControlName="lookBackPeriodInDays"
+                   [value]="opt.value"
+                   [id]="opt.value"
+                   [checked]="f['lookBackPeriodInDays'].value === opt.value"
+                   (change)="searchRi()">
+            <label class="form-check-label"
+                   [for]="opt.value">{{ opt.value | translate | titlecase }}</label>
+          </div>
+        </div>
+      </div>
+
+    </form>
+    <!---- 其他篩選條件 ---->
+    <div class="mb-4" style="min-height: 500px;">
+      <label for="recommendType"
+             class="labelTitle">{{ 'additional filters' | translate | titlecase }}</label>
+      <div class="mb-2">{{ 'Payer ID' }}</div>
+      <angular2-multiselect [data]="selectList.view.payerId"
+                            [(ngModel)]="selectList.select.payerId"
+                            [settings]="payerIdSettings"
+                            [ngClass]="{'multiselect-disabled': ui.isLoading}"
+                            (ngModelChange)="payerChange()">
+      </angular2-multiselect>
+      <div class="mb-2 mt-2">{{ 'Account ID' }}</div>
+      <angular2-multiselect [data]="selectList.view.accountId"
+                            [(ngModel)]="selectList.select.accountId"
+                            [settings]="settings"
+                            [ngClass]="{'multiselect-disabled': ui.isLoading}"
+                            (onClose)="accountChange()">
+      </angular2-multiselect>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,55 @@
+
+
+
+{
+  "costTyped":[
+    {
+      "itemName": "Credit",
+      "id": "Credit"
+    },
+    {
+      "itemName": "DiscountedUsage",
+      "id": "DiscountedUsage"
+    },
+    {
+      "itemName": "Refund",
+      "id": "Refund"
+    },
+    {
+      "itemName": "SppDiscount",
+      "id": "SppDiscount"
+    },
+    {
+      "itemName": "Usage",
+      "id": "Usage"
+    },
+    {
+      "itemName": "Tax",
+      "id": "Tax"
+    },
+    {
+      "itemName": "Fee",
+      "id": "Fee"
+    },
+    {
+      "itemName": "RIFee",
+      "id": "RIFee"
+    },
+    {
+      "itemName": "SavingsPlanCoveredUsage",
+      "id": "SavingsPlanCoveredUsage"
+    },
+    {
+      "itemName": "SavingsPlanNegation",
+      "id": "SavingsPlanNegation"
+    },
+    {
+      "itemName": "SavingsPlanUpfrontFee",
+      "id": "SavingsPlanUpfrontFee"
+    },
+    {
+      "itemName": "SavingsPlanRecurringFee",
+      "id": "SavingsPlanRecurringFee"
+    }
+  ]
+}

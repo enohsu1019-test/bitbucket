@@ -1,0 +1,33 @@
+.labelTitle {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.text-xs {
+  font-size: 0.785rem;
+}
+
+.text-sm {
+  font-size: 0.9rem;
+}
+
+.text-md {
+  font-size: 1.1rem;
+}
+
+.no-truncate {
+  overflow: initial !important;
+  text-overflow: initial !important;
+  white-space: initial !important;
+}
+
+.selected-dropdown {
+  background-color: rgb(215, 215, 215);
+  pointer-events: none;
+}
+
+.spanTag {
+  background-color: rgb(170, 170, 170);
+}
+

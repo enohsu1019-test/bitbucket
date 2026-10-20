@@ -1,0 +1,23 @@
+.right-drawer-scrollbar {
+  overflow: auto;
+}
+
+.drag-bar {
+  cursor: move;
+}
+
+.status-bar {
+  height: 2px;
+  background: gray;
+  position: relative;
+  top: 20px;
+  margin: 0 auto;
+}
+
+.current-status {
+  height: 2px;
+  width: 0;
+  border-radius: 1px;
+  background: mediumseagreen;
+  transition: width .5s linear 0s;
+}

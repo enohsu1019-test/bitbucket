@@ -1,0 +1,42 @@
+
+
+
+{
+    "brandSet": {
+        "e936c95b-4295-432e-af0e-d6ecfb9d8368": {
+            "brandId": "e936c95b-4295-432e-af0e-d6ecfb9d8368",
+            "name": "AWS",
+            "cloudIdTile": "Account ID",
+            "billingPeriodSet": -1,
+            "searchBillingPeriodSet": 1
+        },
+        "7f1924cd-851b-4d6f-b6eb-2c24f0d77357": {
+            "brandId": "7f1924cd-851b-4d6f-b6eb-2c24f0d77357",
+            "name": "Microsoft",
+            "cloudIdTile": "domain",
+            "billingPeriodSet": -1,
+            "searchBillingPeriodSet": 1
+        },
+        "a5ce669b-51ba-4698-919f-84b65bf7174e": {
+            "brandId": "a5ce669b-51ba-4698-919f-84b65bf7174e",
+            "name": "Akamai",
+            "cloudIdTile": "Account ID",
+            "billingPeriodSet": 0,
+            "searchBillingPeriodSet": 0
+        },
+        "6e420d8e-b898-48ab-be82-ba148870609d": {
+            "brandId": "6e420d8e-b898-48ab-be82-ba148870609d",
+            "name": "Cisco",
+            "cloudIdTile": "Sub ID",
+            "billingPeriodSet": 0,
+            "searchBillingPeriodSet": 0
+        },
+        "ed933ca8-1b44-4e58-9dfb-77d731b935c3": {
+            "brandId": "ed933ca8-1b44-4e58-9dfb-77d731b935c3",
+            "name": "Google",
+            "cloudIdTile": "Account ID",
+            "billingPeriodSet": 0,
+            "searchBillingPeriodSet": 0
+        }
+    }
+  }

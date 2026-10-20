@@ -1,0 +1,130 @@
+<div class="card md-4">
+  <div class="card-body">
+    <div class="card-body p-0 d-flex">
+      <div class="p-3 col-9">
+        <input bsDaterangepicker
+               type="text"
+               class="form-control"
+               placeholder="{{ 'please select sta end day' | translate | titlecase }}"
+               [(bsValue)]="pickerRangeDates"
+               [maxDate]="maxDate"
+               [minDate]="minDate">
+        <canvas baseChart
+                [datasets]="dashboardDatasets"
+                [labels]="dashboardDate"
+                [options]="options"
+                [type]="'bar'">
+        </canvas>
+      </div>
+
+      <!-- 篩選條件 -->
+      <div class="col-3 p-3">
+        <div>
+          <form [formGroup]="selectForm">
+
+            <!-- payer id -->
+            <div class="mt-2">
+              <div class="d-flex justify-content-start">
+                <h4 class="font-weight-bold mt-2">{{ 'Payer ID' }}</h4>
+                <span class="ml-2 pt-3"><i *ngIf="loading" class="fas fa-spin fa-spinner"></i></span>
+              </div>
+              <select class="form-control required"
+                      id="payerId"
+                      formControlName="payerId"
+                      (change)="payerChange()"
+                      [attr.disabled]="loading ? true : null">
+                <option selected
+                        value=""
+                        disabled>{{ 'please select payer id' | translate }}</option>
+                <option *ngFor="let opt of uniqPayerId"
+                        [value]="opt.payer">{{ opt.nickName }}</option>
+              </select>
+            </div>
+
+            <!-- cloud id -->
+            <div class="mt-2">
+              <div class="d-flex justify-content-start">
+                <h4 class="font-weight-bold mt-2">{{ currentUserValue?.role?.brand?.name === 'AWS' ? 'Account ID' : 'Cloud ID' }}</h4>
+                <span class="ml-2 pt-3"><i *ngIf="loading" class="fas fa-spin fa-spinner"></i></span>
+              </div>
+              <select class="form-control required"
+                      id="cloudId"
+                      formControlName="cloudId"
+                      (change)="getFilterList()"
+                      [attr.disabled]="(loading || !this.selectForm.get('payerId')?.value) ? true : null">
+                <option selected
+                        value=""
+                        disabled>{{ (currentUserValue?.role?.brand?.name === 'AWS' ? 'please select account id' : 'please select cloud id') | translate }}</option>
+                <option *ngFor="let opt of cloudId"
+                        [value]="opt.cloudId">{{ opt.cloudId }}</option>
+              </select>
+            </div>
+
+            <!-- 服務 -->
+            <div class="mt-2">
+              <div class="d-flex justify-content-start">
+                <h4 class="font-weight-bold mt-2">{{ 'service' | translate | uppercase }}</h4>
+                <span class="ml-2 pt-3"><i *ngIf="loading" class="fas fa-spin fa-spinner"></i></span>
+              </div>
+              <angular2-multiselect [data]="chartFilterList.service"
+                                    [(ngModel)]="chartFilter.service"
+                                    [ngModelOptions]="{standalone: true}"
+                                    [settings]="filterConfig">
+              </angular2-multiselect>
+            </div>
+
+            <!-- 區域 -->
+            <div class="mt-2">
+              <div class="d-flex justify-content-start">
+                <h4 class="font-weight-bold mt-2">{{ 'region' | translate | uppercase }}</h4>
+                <span class="ml-2 pt-3"><i *ngIf="loading" class="fas fa-spin fa-spinner"></i></span>
+              </div>
+              <angular2-multiselect [data]="chartFilterList.area"
+                                    [(ngModel)]="chartFilter.area"
+                                    [ngModelOptions]="{standalone: true}"
+                                    [settings]="filterConfig">
+              </angular2-multiselect>
+            </div>
+
+            <!-- 專案名稱 -->
+            <div class="mt-2">
+              <div class="d-flex justify-content-start">
+                <h4 class="font-weight-bold mt-2">{{ 'project name' | translate | uppercase }}</h4>
+                <span class="ml-2 pt-3"><i *ngIf="loading" class="fas fa-spin fa-spinner"></i></span>
+              </div>
+              <angular2-multiselect [data]="chartFilterList.project"
+                                    [(ngModel)]="chartFilter.project"
+                                    [ngModelOptions]="{standalone: true}"
+                                    [settings]="filterConfig">
+              </angular2-multiselect>
+            </div>
+
+            <!-- 更新按鈕 -->
+            <div class="mt-4">
+              <button class="btn btn-success mr-2"
+                      [attr.disabled]="loading ||
+                                       !this.selectForm.get('cloudId')?.value ||
+                                       this.chartFilter.area.length === 0 ||
+                                       this.chartFilter.project.length === 0 ||
+                                       this.chartFilter.service.length === 0 ? true : null"
+                      (click)="getChartData(0)">
+                <i [ngClass]="{'fas fa-spin fa-spinner': loading}"></i>
+                {{ "update" | translate }}
+              </button>
+
+              <!-- 下載 -->
+              <button class="btn btn-warning"
+                      [attr.disabled]="(loading || downloadLoading) ? true : null"
+                      (click)="excelDownLoad()">
+                <i [ngClass]="{'far fa-save': !(downloadLoading || loading),
+                               'fas fa-spin fa-spinner': downloadLoading || loading}"></i>
+                {{ "download" | translate }}Excel
+              </button>
+            </div>
+
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

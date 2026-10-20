@@ -1,0 +1,91 @@
+<div>
+  <!-- <form [formGroup]="filterForm" (ngSubmit)="search()">
+    <div class="card mb-2">
+      <div class="card-body">
+        <div class="col-4">
+          <label class="col-form-label">&nbsp;</label>
+          <div class="">
+
+            <button type="button" class="btn btn-success mr-2" [routerLink]="['add']" routerLinkActive="router-link-active" *appPermissionIf="'brand-v1.addBrand'">
+              <i class="fas fa-plus"></i> {{ 'add' | translate | titlecase }}
+            </button>
+            重設按鈕
+            <button type="button" class="btn btn-dark mr-2" (click)="resetFilter()">
+              <i class="fas fa-undo"></i> {{ 'reset' | translate | titlecase }}
+            </button>
+            搜尋按鈕
+            <button type="submit" class="btn btn-primary mr-2" [disabled]="ui.isLoading || !filterForm.valid" (click)="getBrandListApi()">
+              <i class="fas" [ngClass]="{'fa-spin fa-spinner': ui.isLoading, 'fa-search': !ui.isLoading}"></i> {{
+              'search' | translate | titlecase }}
+            </button >
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </form> -->
+
+
+
+  <div class="bg-white">
+    <div class="mb-3">
+
+
+      <ng-container>
+        <div class="card-header bg-primary text-white">
+          <h5 class="mb-0">{{ 'brand name' | translate | titlecase }}
+            <button type="button" class="btn btn-sm btn-success ml-2" [routerLink]="['add']" routerLinkActive="router-link-active" *appPermissionIf="'brand-v1.addBrand'">
+              <i class="fas fa-plus"></i> {{ 'add' | translate | titlecase }}
+            </button>
+          </h5>
+        </div>
+        <in-table [data]="brandDatas"
+                  [listViewClass]="'d-none d-md-block'"
+                  [cardViewClass]="'d-block d-md-none'"
+                  [listHeaderClass]="'sticky-header-color'"
+                  [isLoading]="ui.isLoading" [rowLinks]="links"
+                  [shownodata]="brandDatas.length === 0 ? true : false || ui.isLoading"
+                  [config]="inTableConfig"
+                  [inTableTranslate]="{
+                    'no data found': 'No Data Found' | translate,
+                    'items per page': 'items per page' | translate
+                  }">
+
+          <in-table-column label="#">
+            <ng-template #tpl let-index="rowIndex">
+              {{ ( pageConfig.currentPage -1 ) * pageConfig.itemsPerPage + index + 1 }}
+            </ng-template>
+          </in-table-column>
+
+          <!-- 品牌名稱 -->
+          <in-table-column class="text-truncate ml-1 mr-1" prop="name" label="{{ 'brand' | translate }}">
+            <ng-template #tpl let-brand="item" let-i>
+              <label >{{brand.name}}</label>
+            </ng-template>
+          </in-table-column>
+
+
+
+          <!-- 狀態 -->
+          <in-table-column class="text-truncate ml-1 mr-1" prop="status" label="{{ 'status' | translate }}">
+            <ng-template #tpl let-brand="item" let-i>
+              <i class="fa fa-circle " [ngClass]="{'text-danger': brand.status !== 'enable', 'text-success': brand.status === 'enable'}"></i>
+            </ng-template>
+          </in-table-column>
+          <!-- 更新日期 -->
+          <in-table-column class="text-truncate ml-1 mr-1" prop="modifyDate" label="{{ 'modify time' | translate }}">
+            <ng-template #tpl let-brand="item">
+              {{ brand.modifyDate | date:'yyyy-MM-dd' }}
+            </ng-template>
+          </in-table-column>
+
+
+
+        </in-table>
+      </ng-container>
+
+    </div>
+
+
+  </div>
+</div>

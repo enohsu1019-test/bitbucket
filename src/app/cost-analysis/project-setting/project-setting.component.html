@@ -1,0 +1,112 @@
+<div class="card md-4">
+  <div class="card-body">
+
+    <div class="form-group row">
+      <div class="col-12"><h4>{{ 'analysis setting' | translate | titlecase }}</h4></div>
+      <div class="col-3">
+        <form [formGroup]="inputForm">
+          <input type="text"
+                 class="form-control"
+                 placeholder="{{ 'please input project name' | translate | titlecase }}"
+                 id="projectName"
+                 formControlName="projectName">
+        </form>
+      </div>
+      <div>
+        <button class="btn btn-success mb-3"
+                (click)="addProject(1)"
+                [disabled]="getValidator('projectName') || loading || projectLoading">
+          <i class="fas fa-plus"></i> {{ 'add' | translate | titlecase }}
+        </button>
+      </div>
+      <div class="col-12">
+        <in-table [data]="projectList"
+                  [listViewClass]="'d-none d-md-block'"
+                  [cardViewClass]="'d-block d-md-none'"
+                  [listHeaderClass]="'sticky-header-color'"
+                  [pageConfig]="pageConfig"
+                  (pageChanged)="pageChange($event)"
+                  [isLoading]="projectLoading"
+                  [shownodata]="projectList.length === 0 ? true : false"
+                  [config]="inTableConfig"
+                  [inTableTranslate]="{
+                    'no data found': 'no data found' | translate | titlecase,
+                    'items per page': 'items per page' | translate | titlecase
+                  }">
+
+          <!-- 編號 -->
+          <in-table-column label="#">
+            <ng-template #tpl
+                         let-index="rowIndex"
+                         let-xxx>
+              {{ ( pageConfig.currentPage -1 ) * pageConfig.itemsPerPage + index + 1 }}
+            </ng-template>
+          </in-table-column>
+
+          <!-- 專案名稱 -->
+          <in-table-column class="text-truncate ml-1 mr-1"
+                           prop="name"
+                           label="{{ 'project name' | translate | titlecase }}">
+            <ng-template #tpl
+                         let-name="item"
+                         let-i>
+              <!-- 編輯模式 -->
+              <ng-container *ngIf="name.edit">
+                <input class="form-control"
+                             [(ngModel)]="name.name"
+                             [ngModelOptions]="{standalone: true}">
+              </ng-container>
+
+              <!-- 檢視模式 -->
+              <ng-container *ngIf="!name.edit">
+                {{ name.name }}
+              </ng-container>
+            </ng-template>
+          </in-table-column>
+
+          <!-- 動作 -->
+          <in-table-column class="text-truncate ml-1 mr-1"
+                           label="{{ 'action' | translate }}">
+                           <!-- label="{{ 'action' | translate }}"> -->
+            <ng-template #tpl
+                         let-contact="item"
+                         let-i>
+              <!-- <button type="submit"
+                      class="btn btn-success mr-2 mb-2 mt-2"
+                      (click)="delProject(i)">
+                  {{ 'insert' | translate }}
+              </button> -->
+              <!-- 儲存(編輯模式) -->
+              <a *ngIf="contact.edit"
+                 class="btn btn-sm"
+                 (click)="save(i)">
+                <i class="fas fa-save fa-lg text-success"></i>
+              </a>
+              <!-- 取消(編輯模式) -->
+              <a *ngIf="contact.edit"
+                 class="btn btn-sm"
+                 (click)="cancel(i)">
+                <i class="fas fa-ban fa-lg text-secondary"></i>
+              </a>
+              <!-- 編輯(檢視模式) -->
+              <a *ngIf="!contact.edit && contact.name !== '其他'"
+                 class="btn btn-sm"
+                 (click)="edit(i)">
+                <i class="fas fa-fw fa-edit fa-lg text-primary"></i>
+              </a>
+              <!-- 刪除(檢視模式) -->
+              <a *ngIf="!contact.edit && contact.name !== '其他'"
+                 class="btn btn-sm"
+                 (click)="delProject(i)">
+                <i class="fas fa-times fa-lg text-danger"></i>
+              </a>
+            </ng-template>
+          </in-table-column>
+
+        </in-table>
+      </div>
+
+    </div> <!-- form-group -->
+  </div> <!-- card-body -->
+
+</div>

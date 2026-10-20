@@ -1,0 +1,108 @@
+<div>
+  <div class="card mb-5">
+    <div class="card-header bg-primary text-white">
+      <h5 class="mb-0">
+        {{ 'alias' | translate | titlecase }}
+        <button class="btn btn-sm btn-success ml-2 ng-star-inserted"
+                (click)="addAliasUIData()">
+          <i class="fas fa-plus"></i>
+          {{ 'add' | translate | titlecase }}
+        </button>
+      </h5>
+    </div>
+    <div class="card-body">
+      <ng-container>
+        <in-table [data]="selectDropdown"
+                  [listViewClass]="'d-none d-md-block'"
+                  [cardViewClass]="'d-block d-md-none'"
+                  [listHeaderClass]="'sticky-header-color'"
+                  (pageChanged)="setIntableTableData()"
+                  [shownodata]="selectDropdown.length === 0 ? true : false"
+                  [isLoading]="loading"
+                  [pageConfig]="pageConfig"
+                  [config]="inTableConfig"
+                  [inTableTranslate]="{
+                    'no data found': 'no data found' | translate | titlecase,
+                    'items per page': 'items per page' | translate | titlecase
+                  }">
+
+          <!-- # -->
+          <in-table-column [style]="{'flex': '1'}"
+                           class="h-100"
+                           label="#">
+            <ng-template #tpl
+                         let-index="rowIndex"
+                         let-xxx>
+              {{ ( pageConfig.currentPage -1 ) * pageConfig.itemsPerPage + index + 1 }}
+            </ng-template>
+          </in-table-column>
+
+          <!-- cloud id -->
+          <in-table-column [style]="{'flex': '2', 'overflow': 'unset'}"
+                           class="ml-1 mr-1 h-100"
+                           prop="cloudId"
+                           label="{{ cloudIdName }}">
+            <ng-template #tpl
+                         let-cloudid="item"
+                         let-i>
+              <angular2-multiselect [data]="cloudIdDropdown"
+                                    [(ngModel)]="selectDropdown[i].item"
+                                    [settings]="filterConfig"
+                                    (onOpen)="filterCloudIdList()">
+              </angular2-multiselect>
+              <!-- 重複cloud id -->
+              <div style="height:25px;" *ngIf="checkCloudId(i)">
+                <p class="help-block text-danger">{{ 'cloud id exist' | translate }}</p>
+              </div>
+              <!-- 必填 -->
+              <div style="height:25px;" *ngIf="selectDropdown[i].item[0].id === ''">
+                <p class="help-block text-danger">{{ 'This field is required!' | translate }}</p>
+              </div>
+            </ng-template>
+          </in-table-column>
+
+          <!-- 別名 -->
+          <in-table-column [style]="{'flex': '1'}"
+                           class="ml-1 mr-1 h-100"
+                           prop="name"
+                           label="{{ 'alias' | translate }}">
+            <ng-template #tpl
+                         let-name="item"
+                         let-i>
+              <input [(ngModel)]="selectDropdown[i].item[0].alias.name"
+                     class="form-control"
+                     (change)="selectDropdown[i].item[0].alias.isNew = true">
+            </ng-template>
+          </in-table-column>
+
+          <!-- 刪除 -->
+          <in-table-column [style]="{'flex': '1'}"
+                           class="ml-1 mr-1 h-100"
+                           label="{{ 'operation' | translate }}">
+            <ng-template #tpl
+                         let-option="item"
+                         let-i>
+              <button class="btn" (click)="delAlias(i, option)">
+                <i class="btn-fontawesome text-danger"
+                   [ngClass]="{'fa-solid fa-trash-can': selectDropdown[i].item[0].alias.id !== '', 'fas fa-lg fa-times': selectDropdown[i].item[0].alias.id === ''}"></i>
+              </button>
+            </ng-template>
+          </in-table-column>
+
+        </in-table>
+      </ng-container>
+    </div>
+
+  </div>
+
+  <!-- 儲存 -->
+  <div style="height: 100px; background-color: #f2f2f2;">
+    <button class="btn btn-primary float-right mt-4"
+            [disabled]="loading || saveLoading || checkDisabled()"
+            (click)="save()">
+      <i class="fas mr-1"
+         [ngClass]="{'fa-spin fa-spinner': loading, 'fa-save': !loading}"></i>
+      {{ 'save' | translate | titlecase }}
+    </button>
+  </div>
+</div>

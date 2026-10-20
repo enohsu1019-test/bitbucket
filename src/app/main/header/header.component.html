@@ -1,0 +1,46 @@
+<div class="d-flex p-3 align-items-center"
+  [ngClass]="{'justify-content-between': !sidebarToggled, 'justify-content-end': sidebarToggled}">
+  <div>
+    <h4 class="text-white d-none d-sm-block" *ngIf="!sidebarToggled">{{ 'CMP' | translate }}</h4>
+  </div>
+
+  <span *ngIf="!currentUserValue">
+    <ul class="horizontal-list">
+      <li *ngIf="!checkRegister">
+        <a [routerLink]="'/main/register'">{{ 'register' | translate | titlecase}}</a>
+      </li>
+      <li>
+        <a [routerLink]="'/login'">{{ 'login' | translate | titlecase}}</a>
+      </li>
+    </ul>
+  </span>
+
+
+  <span *ngIf="currentUserValue">
+    <div class="btn-group d-inline">
+      <button class="btn btn-outline-light" type="button" (click)="logout(loginRole.brand)">
+        <i class="fa-solid fa-right-from-bracket"></i>
+        {{ 'logout' | translate | titlecase}}
+      </button>
+    </div>
+    <!-- 登入者角色(有多重角色) -->
+    <div *ngIf="itemList.length > 0" class="d-inline btn-group" dropdown>
+      <button id="basic-link" type="button" dropdownToggle class="btn btn-primary dropdown-toggle"
+        aria-controls="dropdown-basic">
+        <i class="fas fa-user-tag"></i>
+        {{ loginRole.brand }} {{ loginRole.company }}-{{ selectedItems[0].name }}
+      </button>
+      <ul id="basic-link-dropdown" *dropdownMenu class="dropdown-menu dropdown-menu-right login-menu" role="menu"
+        aria-labelledby="basic-link">
+        <li *ngFor="let aRole of itemList">
+          <a *ngIf="aRole.id !== selectedItems[0].id" class="dropdown-item" (click)="changeRole(aRole.id)"><span
+              class="login-item text-muted">{{ aRole.brand?.name }}</span>{{ aRole.company.nickCh }}-{{ aRole.name
+            }}</a>
+          <a *ngIf="aRole.id === selectedItems[0].id" class="dropdown-item disabled"><span class="login-item">{{
+              aRole.brand?.name }}</span>{{ aRole.company.nickCh }}-{{ aRole.name }}</a>
+        </li>
+      </ul>
+    </div>
+
+  </span>
+</div>

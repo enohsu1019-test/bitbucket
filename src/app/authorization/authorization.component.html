@@ -1,0 +1,216 @@
+<div>
+  <!---------------------- 新增 & 搜尋 ---------------------->
+  <div class="mb-5 card">
+    <!------------------ 新增 ------------------>
+    <div class="card-header bg-primary text-white">
+      <h5 class="mb-0">{{ 'authorization' | translate | titlecase }}
+        <button class="btn btn-success btn-sm ml-2"
+                [routerLink]="['add']"
+                *appPermissionIf="'iam-v1.create'">
+          <i class="fa-solid fa-plus fa-sm mr-1"></i>{{ 'add' | translate | titlecase }}</button>
+      </h5>
+    </div>
+    <!------------------ 表單 ------------------>
+    <div class="card-body"
+         *appPermissionIf="'iam-v1.iam-query'">
+      <form [formGroup]="authSearchForm">
+        <div class="form-row mb-1">
+          <!-------------- 原廠 -------------->
+          <div class="col-12 col-sm-4 mb-3"
+               *appPermissionIf="'layout.iam.adminInput'">
+            <label for="brandName">{{ 'origin' | translate | titlecase }}</label>
+            <!-- <input type="text"
+                   class="form-control"
+                   id="brandName"
+                   formControlName="brandName"
+                   placeholder="{{ 'please fill input' | translate:{input: 'brand' | translate} | titlecase }}"> -->
+            <select class="form-control"
+                    id="brandName"
+                    formControlName="brandName">
+              <option selected
+                      disabled
+                      value="">{{ 'please select' | translate | titlecase }}</option>
+              <option *ngFor="let opt of brandDDL"
+                      [value]="opt.name">{{ opt.name | translate }}</option>
+            </select>
+          </div>
+
+          <!-------------- 公司類型 -------------->
+          <div class="col-12 col-sm-4 mb-3">
+            <label for="identityType">{{ 'identity type' | translate | titlecase }}</label>
+            <select class="form-control"
+                    id="identityType"
+                    formControlName="identityType">
+              <option selected
+                      value="">{{ 'please select' | translate | titlecase }}</option>
+              <option *ngFor="let opt of identityTypeDDL"
+                      [value]="opt.value">{{ opt.name | translate }}</option>
+            </select>
+          </div>
+
+          <!-------------- 公司 -------------->
+          <div class="col-12 col-sm-4 mb-3">
+            <label for="customer">{{ 'company' | translate | titlecase }}</label>
+            <input type="text"
+                   class="form-control"
+                   id="customer"
+                   formControlName="customer"
+                   placeholder="{{ 'please fill input' | translate:{ input: 'company chinese english nickname' | translate } | titlecase }}">
+          </div>
+
+
+          <!-------------- 統一編號 -------------->
+          <div class="col-12 col-sm-4 mb-3">
+            <label for="serialNumber">{{ 'serial number' | translate | titlecase }}</label>
+            <input type="text"
+                   class="form-control"
+                   id="serialNumber"
+                   formControlName="serialNumber"
+                   placeholder="{{ 'please fill input' | translate:{ input: 'serial number' | translate } | titlecase }}">
+          </div>
+
+          <!-------------- 角色 -------------->
+          <div class="col-12 col-sm-4 mb-3">
+            <label for="name">{{ 'role' | translate | titlecase }}</label>
+            <input type="text"
+                   class="form-control"
+                   id="name"
+                   formControlName="name"
+                   placeholder="{{ 'please fill input' | translate:{ input: 'role' | translate } | titlecase }}">
+          </div>
+        </div>
+        <div>
+          <button class="btn btn-secondary btn-sm mr-2"
+                  type="button"
+                  (click)="reset(); getRoleList()"
+                  [disabled]="ui.isSearching">
+            {{ 'reset' | translate | titlecase }}</button>
+          <button class="btn btn-primary btn-sm"
+                  type="button"
+                  (click)="getRoleList()"
+                  [disabled]="ui.isSearching">
+            {{ 'search' | translate | titlecase }}
+            <i class="fas fa-spin fa-spinner mr-1"
+               *ngIf="ui.isSearching"></i>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!---------------------- inTable ---------------------->
+  <in-table class="table table-hover"
+            [data]="roleList"
+            [listViewClass]="'d-none d-md-block'"
+            [cardViewClass]="'d-block d-md-none'"
+            [listHeaderClass]="'thead-light sticky-header-color'"
+            [pageConfig]="pageConfig"
+            (pageChanged)="pageChange($event)"
+            [sortBy]="sortBy"
+            (sort)="sort($event)"
+            [isLoading]="ui.isSearching"
+            [enableHorizontalScroll]="true"
+            [shownodata]="true"
+            [config]="inTableConfig"
+            [inTableTranslate]="{
+              'no data found': 'no data found' | translate | titlecase,
+              'items per page': 'items per page' | translate | titlecase}"
+            (colWidthResized)="util.syncInTableColWidths(authTable, 'intable-auth-table', true)"
+            (afterViewInit)="util.syncInTableColWidths(authTable, 'intable-auth-table', false)"
+            #authTable
+            *appPermissionIf="'iam-v1.iam-query'">
+
+    <!----------- # ----------->
+    <in-table-column label="#"
+                     class="font-weight-bold">
+      <ng-template #tpl
+                   let-index="rowIndex"
+                   let-xxx>
+        {{ ( pageConfig.currentPage -1 ) * pageConfig.itemsPerPage + index + 1 }}
+      </ng-template>
+    </in-table-column>
+
+    <!--------------- 原廠 --------------->
+    <in-table-column class="text-truncate mx-1"
+                     prop="brand"
+                     label="{{ 'origin' | translate | titlecase }}"
+                     sortKey="brand">
+      <ng-template #tpl
+                   let-item="item">
+        {{ item.brand?.name }}
+      </ng-template>
+    </in-table-column>
+
+    <!------------- 公司類型 -------------->
+    <in-table-column class="text-truncate mx-1"
+                     prop="identityType"
+                     label="{{ 'identity type' | translate | titlecase }}"
+                     sortKey="identityType">
+      <ng-template #tpl
+                   let-item="item">
+        {{ item.identityType.toLocaleLowerCase() | translate | titlecase }}
+      </ng-template>
+    </in-table-column>
+
+    <!--------------- 公司 --------------->
+    <in-table-column class="text-truncate mx-1"
+                     prop="company"
+                     label="{{ 'company' | translate | titlecase }}"
+                     sortKey="company">
+      <ng-template #tpl
+                   let-item="item">
+        <div [popover]="item.company?.fullCh"
+             placement="top left"
+             triggers="mouseenter:mouseleave">
+          {{ item.company?.fullCh }}</div>
+      </ng-template>
+    </in-table-column>
+
+    <!--------------- 角色 --------------->
+    <in-table-column class="text-truncate mx-1"
+                     prop="name"
+                     label="{{ 'role' | translate | titlecase }}"
+                     sortKey="name">
+    </in-table-column>
+
+    <!--------------- 時間 --------------->
+    <in-table-column class="text-truncate mx-1"
+                     prop="time"
+                     label="{{ 'update date' | translate | titlecase }}"
+                     sortKey="time">
+      <ng-template #tpl
+                   let-item="item">
+        {{ item.time | date:'yyyy-MM-dd' }}
+      </ng-template>
+    </in-table-column>
+
+    <!--------------- 動作 --------------->
+    <in-table-column class="text-truncate mx-1 text-center"
+                     label="{{ 'action' | translate | titlecase }}"
+                     [styleColumn]="{'max-width': '100px'}"
+                     *ngIf="this.iamPermission['iam-v1.update'] ||
+                            this.iamPermission['iam-v1.one'] ||
+                            this.iamPermission['iam-v1.delete']">
+      <ng-template #tpl
+                   let-item="item">
+        <i class="fa-solid fa-pen-to-square fa- btn-fontawesome mr-3"
+           [routerLink]="'./'+ item.id"
+           *appPermissionIf="'iam-v1.one'"></i>
+        <i class="fa-solid fa-trash-can btn-fontawesome text-danger mr-3"
+           (click)="deleteRole(item.id, item.name)"
+           *appPermissionIf="'iam-v1.delete'"></i>
+        <i class="a-solid fas fa-copy btn-fontawesome text-success"
+           (click)="cloneRole(item.id, item.identityType)"
+           *appPermissionIf="['iam-v1.one', 'iam-v1.create']">
+        </i>
+      </ng-template>
+    </in-table-column>
+  </in-table>
+
+
+  <div *ngIf="!this.iamPermission['iam-v1.iam-query'] && !this.iamPermission['iam-v1.create']"
+       class="text-center p-4 h5">
+    {{ 'please enable related permission first' | translate | titlecase }}
+  </div>
+
+</div>

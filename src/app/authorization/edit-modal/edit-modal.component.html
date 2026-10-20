@@ -1,0 +1,168 @@
+<ng-container>
+  <div class="right-drawer-h100">
+
+    <!-- //////////////// modal header //////////////// -->
+    <div class="modal-header bg-primary align-items-center">
+      <h4 class="modal-title pull-left text-white">
+        {{ (modalType === 'cloudId' ? 'Payer / Cloud Id ' : modalTitle) | translate | titlecase }}{{ 'setting' | translate | titlecase }}
+      </h4>
+      <button type="button"
+              class="close pull-right"
+              (click)="closeBsModal()">
+        <i class="fas fa-times text-white"></i>
+      </button>
+    </div>
+
+    <!-- ///////////////// modal body ///////////////// -->
+    <div class="modal-body pt-0 px-4">
+
+      <!----------------- 角色權限設定 ----------------->
+      <div *ngIf="modalType === 'roleRule'">
+        <!---------- 全選 & 解鎖 ---------->
+        <div class="form-check form-check-sticky d-flex justify-content-between mb-2 py-1 pb-2 pt-4 border-bottom">
+          <!---------- 全選 ---------->
+          <div>
+            <input class="form-check-input"
+                   type="checkbox"
+                   id="allRoleRule"
+                   value="allRoleRule"
+                   [checked]="ui.isAllRoleRule"
+                   (change)="allRoleRuleChange()"
+                   (click)="$event.stopPropagation()">
+            <label class="form-check-label h6"
+                   for="allRoleRule">
+              {{ (ui.isAllRoleRule ? 'unselect all' : 'select all') | translate | titlecase }}
+            </label>
+          </div>
+          <!---------- 解鎖 ---------->
+          <div *appPermissionIf="'layout.iam.adminInput'">
+            <label class="text-secondary pointer mb-0"
+                   style="font-size: 85%"
+                   (click)="$event.stopPropagation(); toggleLockAllRule()">
+              <i class="far fas"
+                 [ngClass]="{'fa-lock-open': !ui.isLockAllRule, 'fa-lock': ui.isLockAllRule}"></i>
+              {{ (ui.isLockAllRule ? 'lock' : 'unlock') | translate | titlecase }}
+            </label>
+          </div>
+        </div>
+
+        <!----------- 選項 ----------->
+        <div class="form-check mb-2 py-1"
+             *ngFor="let listItem of allList">
+          <input class="form-check-input"
+                 type="checkbox"
+                 [id]="listItem.id"
+                 [value]="listItem.id"
+                 [checked]="listItem.status === 'ENABLE'"
+                 [disabled]="listItem.disabled"
+                 (change)="listItem.checked = !listItem.checked;
+                           listItem.status = listItem.checked ? 'ENABLE' : 'DISABLE';
+                           checkIsRoleRule()"
+                 (click)="$event.stopPropagation()">
+          <label class="form-check-label"
+                 [for]="listItem.id">
+            {{ listItem.description }}
+          </label>
+        </div>
+      </div>
+
+      <!------------- payer/cloud Id 設定 ------------->
+      <div *ngIf="modalType === 'cloudId'">
+        <!------------- payer Id  ------------->
+        <div class="mb-4">
+          <label>Payer ID</label>
+          <angular2-multiselect [data]="payerIdAllList"
+                                [(ngModel)]="selectPayerId"
+                                [settings]="payerIdSelectSetting"
+                                [ngClass]="{'multiselect-disabled': ui.isPayerIdLoading}"
+                                (onSelect)="companyAllList = []; selectCompany = []; cloudIdAllList = []; selectCloudId = []; setCidInfoRequest(CloudIdInfoType.customer)"
+                                (onDeSelect)="companyAllList = []; selectCompany = []; cloudIdAllList = []; selectCloudId = [];">
+          </angular2-multiselect>
+        </div>
+        <!------------- company  ------------->
+        <div class="mb-4">
+          <label>{{ 'customer company' | translate | titlecase }}
+            <i class="fas fa-info-circle fa-xs"
+               popover="{{ 'cloudId all company note' | translate | titlecase }}"
+               triggers="mouseenter:mouseleave"></i>
+          </label>
+          <angular2-multiselect [data]="companyAllList"
+                                [(ngModel)]="selectCompany"
+                                [settings]="companySelectSetting"
+                                [ngClass]="{'multiselect-disabled': ui.isCompanyLoading || !selectPayerId.length}"
+                                (onSelect)=" cloudIdAllList = []; selectCloudId = []; setCidInfoRequest(CloudIdInfoType.cloudId , CloudIdInfoType.customer)"
+                                (onDeSelect)="cloudIdAllList = []; selectCloudId = [];">
+          </angular2-multiselect>
+        </div>
+        <!------------- cloud Id  ------------->
+        <div>
+          <label>Cloud ID</label>
+          <div class="text-xs text-danger pb-2"
+               *ngIf="!selectPayerId.length || !selectCompany.length">
+            <i class="fa-solid fa-circle-exclamation"></i>
+            {{ 'select payerId and company first' | translate | titlecase }}
+          </div>
+          <div class="form-check mb-2">
+            <input class="form-check-input"
+                   type="checkbox"
+                   id="isAllCloudId"
+                   value=""
+                   [checked]="ui.isAllCloudId"
+                   [disabled]="ui.isCloudIdLoading || !selectPayerId.length || !selectCompany.length"
+                   (change)="ui.isAllCloudId = !ui.isAllCloudId; allCloudIdChanged()"
+                   (click)="$event.stopPropagation()">
+            <label class="form-check-label text-xs"
+                   for="isAllCloudId">
+              {{ 'cloudId all cloudId check label' | translate }}
+            </label>
+          </div>
+          <angular2-multiselect [data]="cloudIdAllList"
+                                [(ngModel)]="selectCloudId"
+                                [settings]="cloudIdSelectSetting"
+                                [ngClass]="{'multiselect-disabled': ui.isCloudIdLoading || ui.isAllCloudId || ( !selectPayerId.length || !selectCompany.length) }">
+          </angular2-multiselect>
+        </div>
+      </div>
+
+      <!------------- 指定訂單所屬公司 設定 ------------->
+      <!-- <div *ngIf="modalType === 'company'">
+        <div class="mb-3">
+          <label>{{ 'company' | translate | titlecase }}</label>
+          <angular2-multiselect [data]="companyAllList"
+                                [(ngModel)]="selectCompany"
+                                [settings]="singleSelectSetting"
+                                [ngClass]="{'multiselect-disabled': ui.isLoading}"
+                                (onClose)="onClose($event)">
+            <c-badge>
+              <ng-template let-item="item">{{item.company}}</ng-template>
+            </c-badge>
+            <c-item>
+              <ng-template let-item="item">{{item.company}}</ng-template>
+            </c-item>
+          </angular2-multiselect>
+          <span class="invalid-feedback d-inline-block">* {{ 'company setting card head note' | translate | titlecase }}</span>
+        </div>
+      </div> -->
+
+      <!---------------- Error Message --------------->
+      <div class="mx-1 mt-2 invalid-feedback"
+           [ngClass]="{'d-inline-block':errMsg}">{{ errMsg }}</div>
+    </div>
+
+    <!-- //////////////// modal footer //////////////// -->
+    <div class="modal-footer">
+      <button type="button"
+              class="btn btn-secondary flex-grow-1"
+              (click)="closeBsModal()">
+        {{ 'cancel' | translate | titlecase }}
+      </button>
+      <button type="submit"
+              class="btn btn-primary flex-grow-1"
+              (click)="submit()">
+        {{ 'save' | translate | titlecase }}
+        <i class="fas fa-spin fa-spinner mr-1"
+           *ngIf="ui.isSaving"></i>
+      </button>
+    </div>
+  </div>
+</ng-container>

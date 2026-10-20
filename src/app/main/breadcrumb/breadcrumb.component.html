@@ -1,0 +1,25 @@
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <!-- 改成直接在 constructor subscribe，否則 reload 頁面時，不會出現目前 route 的 breadcrumb -->
+      <!-- <li *ngFor="let breadcrumb of breadcrumbs$ | async" class="breadcrumb-item"> -->
+      <li class="breadcrumb-item icon"><i class="fa-fw {{ breadcrumbs[breadcrumbs.length - 1] ? breadcrumbs[breadcrumbs.length - 1].icon : '' }}"></i>
+      <li *ngFor="let breadcrumb of breadcrumbs; let i = index" class="breadcrumb-item" [ngClass]="{'active': i === breadcrumbs.length - 1}">
+        <span *ngIf="i === breadcrumbs.length - 1">
+          <ng-container *ngIf="breadcrumb.label.length > 30 && !usersPage">
+            {{ breadcrumb.label | translate | slice:0:5 }}...{{ breadcrumb.label | translate | slice:-5 }}
+          </ng-container>
+          <ng-container *ngIf="!(breadcrumb.label.length > 30) || usersPage">
+            {{ breadcrumb.label | translate }}
+          </ng-container>
+        </span>
+        <a *ngIf="i < breadcrumbs.length -1" [routerLink]="[breadcrumb.url]" [state]="{ route: { internal: true }}">
+          <ng-container *ngIf="breadcrumb.label.length > 30">
+            {{ breadcrumb.label | translate | slice:0:5 }}...{{ breadcrumb.label | translate | slice:-5 }}
+          </ng-container>
+          <ng-container *ngIf="!(breadcrumb.label.length > 30)">
+            {{ breadcrumb.label | translate }}
+          </ng-container>
+        </a>
+      </li>
+    </ol>
+  </nav>

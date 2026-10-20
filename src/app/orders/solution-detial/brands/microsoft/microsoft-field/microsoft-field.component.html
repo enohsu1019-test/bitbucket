@@ -1,0 +1,342 @@
+<div class="form-group row">
+  <!-- 主要網域 -->
+  <div class="col-4">
+    <label class="col-form-label required">{{'domain'| translate }}</label>
+    <label class="badge badge-primary ml-1"
+           style="cursor: pointer"
+           (click)="checkCloudId()">{{ 'check' | translate }}</label>
+    <label class="badge badge-warning ml-1"
+           style="cursor: pointer"
+           (click)="requestForm(request)">{{ 'request' | translate }}</label>
+
+    <span *ngIf="cloudIdExist"
+       class="text-danger ml-1">{{ 'registered' | translate }}</span>
+    <span *ngIf="cloudIdExist !== undefined && !cloudIdExist"
+       class="text-success ml-1">{{ 'unregistered' | translate }}</span>
+       <i class="fas fa-spin fa-spinner ml-1"
+       *ngIf="checkDomainLoading"></i>
+    <input type="text"
+           class="form-control"
+           (change)="checkBlankCharacters()"
+           [(ngModel)]="domain"
+           [attr.disabled]="status !== 'DRAFT'? true: null">
+
+  </div>
+
+  <!-- root email -->
+  <div class="col-4">
+    <label class="col-form-label required">{{'root email'| translate }}</label>
+    <input type="text"
+           class="form-control"
+           (change)="outputValue()"
+           [(ngModel)]="originalInfoDatas['rootEmail']">
+  </div>
+
+  <!-- partnerId -->
+  <div class="col-4"
+       *ngIf="salesModel === 'DISTRIBUTION'">
+    <label class="col-form-label">{{ 'partnerId' | translate }}</label>
+    <select class="custom-select pt-2"
+            [(ngModel)]="originalInfoDatas['partnerId']"
+            (ngModelChange)="outputValue();">
+      <option disabled
+              [ngValue]="''">請選擇partnerId</option>
+      <option *ngFor="let partnerId of partnerIdDropdowns"
+              [ngValue]="partnerId.value">{{ partnerId.name }}
+      </option>
+    </select>
+  </div>
+
+  <!-- 原廠授權狀態 -->
+  <div class="col-4">
+    <label class="col-form-label">{{ 'original contract status' | translate }}</label>
+    <i class="fas fa-spin fa-spinner"
+       *ngIf="checkFactoryLoading"></i>
+    <p *ngIf="solutionHeaderData.originalStatus"
+       class="text-success mb-0">{{ 'accepted' | translate }}</p>
+    <p *ngIf="!solutionHeaderData.originalStatus"
+       class="text-danger mb-0">{{ 'not accepted' | translate }}</p>
+  </div>
+</div>
+
+<!-- cloud id不存在跳轉視窗 -->
+<ng-template #request>
+  <!-- loading -->
+  <ng-container *ngIf="loading">
+    <div class="card">
+      <div class="card-header bg-primary text-white">
+        {{ 'microsoft domain' | translate }}
+      </div>
+    </div>
+    <div class="card-body">
+      <h5><i class="fas fa-spin fa-spinner"></i>Loading.<span *ngIf="dot() > 1">.</span><span
+              *ngIf="dot() > 2">.</span><span *ngIf="dot() > 3">.</span></h5>
+    </div>
+  </ng-container>
+
+  <!-- 申請資料 -->
+  <ng-container *ngIf="!loading">
+    <div class="card">
+      <div class="card-header bg-primary text-white">
+        {{ 'microsoft domain' | translate }}
+      </div>
+
+      <!-- step1 填寫 and step2 確認 -->
+      <div *ngIf="step.one || step.two"
+           class="card-body">
+        <h5 *ngIf="step.one">{{ 'no cloud id please register' | translate }}</h5>
+        <h5 *ngIf="step.two">{{ 'be sure to send' | translate }}</h5>
+        <hr>
+        <form [formGroup]="applicationForm">
+          <div class="form-group row">
+            <!-- 名字 -->
+            <div class="col-4">
+              <label class="col-form-label required">{{ 'first name' | translate }}</label>
+              <input type="text"
+                     class="form-control"
+                     placeholder="{{ 'please fill input' | translate:{input: 'first name tips' | translate} | titlecase }}"
+                     id="firstName"
+                     formControlName="firstName"
+                     [attr.disabled]="step.two ? true : null">
+            </div>
+
+            <!-- 姓氏 -->
+            <div class="col-4">
+              <label class="col-form-label required">{{ 'last name' | translate }}</label>
+              <input type="text"
+                     class="form-control"
+                     placeholder="{{ 'please fill input' | translate:{input: 'last name tips' | translate} | titlecase }}"
+                     id="lastName"
+                     formControlName="lastName"
+                     [attr.disabled]="step.two ? true : null">
+            </div>
+
+            <!-- 客戶電子郵件信箱 -->
+            <div class="col-4">
+              <label class="col-form-label required">{{ 'customer email' | translate }}</label>
+              <input type="text"
+                     class="form-control"
+                     placeholder="{{ 'please fill input' | translate:{input: 'email tips' | translate} | titlecase }}"
+                     id="email"
+                     formControlName="email"
+                     [attr.disabled]="step.two ? true : null">
+            </div>
+
+            <!-- 電話號碼 -->
+            <div class="col-4">
+              <label class="col-form-label required">{{ 'phone number' | translate }}</label>
+              <input type="text"
+                     class="form-control"
+                     placeholder="{{ 'please fill input' | translate:{input: 'phone tips' | translate} | titlecase }}"
+                     id="phone"
+                     formControlName="phone"
+                     [attr.disabled]="step.two ? true : null">
+            </div>
+
+            <!-- 公司註冊識別碼(統編) -->
+            <div class="col-4">
+              <label class="col-form-label required">{{ 'identifier' | translate }}</label>
+              <input type="text"
+                     class="form-control"
+                     placeholder="{{ 'please fill input' | translate:{input: 'seriale tips' | translate} | titlecase }}"
+                     id="serial"
+                     formControlName="serial"
+                     [attr.disabled]="step.two ? true : null">
+            </div>
+
+            <!-- 公司法定名稱 -->
+            <div class="col-4">
+              <label class="col-form-label required">{{ 'company legal name' | translate }}</label>
+              <input type="text"
+                     class="form-control"
+                     placeholder="{{ 'please fill input' | translate:{input: 'legal name tips' | translate} | titlecase }}"
+                     id="legalName"
+                     formControlName="legalName"
+                     [attr.disabled]="step.two ? true : null">
+            </div>
+
+            <!-- 主要網域名稱 -->
+            <div class="col-4">
+              <label class="col-form-label required">{{ 'primary domain name' | translate }}</label><br>
+              <input type="text"
+                     class="form-control domain-input"
+                     placeholder="{{ 'please fill input' | translate:{input: 'domain tips' | translate} | titlecase }}"
+                     id="domain"
+                     formControlName="domain"
+                     [attr.disabled]="step.two ? true : null">
+              {{ '.onmicrosoft.com' }}
+            </div>
+
+            <!-- 地址1 -->
+            <div class="col-4">
+              <label class="col-form-label required">{{ 'address' | translate }}1</label>
+              <input type="text"
+                     class="form-control"
+                     placeholder="{{ 'please fill input' | translate:{input: 'address tips' | translate} | titlecase }}"
+                     id="addressOne"
+                     formControlName="addressOne"
+                     [attr.disabled]="step.two ? true : null">
+            </div>
+
+            <!-- 地址2 -->
+            <div class="col-4">
+              <label class="col-form-label">{{ 'address' | translate }}2</label>
+              <input type="text"
+                     class="form-control"
+                     placeholder="{{ 'please fill input' | translate:{input: 'address tips' | translate} | titlecase }}"
+                     id="addressTwo"
+                     formControlName="addressTwo"
+                     [attr.disabled]="step.two ? true : null">
+            </div>
+
+            <!-- 國家 -->
+            <div class="col-4">
+              <label class="col-form-label required">{{ 'country' | translate }}</label>
+              <input type="text"
+                     class="form-control"
+                     placeholder="{{ 'please fill input' | translate:{input: 'country tips' | translate} | titlecase }}"
+                     id="country"
+                     formControlName="country"
+                     value="TW"
+                     [attr.disabled]="true">
+            </div>
+
+            <!-- 鄉鎮市區 -->
+            <div class="col-4">
+              <label class="col-form-label required">{{ 'city' | translate }}</label>
+              <input type="text"
+                     class="form-control"
+                     placeholder="{{ 'please fill input' | translate:{input: 'city tips' | translate} | titlecase }}"
+                     id="city"
+                     formControlName="city"
+                     [attr.disabled]="step.two ? true : null">
+            </div>
+
+            <!-- 縣市 -->
+            <div class="col-4">
+              <label class="col-form-label required">{{ 'state' | translate }}</label>
+              <input type="text"
+                     class="form-control"
+                     placeholder="{{ 'please fill input' | translate:{input: 'state tips' | translate} | titlecase }}"
+                     id="state"
+                     formControlName="state"
+                     [attr.disabled]="step.two ? true : null">
+            </div>
+
+            <!-- 郵遞區號 -->
+            <div class="col-4">
+              <label class="col-form-label required">{{ 'postal code' | translate }}</label>
+              <input type="text"
+                     class="form-control"
+                     placeholder="{{ 'please fill input' | translate:{input: 'postal code tips' | translate} | titlecase }}"
+                     id="postalCode"
+                     formControlName="postalCode"
+                     [attr.disabled]="step.two ? true : null">
+            </div>
+
+            <!-- Microsoft 經銷商 Id -->
+            <div class="col-4">
+              <label class="col-form-label">{{ 'mpnid' | translate }}</label>
+              <input type="text"
+                     class="form-control"
+                     placeholder="{{ 'please fill input' | translate:{input: 'mpnid tips' | translate} | titlecase }}"
+                     id="mpnid"
+                     formControlName="mpnid"
+                     [attr.disabled]="step.two ? true : null">
+            </div>
+
+          </div>
+        </form>
+      </div>
+
+      <!-- step3 確認完畢 -->
+      <div *ngIf="step.three"
+           class="card-body">
+        <h5>{{ 'complete please wait' | translate }}</h5>
+      </div>
+
+      <!-- 發生錯誤 -->
+      <div *ngIf="step.error"
+           class="card-body">
+        <h5>{{ 'register error' | translate }}</h5>
+        {{ errorInfo }}
+      </div>
+    </div>
+
+    <div class="card-footer"
+         style="background-color: rgb(241 239 239);">
+      <!-- step1 -->
+      <div *ngIf="step.one"
+           class="text-right">
+        <button class="btn btn-secondary m-2"
+                (click)="tmpHide()">
+          {{ 'cancel' | translate | titlecase }}
+        </button>
+
+        <button class="btn btn-primary m-2"
+                (click)="step.one = false; step.two = true;"
+                [disabled]="!applicationForm.valid">
+          {{ 'submit' | translate | titlecase }}
+        </button>
+      </div>
+
+      <!-- step2 -->
+      <div *ngIf="step.two"
+           class="text-right">
+        <button class="btn btn-secondary m-2"
+                (click)="step.one = true; step.two = false;">
+          {{ 'back to last page' | translate | titlecase }}
+        </button>
+
+        <button class="btn btn-primary m-2"
+                (click)="sendApplication()">
+          {{ 'submit' | translate | titlecase }}
+        </button>
+      </div>
+
+      <!-- step3 or 錯誤 -->
+      <div *ngIf="step.three || step.error"
+           class="text-right">
+        <button class="btn btn-primary m-2"
+                (click)="tmpHide()">
+          {{ 'confirm' | translate | titlecase }}
+        </button>
+      </div>
+    </div>
+  </ng-container>
+</ng-template>
+
+<!-- 是否要寄送原廠邀請信 -->
+<div bsModal
+     #customerEmail="bs-modal"
+     class="modal fade"
+     tabindex="-1"
+     role="dialog"
+     aria-labelledby="dialog-child-name">
+  <div class="modal-dialog modal-sm">
+
+    <div class="modal-content">
+      <div class="card">
+        <div class="card-header bg-primary text-white">
+          {{'原廠授權列表'}}
+        </div>
+      </div>
+
+      <div class="modal-body">
+        <p style="font-size: 16px;">客戶不再原廠授權列表！ 是否要寄送原廠邀請信？</p>
+
+        <button type="button"
+                class="close pull-right btn-close"
+                (click)="hideChildModal()">
+          {{ 'cancel' | translate}}
+        </button>
+
+        <button type="button"
+                class="mr-2 close pull-right btn-close"
+                (click)="getsSendCustomerEmailAPI()">
+          {{ 'submit' | translate}}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

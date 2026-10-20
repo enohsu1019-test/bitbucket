@@ -1,0 +1,759 @@
+<div class="pb-6">
+
+  <!---------------------- 銷售對象 ---------------------->
+  <div class="my-4 p-3 bg-white shadow-sm">
+    <label class="h4 pb-2 mb-3 border-bottom border-primary h4-border-bottom required d-block">
+      {{ 'sales target' | translate | titlecase }}</label>
+    <div class="row">
+      <div class="col-12 col-sm-6 mb-2 mb-sm-0"
+           [ngClass]="{'pointer-disabled': ui.isLoading}">
+        <h6>{{ 'dealer' | translate | titlecase }}</h6>
+        <div class="my-2">
+          <input type="checkbox"
+                 id="isAllDealer"
+                 class="mr-2"
+                 (change)="salesTargetChanged(SalesTargetIdentity.dealer)"
+                 [checked]="isAllDealer">
+          <label for="isAllDealer"
+                 class="m-0">{{ 'all salesTarget label' | translate | titlecase }}</label>
+        </div>
+        <angular2-multiselect [data]="salesTargetDealer"
+                              [(ngModel)]="dealerSelected"
+                              (onSelect)="ui.isTargetInvalid = false"
+                              (onSelectAll)="ui.isTargetInvalid = false"
+                              [ngModelOptions]="{standalone: true}"
+                              [settings]="targetSelectSettings"
+                              [ngClass]="{'multiselect-disabled': isAllDealer,
+                                          'multiselect-invalid': ui.isTargetInvalid}">
+        </angular2-multiselect>
+      </div>
+      <div class="col-12 col-sm-6 mb-2 mb-sm-0"
+           [ngClass]="{'pointer-disabled': ui.isLoading}">
+        <h6>{{ 'non-dealer'| translate | titlecase}}</h6>
+        <div class="my-2">
+          <input type="checkbox"
+                 id="isAllEndUser"
+                 class="mr-2"
+                 (change)="salesTargetChanged(SalesTargetIdentity.endUser)"
+                 [checked]="isAllEndUser">
+          <label for="isAllEndUser"
+                 class="m-0">{{ 'all salesTarget label' | translate | titlecase }}</label>
+        </div>
+        <angular2-multiselect [data]="salesTargetEnduser"
+                              [(ngModel)]="endUserSelected"
+                              (onSelect)="ui.isTargetInvalid = false"
+                              (onSelectAll)="ui.isTargetInvalid = false"
+                              [ngModelOptions]="{standalone: true}"
+                              [settings]="targetSelectSettings"
+                              [ngClass]="{'multiselect-disabled': isAllEndUser,
+                                          'multiselect-invalid': ui.isTargetInvalid}">
+        </angular2-multiselect>
+      </div>
+
+      <!-- <div class="col-12 col-sm-8 mb-2 mb-sm-0"
+           [ngClass]="{'pointer-disabled': ui.isLoading}">
+        <app-autocomplete-dropdown-list [allList]="salesTargetAll"
+                                        [isDealer]="ui.isDealer"
+                                        [isLoading]="ui.isLoading"
+                                        [mode]="mode"
+                                        [(selectedIdList)]="targetSelected"
+                                        *ngIf="mode === 'add'">
+        </app-autocomplete-dropdown-list>
+        <div class="form-control h-auto pointer-disabled"
+             style="opacity: 0.6;"
+             *ngIf="mode === 'edit'">
+          <mat-chip-list>
+            <mat-chip *ngFor="let targetCompany of targetList"
+                      class="text-white companyChip"
+                      [ngClass]="{'companyChip-isDealer': ui.isDealer,
+                                  'companyChip-nonDealer': !ui.isDealer}"
+                      (click)="$event.stopPropagation(); $event.preventDefault()">
+              {{ targetCompany?.customerName?.fullCh }}
+            </mat-chip>
+            <mat-chip *ngIf="!targetList.length"
+                      class="text-white companyChip"
+                      [ngClass]="{'companyChip-isDealer': ui.isDealer,
+                                  'companyChip-nonDealer': !ui.isDealer}"
+                      (click)="$event.stopPropagation(); $event.preventDefault()">
+              {{ 'select all' | translate | titlecase }}</mat-chip>
+          </mat-chip-list>
+        </div>
+      </div>
+      <div style="padding-bottom: 1.34375em;"
+           class="col-12 col-sm-2 pl-5 ml-1 ml-sm-0 d-flex align-items-center justify-content-start custom-control custom-switch custom-switch-success custom-switch-form"
+           [ngClass]="{'pb-0': mode === 'edit'}">
+        <input class="custom-control-input"
+               type="checkbox"
+               id="isDealer"
+               style="z-index: 1;"
+               (change)="changeDealerStatus()"
+               [checked]="ui.isDealer"
+               [disabled]="ui.isLoading || mode==='edit'"
+               #isDealer>
+        <label class="custom-control-label"
+               for="isDealer"
+               style="z-index: 1;">
+          {{ (isDealer.checked ? 'dealer' : 'non-dealer') | translate | titlecase}}
+        </label>
+      </div> -->
+    </div>
+  </div>
+
+  <!---------------------- 商品設定 ---------------------->
+  <div class="mb-4">
+    <form [formGroup]="commodityForm">
+      <div class="card">
+        <div class="card-header bg-primary text-white">
+          <h5 class="mb-0">{{ 'commodity setting' | translate | titlecase }}</h5>
+        </div>
+        <!---------------- 商品名稱 ---------------->
+        <div class="bg-white p-3 pb-4">
+          <div class="form-row m-0">
+
+            <!------- 原廠 (only admin) ------->
+            <!-- *ngIf="!currentUser?.role?.brand?.id" -->
+            <div class="col-12 col-sm-4 mb-4"
+                 *appPermissionIf="'layout.iam.adminInput'">
+              <label for="brandId"
+                     class="required">{{ 'brand' | translate | titlecase }}</label>
+              <select class="form-control"
+                      id="brandId"
+                      formControlName="brandId"
+                      (change)="onSkuDeSelect(); changeBrand()"
+                      #brand>
+                <option *ngFor="let opt of brandsDDL"
+                        [value]="opt.brandId">{{ opt.name | translate }}</option>
+              </select>
+            </div>
+
+            <!------- 公司 (only admin) ------->
+            <!--  *ngIf="!currentUser?.role?.company?.id" -->
+            <div class="col-12 col-sm-4 mb-4"
+                 *appPermissionIf="'layout.iam.adminInput'">
+              <label for="customerId"
+                     class="required">{{ 'company' | translate | titlecase }} ({{ 'agent' | translate | titlecase }})
+              </label>
+              <span class="text-danger small pl-2"
+                    *ngIf="!companyDDL.length">
+                {{ 'please link to' | translate | titlecase }}
+                <a class="text-danger font-weight-bold"
+                   target="_blank"
+                   [routerLink]="['/', 'main', 'customers', 'add']">
+                  {{ 'customer' | translate | titlecase }}</a>
+                {{ 'add related data first' | translate | titlecase }}
+              </span>
+              <!-- <select class="form-control"
+                      id="customerId"
+                      formControlName="customerId"
+                      (change)="changeBrand()">
+                <option *ngFor="let opt of companyDDL"
+                        [value]="opt.id">{{ opt.fullCh | translate }}</option>
+              </select> -->
+              <div class="btn-group btn-block custom-ngx-dropdown"
+                   dropdown>
+                <button id="button-animated"
+                        dropdownToggle
+                        type="button"
+                        class="form-control dropdown-toggle d-flex justify-content-between align-items-center"
+                        aria-controls="dropdown-animated"
+                        [ngClass]="{'border-red': ui.isCompanyInvalid}">
+                  {{ (selectedCompany ? selectedCompany.fullCh : 'please select' | translate | titlecase) }}
+                </button>
+                <ul id="dropdown-animated"
+                    *dropdownMenu
+                    class="dropdown-menu w-100"
+                    role="menu"
+                    aria-labelledby="button-animated">
+                  <li role="menuitem"
+                      class="custom-ngx-dropdown-option pointer"
+                      *ngFor="let opt of companyDDL"
+                      [ngClass]="{'selected': opt.id === selectedCompany?.id}"
+                      (click)="onCompanySelect(opt)">
+                    <div class="text-muted menu_item pt-2"
+                         [ngClass]="{'pl-2': opt.id === selectedCompany?.id, 'pl-4': opt.id !== selectedCompany?.id}">
+                      <i class="fa-solid far fa-check text-primary"
+                         *ngIf="opt.id === selectedCompany?.id"></i>
+                      {{ opt.creator }}
+                    </div>
+                    <div class="d-block pl-4 pt-1 pb-2">{{ opt.fullCh }}</div>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            <!----------- 商品名稱 ----------->
+            <div class="col-12 col-sm-4 mb-4">
+              <label for="productName"
+                     class="required">{{ 'commodity name' | translate | titlecase }}</label>
+              <input type="text"
+                     class="form-control"
+                     id="productName"
+                     formControlName="productName"
+                     placeholder="{{ 'please fill input' | translate:{input: 'commodity name' | translate} | titlecase }}">
+            </div>
+
+            <!----------- 原廠料號 ----------->
+            <!-- 選完後自動帶入 -->
+            <!-- 品名規格(specification)、計價單位(unit)、下單成本(originalPrice)、定價(listPrice) -->
+            <!-- ERP料號(erpSku)、計費週期(leaseMode)、計算方式(calculateMethod)、原廠幣別(originalCurrency) -->
+            <!-- 上架日期(startDate)、下架日期(endDate) -->
+            <div class="col-12 col-sm-4 mb-4">
+              <label class="required">{{ 'brand serial number' | translate | titlecase }}</label>
+              <!-- 非雲市集為下拉選單 -->
+              <angular2-multiselect *ngIf="currentUser && !(isCloudRole || isAkamaiRole)"
+                                    [data]="originalSkuDDL"
+                                    [(ngModel)]="selectedSku"
+                                    [ngModelOptions]="{standalone: true}"
+                                    [settings]="selectSettings"
+                                    [ngClass]="{'multiselect-disabled': ui.isSkuListLoading,
+                                                'multiselect-invalid': ui.isOriSkuInvalid}"
+                                    (onSelect)="getCrmPriceBookCompany($event)"
+                                    (onDeSelect)="onSkuDeSelect()">
+                <c-search>
+                  <ng-template>
+                    <input type="text"
+                           (keyup.enter)="getCrmPriceBookList($event)"
+                           placeholder="{{ 'please fill input' | translate:{input: 'keyword' | translate} | titlecase }}"
+                           style="border: none;width: 100%; height: 100%;outline: none;" />
+                  </ng-template>
+                </c-search>
+              </angular2-multiselect>
+              <!-- 雲市集為手動輸入 -->
+              <input *ngIf="isCloudRole || isAkamaiRole"
+                     type="text"
+                     class="form-control"
+                     [(ngModel)]="inputSku"
+                     [ngModelOptions]="{standalone: true}">
+            </div>
+
+            <!----------- 品名規格 ----------->
+            <div class="col-12 col-sm-4 mb-4">
+              <label for="specification">
+                {{ 'commodity short name' | translate | titlecase }} / {{ 'specification' | translate | titlecase }}</label>
+              <input type="text"
+                     class="form-control"
+                     id="specification"
+                     formControlName="specification"
+                     placeholder="{{ ((isCloudRole || isAkamaiRole) ? 'please input' : 'auto fill-in after selecting sku') | translate | titlecase }}">
+
+            </div>
+
+            <!----------- 計價單位 ----------->
+            <div class="col-12 col-sm-4 mb-4">
+              <label for="unit">{{ 'billing unit' | translate | titlecase }}</label>
+              <input type="text"
+                     class="form-control"
+                     id="unit"
+                     formControlName="unit"
+                     placeholder="{{ ((isCloudRole || isAkamaiRole) ? 'please input' : 'auto fill-in after selecting sku') | translate | titlecase }}">
+            </div>
+
+            <!----------- ERP 料號 ----------->
+            <div class="col-12 col-sm-4 mb-4">
+              <label for="erpSku">{{ 'erp sku' | translate }}</label>
+              <input type="text"
+                     class="form-control"
+                     id="erpSku"
+                     formControlName="erpSku"
+                     placeholder="{{ ((isCloudRole || isAkamaiRole) ? 'please input' : 'auto fill-in after selecting sku') | translate | titlecase }}">
+            </div>
+
+            <!---------- 計價類別 (原為 商品類別) ----------->
+            <div class="col-12 col-sm-4 mb-4">
+              <label for="category"
+                     class="required">{{ 'commodity category' | translate | titlecase }}</label>
+              <select class="form-control"
+                      id="category"
+                      formControlName="category"
+                      (change)="changeCategory()"
+                      #category>
+                <option *ngFor="let opt of productCateList"
+                        [value]="opt.value">{{ opt.name | translate }}</option>
+              </select>
+            </div>
+
+            <!---------- 商品分類 ----------->
+            <div class="col-12 col-sm-4 mb-4">
+              <label for="brandCategory">{{ 'goods category'| translate | titlecase }}</label>
+              <angular2-multiselect [data]="categoryList.view"
+                                    [(ngModel)]="categoryList.select"
+                                    [ngModelOptions]="{standalone: true}"
+                                    [settings]="productSettings">
+              </angular2-multiselect>
+            </div>
+
+            <!----------- 計費週期 (原為 租約方式) ----------->
+            <div class="col-12 col-sm-4 mb-4">
+              <!-- <label for="leaseMode"
+                     [ngClass]="{'required' : category.value === 'subscription' }">{{ 'lease mode' | translate | titlecase }}</label> -->
+              <label for="leaseMode"
+                     [ngClass]="{'required' : (category.value === ProductCate.subscription || category.value === ProductCate.expense) }">{{ 'payment period' | translate | titlecase }}</label>
+              <select class="form-control"
+                      id="leaseMode"
+                      formControlName="leaseMode">
+                <option value=""
+                        disabled
+                        selected
+                        hidden>{{ 'auto fill-in after selecting sku' | translate | titlecase }}</option>
+                <option [value]="null"
+                        disabled
+                        hidden>{{ 'no need to input' | translate }}</option>
+                <option *ngFor="let opt of leaseModeDDL"
+                        [value]="opt.value">{{ opt.name | translate }}</option>
+              </select>
+            </div>
+
+            <!----------- 計算方式 ----------->
+            <div class="col-12 col-sm-4 mb-4">
+              <label for="calculateMethod"
+                     class="required">
+                {{ 'calculate method' | translate | titlecase }}</label>
+              <select class="form-control"
+                      id="calculateMethod"
+                      formControlName="calculateMethod">
+                <option value=""
+                        disabled
+                        selected
+                        hidden>{{ 'auto fill-in after selecting sku' | translate | titlecase }}</option>
+                <option *ngFor="let opt of calculateMethodDDL"
+                        [value]="opt.value">{{ opt.name | translate }}</option>
+              </select>
+            </div>
+
+            <!----------- 方案管理 ----------->
+            <div class="col-12 col-sm-4 mb-4">
+              <label for="solutionId"
+                     class="required">{{ 'solution' | translate | titlecase }}</label>
+              <span class="text-danger small pl-2"
+                    *ngIf="!solutionDDL.length">
+                {{ 'please link to' | translate | titlecase }}
+                <a class="text-danger font-weight-bold"
+                   target="_blank"
+                   [routerLink]="['/', 'main', 'brands', f['brandId'].value , getBrandName(f['brandId'].value)]">
+                  {{ 'brand' | translate | titlecase }}</a>
+                {{ 'add related data first' | translate | titlecase }}
+              </span>
+              <select class="form-control"
+                      id="solutionId"
+                      formControlName="solutionId">
+                <option *ngFor="let opt of solutionDDL"
+                        [value]="opt.solutionId">{{ opt.name | translate }}</option>
+              </select>
+            </div>
+
+            <!----------- 計費方式 ----------->
+            <div class="col-12 col-sm-4 mb-4">
+              <label for="billingMethod"
+                     [ngClass]="{'required' : category.value === ProductCate.expense }">
+                {{ 'billing methods' | translate | titlecase }}</label>
+              <select class="form-control"
+                      id="billingMethod"
+                      formControlName="billingMethod"
+                      (change)="f['minimum'].setValue('')"
+                      #billingMethod>
+                <option *ngFor="let opt of billingMethodDDL"
+                        [value]="opt.value"
+                        [disabled]="opt.value === 'NONE'">{{ opt.name | translate }}</option>
+              </select>
+            </div>
+
+            <!----------- 費用低消 ----------->
+            <div class="col-12 col-sm-4 mb-4"
+                 *ngIf="billingMethod.value === BillingMethod.totalPercent">
+              <label for="minimum">
+                {{ 'minimum cost' | translate | titlecase }}
+                <i class="fas fa-info-circle fa-xs text-secondary"
+                   popover="{{ 'minimum cost info' | translate | titlecase }}"
+                   triggers="mouseenter:mouseleave"></i>
+              </label>
+              <input type="text"
+                     class="form-control"
+                     id="minimum"
+                     formControlName="minimum"
+                     placeholder="{{ 'please fill input' | translate:{input: 'minimum cost' | translate} | titlecase }}">
+              <div *ngIf="f['minimum'].invalid && (f['minimum'].dirty || f['minimum'].touched) && f['minimum'].errors?.['pattern']"
+                   class="text-danger pt-1 pl-1 text-xs">
+                {{ 'positive number only' | translate | titlecase }}
+              </div>
+            </div>
+
+          </div>
+          <!----------- 是否為雲市集商品 ----------->
+          <div class="ml-1 mb-4">
+            <input type="checkbox"
+                   class="mr-2"
+                   id="isCloudMarketProduct"
+                   formControlName="isCloudMarketProduct">
+            <label for="isCloudMarketProduct">{{ 'cloud market product' | translate | titlecase }}</label>
+          </div>
+        </div>
+
+        <!-- 動態欄位 -->
+        <div class="bg-white p-3 pb-4">
+          <div class="form-row m-0">
+            <div *ngFor="let field of commoditySettingField; let idx = index"
+                 class="col-12 col-sm-4 mb-4">
+              <!-- boolean -->
+              <input *ngIf="field.type === 'BOOLEAN'"
+                     type="checkbox"
+                     [(ngModel)]="field.value"
+                     [ngModelOptions]="{standalone: true}"
+                     [hidden]="field.hidden">
+
+              <label [ngClass]="{'required' : field.required, 'ml-2': field.type === 'BOOLEAN'}">{{ field.name }}</label>
+
+              <!-- 文字，信箱 -->
+              <input *ngIf="field.type === 'STRING' ||
+                            field.type === 'MAIL'"
+                     type="{{field.type}}"
+                     class="form-control"
+                     [(ngModel)]="field.value"
+                     [ngModelOptions]="{standalone: true}"
+                     [hidden]="field.hidden">
+
+              <!-- 數字 -->
+              <input *ngIf="field.type === 'NUMBER'"
+                     type="number"
+                     class="form-control"
+                     [(ngModel)]="field.value"
+                     [ngModelOptions]="{standalone: true}"
+                     [hidden]="field.hidden">
+
+              <!-- 單選 -->
+              <select *ngIf="field.type === 'SINGLE_CHOICE'"
+                      class="form-control"
+                      [(ngModel)]="field.value"
+                      [ngModelOptions]="{standalone: true}"
+                      [hidden]="field.hidden">
+                <option selected
+                        disabled
+                        [value]="''">{{ 'please select' | translate | titlecase }}</option>
+                <option *ngFor="let opt of field.options"
+                        [value]="opt.internalVariableName">{{ opt.name | translate }}</option>
+              </select>
+
+              <!-- 多選 -->
+              <angular2-multiselect *ngIf="field.type === 'MULTIPLE_CHOICE'"
+                                    [data]="dynamicField.view"
+                                    [(ngModel)]="dynamicField.select"
+                                    [ngModelOptions]="{standalone: true}"
+                                    [settings]="dynamicFieldConfig"
+                                    (onOpen)="openDynamicField(field)"
+                                    (onClose)="closeDynamicField(field)">
+              </angular2-multiselect>
+
+              <!-- 密碼 -->
+              <input *ngIf="field.type === 'PASSWORD'"
+                     type="password"
+                     class="form-control"
+                     [(ngModel)]="field.value"
+                     [ngModelOptions]="{standalone: true}"
+                     [hidden]="field.hidden">
+
+              <!-- 日期 -->
+              <input *ngIf="field.type === 'DATE'"
+                     type="text"
+                     class="form-control"
+                     autocomplete="off"
+                     bsDatepicker
+                     [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD' }"
+                     [maxDate]="f['endDate'].value"
+                     [(ngModel)]="field.value"
+                     [ngModelOptions]="{standalone: true}">
+            </div>
+          </div>
+        </div>
+
+        <!---------------- 價格設定 ---------------->
+        <div class="bg-light p-3 pb-4">
+          <h4 class="text-secondary mb-3 d-flex align-items-baseline">{{ 'commodity price setting' | translate | titlecase }}
+            <h6 class="ml-2">
+              <span *ngIf="!ui.isLoading">
+                <!-- {{ "today's currency" | translate:{currency: 'currency-' + currency | translate} }} ({{currency}})
+                <span [innerHTML]="'exchange rate is' | translate: {exchange: exchange} | titlecase "></span> -->
+                {{ 'customs thirty' | translate }}{{exchange}}({{ 'reference exchange rate' | translate }})
+              </span>
+              <i class="fas fa-spin fa-spinner"
+                 *ngIf="ui.isLoading"></i>
+            </h6>
+          </h4>
+          <div class="form-row m-0">
+
+            <!----------- 販售價格 ----------->
+            <div class="col-12 col-sm-3 mb-4">
+              <label for="sellingPrice">{{ 'selling price' | translate | titlecase }}</label>
+              <input type="text"
+                     class="form-control"
+                     id="sellingPrice"
+                     formControlName="sellingPrice"
+                     placeholder="{{ 'please fill input' | translate:{input: 'selling price' | translate} | titlecase }}">
+              <div *ngIf="f['sellingPrice'].invalid && (f['sellingPrice'].dirty || f['sellingPrice'].touched) && f['sellingPrice'].errors?.['pattern']"
+                   class="text-danger pt-1 pl-1 text-xs">
+                {{ 'positive number only' | translate | titlecase }}
+              </div>
+            </div>
+
+            <!----------- 下單成本 (原為 原廠價格)----------->
+            <div class="col-12 col-sm-3 mb-4">
+              <label for="originalPrice">{{ 'order cost' | translate | titlecase }}</label>
+              <!-- <label for="originalPrice">{{ 'original price' | translate | titlecase }}</label> -->
+              <input type="text"
+                     class="form-control"
+                     id="originalPrice"
+                     formControlName="originalPrice"
+                     placeholder="{{ ((isCloudRole || isAkamaiRole) ? 'please input' : 'auto fill-in after selecting sku') | translate | titlecase }}">
+              <!-- placeholder="{{ (f['category'].value === 'subscription' ? 'auto fill-in after selecting sku' : 'no need to input') | translate | titlecase }}" -->
+            </div>
+
+            <!----------- 原廠定價 ----------->
+            <div class="col-12 col-sm-3 mb-4">
+              <label for="listPrice">{{ 'origin list price' | translate | titlecase }}</label>
+              <input type="text"
+                     class="form-control"
+                     id="listPrice"
+                     formControlName="listPrice"
+                     placeholder="{{ ((isCloudRole || isAkamaiRole) ? 'please input' : 'auto fill-in after selecting sku') | translate | titlecase }}">
+              <!-- placeholder="{{ (f['category'].value === 'subscription' ? 'auto fill-in after selecting sku' : 'no need to input') | translate:{input: 'list price' | translate} | titlecase }}" -->
+            </div>
+
+            <!----------- 台幣定價 ----------->
+            <div class="col-12 col-sm-3 mb-4">
+              <label for="twdListPrice">{{ 'twd list price' | translate | titlecase }}</label>
+              <input type="text"
+                     class="form-control"
+                     id="twdListPrice"
+                     formControlName="twdListPrice"
+                     placeholder="{{ ((isCloudRole || isAkamaiRole) ? 'please input' : 'auto fill-in after selecting sku') | translate | titlecase }}">
+              <!-- placeholder="{{ (f['category'].value === 'subscription' ? 'auto fill-in after selecting sku' : 'no need to input') | translate:{input: 'list price' | translate} | titlecase }}" -->
+            </div>
+
+            <!----------- 原廠幣別 (原標題為 出帳幣別) ----------->
+            <div class="col-12 col-sm-3 mb-4">
+              <label for="currency"
+                     class="required">{{ 'origin currency' | translate | titlecase }}</label>
+              <select class="form-control"
+                      id="currency"
+                      formControlName="currency">
+                <!-- <option selected
+                        value="">{{ 'please select' | translate | titlecase }}</option> -->
+                <option *ngFor="let opt of currencyDDL"
+                        [value]="opt.value">{{ opt.name }}</option>
+              </select>
+            </div>
+
+            <!----------- 庫存 ----------->
+            <div class="col-12 col-sm-3 mb-4">
+              <label for="inventory"
+                     class="required">{{ 'inventory' | translate | titlecase }}</label>
+              <select class="form-control"
+                      id="inventory"
+                      formControlName="inventory"
+                      (change)="changeInventory()"
+                      #inventory>
+                <option *ngFor="let opt of inventoryDDL"
+                        [value]="opt.value">{{ opt.name | translate }}</option>
+              </select>
+            </div>
+
+            <!----------- 庫存數量 ----------->
+            <div class="col-12 col-sm-3 mb-4">
+              <label for="inventoryQty"
+                     [ngClass]="{'required' : inventory.value === Inventory.custom}">
+                {{ 'quantity of inventory' | translate | titlecase }}</label>
+              <input type="text"
+                     class="form-control"
+                     id="inventoryQty"
+                     formControlName="inventoryQty"
+                     placeholder="{{ inventory.value === Inventory.custom ?
+                                    ('please fill input' | translate:{input: 'quantity of inventory' | translate} | titlecase) :
+                                    'no need to input' | translate | titlecase }}">
+              <div *ngIf="f['inventoryQty'].invalid && (f['inventoryQty'].dirty || f['inventoryQty'].touched) && f['inventoryQty'].errors?.['pattern']"
+                   class="text-danger pt-1 pl-1 text-xs">
+                {{ 'positive number only' | translate | titlecase }}
+              </div>
+            </div>
+
+            <!----------- 上架日期 ----------->
+            <div class="col-12 col-sm-3 mb-4">
+              <label for="startDate"
+                     class="required">{{ 'launched date' | translate | titlecase }}</label>
+              <input type="text"
+                     class="form-control"
+                     autocomplete="off"
+                     bsDatepicker
+                     placeholder="{{ ((isCloudRole || isAkamaiRole) ? 'please select' : 'auto fill-in after selecting sku') | translate | titlecase }}"
+                     id="startDate"
+                     formControlName="startDate"
+                     [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD' }"
+                     [maxDate]="f['endDate'].value"
+                     (change)="checkDate($event, 'startDate')">
+            </div>
+
+            <!----------- 下架日期 ----------->
+            <div class="col-12 col-sm-3 mb-4">
+              <label for="endDate"
+                     class="required">{{ 'discontinued date' | translate | titlecase }}</label>
+              <input type="text"
+                     class="form-control"
+                     autocomplete="off"
+                     bsDatepicker
+                     placeholder="{{ ((isCloudRole || isAkamaiRole) ? 'please select' : 'auto fill-in after selecting sku') | translate | titlecase }}"
+                     id="endDate"
+                     formControlName="endDate"
+                     [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD' }"
+                     [minDate]="f['startDate'].value"
+                     (change)="checkDate($event, 'endDate')">
+            </div>
+
+          </div>
+        </div>
+        <!---------------- 圖片設定 ---------------->
+        <div class="bg-white p-3 pb-4">
+          <h4 class="text-secondary mb-3">{{ 'commodity image setting' | translate | titlecase }}</h4>
+          <div class="form-row m-0">
+
+            <!------ Banner 圖片 ------>
+            <div class="col-12 col-sm-3 mb-4 mb-sm-0">
+              <label class="d-block"
+                     for="bannerImage">{{ 'Banner' }}</label>
+              <input type="file"
+                     id="bannerImage"
+                     hidden
+                     accept="image/*"
+                     (change)="selectImg($event, ImageType.banner)"
+                     #bannerImg>
+              <label for="bannerImage"
+                     class="custom-image upload banner pointer mb-2"
+                     *ngIf="!bannerImgUrl">
+                <i class="fas fa-image fa-3x text-secondary"></i>
+              </label>
+              <div class="custom-image preview mb-2"
+                   *ngIf="bannerImgUrl">
+                <img [src]="bannerImgUrl"
+                     alt="banner image" />
+                <i class="fas fa-times-circle btn-fontawesome x-large btn-cancel"
+                   (click)="bannerImg.value = ''; unselectImg(ImageType.banner); bannerTooBig = false;"></i>
+              </div>
+              <span *ngIf="bannerTooBig" class="text-danger">{{ 'img too big' | translate }}</span>
+            </div>
+
+            <!------ 商品圖片 ------>
+            <div class="col-12 col-sm-3 mb-4 mb-sm-0">
+              <label class="d-block"
+                     for="productImage">{{ 'commodity' | translate | titlecase }}</label>
+              <input type="file"
+                     id="productImage"
+                     hidden
+                     accept="image/*"
+                     (change)="selectImg($event, ImageType.default)"
+                     #productImg>
+              <label for="productImage"
+                     class="custom-image upload product pointer mb-2"
+                     *ngIf="!defaultImgUrl">
+                <i class="fas fa-image fa-3x"></i>
+              </label>
+              <div class="custom-image preview mb-2"
+                   *ngIf="defaultImgUrl">
+                <img [src]="defaultImgUrl"
+                     alt="product image" />
+                <i class="fas fa-times-circle btn-fontawesome x-large btn-cancel"
+                   (click)="productImg.value = ''; unselectImg(ImageType.default); productTooBig = false;"></i>
+              </div>
+              <span *ngIf="productTooBig" class="text-danger">{{ 'img too big' | translate }}</span>
+            </div>
+          </div>
+          <div>※ {{ 'image type only' | translate }}</div>
+
+
+        </div>
+        <!---------------- 商品描述 ---------------->
+        <div class="bg-light p-3 pb-4">
+          <h4 class="text-secondary mb-3">{{ 'commodity describe setting' | translate | titlecase }}</h4>
+          <div class="form-row m-0">
+            <div class="col-12">
+              <textarea class="form-control"
+                        rows="6"
+                        formControlName="description"
+                        id="description"
+                        placeholder="{{ 'please fill input' | translate:{input: 'commodity describe setting' | translate} | titlecase }}"></textarea>
+            </div>
+          </div>
+        </div>
+        <!---------------- 商品標籤 ---------------->
+        <div class="bg-white p-3 pb-4">
+          <h4 class="text-secondary mb-3">{{ 'commodity tag setting' | translate | titlecase }}</h4>
+          <div class="form-row m-0">
+            <div class="col-5 mb-3">
+              <input #tagInput
+                     type="text"
+                     class="form-control"
+                     id="commodityName"
+                     placeholder="{{ 'please fill input' | translate:{input: 'keyword' | translate} | titlecase }}"
+                     (keyup.enter)="enterTagChip($event, tagInput)">
+            </div>
+          </div>
+          <div *ngIf="tagList.length">
+            <mat-chip class="mat-custom-color-blue mr-1 mb-1"
+                      *ngFor="let chip of tagList"
+                      (removed)="removeTagChip(chip)">
+              {{ chip }}
+              <button matChipRemove>
+                <mat-icon>cancel</mat-icon>
+              </button>
+            </mat-chip>
+
+          </div>
+        </div>
+        <!---------------- 商品頁面設定 ---------------->
+        <div class="bg-light p-3 pb-4">
+          <h4 class="text-secondary mb-3">{{ 'commodity page setting' | translate | titlecase }}</h4>
+          <div>
+            <email-editor [options]="options"
+                          [minHeight]="'70vh'"
+                          (loaded)="editorLoaded()"></email-editor>
+          </div>
+          <!-- <div *ngIf="!ui.isUnlayerLoading"
+               class="bg-white overflow-auto html-preview-loading d-flex justify-content-center align-items-center">
+            <i class="fas fa-spin fa-spinner fa-2x"></i>
+          </div> -->
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ===================== Footer ===================== -->
+<div class="action-button-footer"
+     *ngIf="this.productPermission['product-v1.addProduct'] || this.productPermission['product-v1.updateProduct']">
+  <button class="btn btn-warning mr-2"
+          type="button"
+          (click)="openPreviewModal(previewModal)"
+          [disabled]="ui.isLoading || ui.isSaving">
+    {{ 'preview' | translate | titlecase }}
+  </button>
+  <button class="btn btn-secondary mr-2"
+          type="button"
+          (click)="cancel()"
+          [disabled]="ui.isLoading || ui.isSaving">
+    {{ 'cancel' | translate | titlecase }}
+  </button>
+  <button class="btn btn-primary"
+          type="button"
+          (click)="saveCommodity()"
+          [disabled]="ui.isLoading || ui.isSaving || bannerTooBig || productTooBig">
+    {{ 'save' | translate | titlecase }}
+    <i class="fas fa-spin fa-spinner mr-1"
+       *ngIf="ui.isSaving"></i>
+  </button>
+</div>
+
+<!--------------- commodity preview ----------------->
+<ng-template #previewModal>
+  <div class="p-3 position-relative">
+    <i class="fas fa-times-circle btn-fontawesome btn-cancel x-large btn-modal"
+       (click)="closeModal()"></i>
+    <app-commodity-shop-detail [commodity]="commodityForm.value"
+                               [mode]="'prev'">
+    </app-commodity-shop-detail>
+  </div>
+</ng-template>

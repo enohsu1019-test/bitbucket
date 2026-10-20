@@ -1,0 +1,412 @@
+<!-- 預測未來使用量功能 -->
+
+<!-- dateModal -->
+<ng-template #forecastFuture>
+  <div class="modal-body text-center">
+    <p>預測未來會取消目前所選的模式你是否要使用預測未來?</p>
+    <button type="button" class="btn btn-default" (click)="modalComfirm()">Yes</button>
+    <button type="button" class="btn btn-primary" (click)="modalDeCline()">No</button>
+  </div>
+</ng-template>
+<div class="shadow-sm mb-4 bg-white rounded cardHeight">
+  <div class="p-0">
+    <div class="p-3">
+      <!-- dashboard -->
+      <div>
+        <!-- dashobard header -->
+        <div class="card-header p-0 border-primary d-flex" style="height:40px;">
+          <h4 class="font-weight-bold col-6 p-0">
+            {{ 'future forecast usage' | translate | uppercase }}(US$)
+            <button class="ml-3 btn btn-primary"
+                    (click)="openCondition(condition)">
+              {{ "select analysis source" | translate }}
+            </button>
+          </h4>
+        </div>
+
+        <!-- date -->
+        <div class="row p-3">
+          <!-- datePicker -->
+          <div class="col-4 p-0 mr-3">
+            <input type="text" placeholder="請輸入日期" class="form-control" bsDaterangepicker
+              (onHidden)="handleDateAPIData(forecastFuture)" [(bsValue)]="pickerRangeDates" [maxDate]="maxDate"
+              [minDate]="minDate" [placement]="'right'">
+          </div>
+          <!-- 日期類型 月、日 -->
+          <div>
+            <select class="custom-select pt-2" [(ngModel)]="granularity">
+              <option [ngValue]="'MONTHLY'">{{ 'MONTHLY' | translate }}</option>
+              <option [ngValue]="'DAILY'">{{ 'DAILY' | translate }}</option>
+            </select>
+          </div>
+
+          <button (click)="getAWSCostExplorer()"
+                  [disabled]="ui.isLoadCost || sidebarFilter['accountIds'].length === 0 || sidebarFilter['recordType'].length === 0 || ui.isLoadFilter"
+                  class="ml-3 btn btn-primary" style="height: 35px">
+            {{ "update report" | translate }}
+          </button>
+        </div>
+
+        <!-- 分組依序 -->
+        <div class="row m-0 p-2 bg-light border">
+          <div class="row col-3">
+            <p class="m-0 font-weight-bold pr-0 col-5" style="line-height: 38px">{{ 'arrange in groups' | translate }}:</p>
+            <p  *ngIf="groupBy === ''"
+                class="m-0 font-weight-bold col-6 border-right pl-0"
+                style="line-height: 38px">None</p>
+            <button *ngIf="groupBy !== ''"
+                    type="button"
+                    class="btn btn-primary"
+                    style="height: 40px"
+                    (click)="groupBy='';">
+              {{ groupBy | translate }}
+              <i class="ml-1 fas fa-times"></i>
+            </button>
+          </div>
+
+          <div class="col-9" style="height: 60px;overflow-y: hidden; overflow-x: scroll;">
+            <div style="display: flex;flex-wrap: nowrap;width: max-content;">
+              <button (click)="groupBy='SERVICE';selectTagGroup = '';" class="btn btn-link">{{ 'service'| translate }}</button>
+              <button (click)="groupBy='LINKED_ACCOUNT';selectTagGroup = '';" class="btn btn-link">{{ 'linked account'| translate }}</button>
+              <button (click)="groupBy='REGION';selectTagGroup = '';" class="btn btn-link">{{ 'region'| translate }}</button>
+              <button (click)="groupBy='INSTANCE_TYPE';selectTagGroup = '';" class="btn btn-link">{{ 'instance type'| translate }}</button>
+              <button (click)="groupBy='USAGE_TYPE';selectTagGroup = '';" class="btn btn-link">{{ 'usage type'| translate }}</button>
+              <button (click)="groupBy='OPERATION';selectTagGroup = '';" class="btn btn-link">{{ 'OPERATION'| translate }}</button>
+              <button (click)="groupBy='RECORD_TYPE';selectTagGroup = '';" class="btn btn-link">{{ 'chargeType'| translate }}</button>
+              <button (click)="groupBy='AZ';selectTagGroup = '';" class="btn btn-link">{{ 'az'| translate }}</button>
+              <button (click)="groupBy='PLATFORM';selectTagGroup = '';" class="btn btn-link">{{ 'platform'| translate }}</button>
+              <button (click)="groupBy='PURCHASE_TYPE';selectTagGroup = '';" class="btn btn-link">{{ 'purchase type'| translate }}</button>
+              <!-- <button *ngFor="let tag of tagGroup" (click)="groupBy='TAG:' + tag;" class="btn btn-link">{{ tag }}</button> -->
+              <select *ngIf="tagGroup.length > 0"
+                       class="custom-select pt-2"
+                       style="width: auto"
+                       [(ngModel)]="selectTagGroup"
+                       (change)="tagChange()">
+                <option [ngValue]="''">{{ 'please select' | translate }} {{ 'TAG' }}</option>
+                <option *ngFor="let tag of tagGroup" [ngValue]="tag">{{ tag }}</option>
+              </select>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- dashobard body -->
+        <div class="card w-100 rounded-0 p-2 bg-light" style="margin-bottom: 30px;">
+
+          <!-- 遮罩 -->
+          <div class="h-100 d-flex justify-content-center align-items-center" *ngIf="ui.isLoadCost">
+            <i class="fas fa-spin fa-spinner fa-3x text-blue"></i>
+            {{ 'loading data' | translate }}
+          </div>
+
+          <!-- 查無資料 -->
+          <ng-container *ngIf="!ui.isLoadCost && dashboardDatasets.length === 0">
+            <div class="list-group-item flex-column align-items-start" style="text-align: center;">
+              <h3><i class="fa fa-exclamation-circle mr-2"></i>{{ 'Can not find data' | translate }}</h3>
+            </div>
+          </ng-container>
+
+          <!-- api 錯誤訊息 -->
+          <ng-container *ngIf="!ui.isLoadCost && ui.isError">
+            <div class="card-body list-group p-0">
+              <p style="display: flex;">
+                <i class="fa fa-exclamation-circle col-sm-1" style="font-size:35px"></i>
+                {{ errorMessage }}
+              </p>
+            </div>
+          </ng-container>
+
+          <!-- Dashboard -->
+          <ng-container *ngIf="dashboardDatasets.length >= 1 && !ui.isLoadCost">
+            <div class="card-body p-0">
+              <div class="col-12">
+                <canvas baseChart [datasets]="dashboardDatasets" [labels]="dashboardDate" [options]="options"
+                  [type]="'bar'" style="height: 250px;"></canvas>
+              </div>
+            </div>
+          </ng-container>
+        </div>
+      </div>
+
+      <!-- table -->
+      <div >
+        <!-- table header -->
+        <div class="card-header p-0 border-primary d-flex justify-content-end" style="height:40px;">
+          <button (click)="excelDownLoad()" class="btn btn-warning" style="height: 35px"
+                  *ngIf="!ui.isLoadCost && tableDatas.length > 0">
+            <i [ngClass]="{'far fa-save': !ui.dropdownExcel, 'fas fa-spin fa-spinner': ui.dropdownExcel}"></i>
+            {{ "download" | translate }}Excel
+          </button>
+        </div>
+
+        <!-- table body  -->
+        <div class="card w-100 rounded-0 p-2 bg-light">
+
+          <!-- 遮罩 -->
+          <div class="h-100 d-flex justify-content-center align-items-center" *ngIf="ui.isLoadCost">
+            <i class="fas fa-spin fa-spinner fa-3x text-blue"></i>
+            {{ 'loading data' | translate }}
+          </div>
+
+          <!-- 查無資料 -->
+          <ng-container *ngIf="!ui.isLoadCost && tableDatas.length === 0">
+            <div class="list-group-item flex-column align-items-start" style="text-align: center;">
+              <h3 ><i class="fa fa-exclamation-circle mr-2"></i>{{ 'Can not find data' | translate }}</h3>
+            </div>
+          </ng-container>
+
+          <!-- api 錯誤訊息 -->
+          <ng-container *ngIf="!ui.isLoadCost && ui.isError">
+            <!-- <div class="card-body list-group p-0" *ngIf="chartDatas.length === 0 "> -->
+            <div class="card-body list-group p-0">
+              <p style="display: flex;">
+                <i class="fa fa-exclamation-circle col-sm-1" style="font-size:35px"></i>
+                {{ errorMessage }}
+              </p>
+            </div>
+          </ng-container>
+
+          <!-- table -->
+          <ng-container *ngIf="!ui.isLoadCost && tableDatas.length > 0">
+            <div class=" p-0" style="overflow-y: auto; max-height: 400px">
+              <table mat-table [dataSource]="tableDatas" class="mat-elevation-z8">
+                <ng-container matColumnDef="key" sticky>
+                  <th mat-header-cell class="text-white text-center" style="min-width: 270px;" *matHeaderCellDef>
+                    {{ mode | translate }}
+                  </th>
+                  <td mat-cell class="truncate-cell" style="background-color: #c9f6ff;" *matCellDef="let element"
+                    popover="{{ element.key }}" triggers="mouseenter:mouseleave">
+                    {{ element.key }} </td>
+                  <td mat-footer-cell class="" *matFooterCellDef> {{ 'total' | translate }} </td>
+                </ng-container>
+
+                <ng-container matColumnDef="total" sticky>
+                  <th mat-header-cell class="text-white text-center" style="min-width: 90px;" *matHeaderCellDef>
+                    {{ 'subtotal' | translate }}
+                  </th>
+                  <td mat-cell class="truncate-cell p-3 text-right" style="background-color: #efefef;"
+                    *matCellDef="let element"> {{ element.total }} </td>
+                  <td mat-footer-cell *matFooterCellDef class=" text-right p-3"> </td>
+                  <!-- <td mat-footer-cell *matFooterCellDef class=" text-right p-3"> {{ getTotalCost('total') }} </td> -->
+                </ng-container>
+
+                <ng-container matColumnDef="{{ column }}" *ngFor="let column of dashboardDate">
+                  <th mat-header-cell class="text-white text-center" style="min-width: 90px;" *matHeaderCellDef>
+                    {{ column }} </th>
+                  <td mat-cell class="text-right" *matCellDef="let element"> {{element[column]}} </td>
+                </ng-container>
+
+                <tr mat-header-row class="bg-primary" *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+                <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+              </table>
+            </div>
+          </ng-container>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<ng-template #condition>
+  <div class="card">
+    <div class="card-header bg-primary text-white">
+      <h5 class="mb-0">{{ 'select analysis source' | translate | uppercase }}</h5>
+    </div>
+    <div class="card-body">
+
+      <!-- loading -->
+      <div *ngIf="ui.isLoadFilter" class="text-center">
+        <h2>
+          <i class="fas fa-spin fa-spinner my-5"></i>
+          <span class="pl-2">{{ 'data fetching' | translate | uppercase }}</span>
+        </h2>
+      </div>
+
+      <!-- step1. 選擇payer id 與 cloud id -->
+      <div *ngIf="ui.step === 1 && !ui.isLoadFilter" class="row">
+        <!-- payer id -->
+        <div class="col-6">
+          <div class="d-flex justify-content-start">
+            <h4 class="font-weight-bold">{{ 'Payer ID' }}</h4>
+            <i class="fas fa-asterisk pl-2 text-danger"></i>
+          </div>
+          <angular2-multiselect class="" [data]="sidebarFilterView['payerIds']" [(ngModel)]="sidebarFilterDatas['payerIds']"
+            [settings]="settingsPayerId"  (onOpen)="payerIdOpen()" (ngModelChange)="payerChange()">
+          </angular2-multiselect>
+        </div>
+
+        <!-- 連接帳戶 -->
+        <div class="col-6">
+          <div class="d-flex justify-content-start">
+            <h4 class="font-weight-bold">{{ 'linked account' | translate | uppercase }}</h4>
+            <i class="fas fa-asterisk pl-2 text-danger"></i>
+          </div>
+          <angular2-multiselect class="" [data]="sidebarFilterView['accountIds']" [(ngModel)]="sidebarFilterDatas['accountIds']"
+            [settings]="settingsAccountId" (onClose)="handleSidebarFilterEvent('accountIds')"
+            (onOpen)="openSidebarEvent('accountIds')">
+          </angular2-multiselect>
+        </div>
+      </div>
+      <!-- step1. end -->
+
+      <!-- step2. 條件選擇 -->
+      <div *ngIf="ui.step === 2 && !ui.isLoadFilter" class="row">
+        <!--服務-->
+        <div class="col-4">
+          <div class="d-flex justify-content-start">
+            <h4 class="font-weight-bold mt-2">{{ 'service' | translate | uppercase }}</h4>
+          </div>
+          <angular2-multiselect class="" [data]="sidebarFilterView['service']" [(ngModel)]="sidebarFilterDatas['service']"
+            [settings]="settings" (onClose)="handleSidebarFilterEvent('service')" (onOpen)="openSidebarEvent('service')">
+          </angular2-multiselect>
+        </div>
+
+        <!--區域-->
+        <div class="col-4">
+          <div class="d-flex justify-content-start">
+            <h4 class="font-weight-bold mt-2">{{ 'region' | translate | uppercase }}</h4>
+          </div>
+          <angular2-multiselect [data]="sidebarFilterView['region']" [(ngModel)]="sidebarFilterDatas['region']"
+            [settings]="settings" (onClose)="handleSidebarFilterEvent('region')" (onOpen)="openSidebarEvent('region')">
+          </angular2-multiselect>
+        </div>
+
+        <!--執行個體類型-->
+        <div class="col-4">
+          <div class="d-flex justify-content-start">
+            <h4 class="font-weight-bold mt-2">{{ 'instance type' | translate | uppercase }}</h4>
+          </div>
+          <angular2-multiselect [data]="sidebarFilterView['instanceType']" [(ngModel)]="sidebarFilterDatas['instanceType']"
+            [settings]="settings" (onClose)="handleSidebarFilterEvent('instanceType')"
+            (onOpen)="openSidebarEvent('instanceType')">
+          </angular2-multiselect>
+        </div>
+
+        <!--用量類型-->
+        <div class="col-4">
+          <div class="d-flex justify-content-start">
+            <h4 class="font-weight-bold mt-2">{{ 'usage type' | translate | uppercase }}</h4>
+          </div>
+          <angular2-multiselect [data]="sidebarFilterView['usageType']" [(ngModel)]="sidebarFilterDatas['usageType']"
+            [settings]="settings" (onClose)="handleSidebarFilterEvent('usageType')"
+            (onOpen)="openSidebarEvent('usageType')">
+          </angular2-multiselect>
+        </div>
+
+        <!--用量類型群組-->
+        <div class="col-4">
+          <div class="d-flex justify-content-start">
+            <h4 class="font-weight-bold mt-2">{{ 'usage type group' | translate | uppercase }}</h4>
+          </div>
+          <angular2-multiselect [data]="sidebarFilterView['usageTypeGroup']" [(ngModel)]="sidebarFilterDatas['usageTypeGroup']"
+            [settings]="settings" (onClose)="handleSidebarFilterEvent('usageTypeGroup')"
+            (onOpen)="openSidebarEvent('usageTypeGroup')">
+          </angular2-multiselect>
+        </div>
+
+
+        <!--標籤-->
+        <div class="col-4">
+          <div class="d-flex justify-content-start">
+            <h4 class="font-weight-bold mt-2">{{ 'tag' | translate | uppercase }}</h4>
+          </div>
+          <angular2-multiselect class="" [data]="sidebarFilterView.tag" [(ngModel)]="sidebarFilterDatas.tag"
+            [settings]="tagSettings" (onClose)="handleSidebarFilterEvent('tag')" (onOpen)="openSidebarEvent('tag')">
+          </angular2-multiselect>
+        </div>
+
+        <!--API操作-->
+        <div class="col-4">
+          <div class="d-flex justify-content-start">
+            <h4 class="font-weight-bold mt-2">{{ 'OPERATION' | translate | uppercase }}</h4>
+          </div>
+          <angular2-multiselect [data]="sidebarFilterView['operation']" [(ngModel)]="sidebarFilterDatas['operation']"
+            [settings]="settings" (onClose)="handleSidebarFilterEvent('operation')"
+            (onOpen)="openSidebarEvent('operation')">
+          </angular2-multiselect>
+        </div>
+
+        <!--費用類型-->
+        <div *ngIf="userIdentityType === 'AGENT' || userIdentityType === 'SYSTEM'" class="col-4">
+          <div class="d-flex justify-content-start">
+            <h4 class="font-weight-bold mt-2">{{ 'chargeType' | translate | uppercase }}</h4>
+            <i class="fas fa-asterisk pl-2 mt-2 text-danger"></i>
+          </div>
+          <angular2-multiselect [data]="sidebarFilterView['recordType']" [(ngModel)]="sidebarFilterDatas['recordType']"
+            [settings]="settings" (onClose)="handleSidebarFilterEvent('recordType')"
+            (onOpen)="openSidebarEvent('recordType')">
+          </angular2-multiselect>
+        </div>
+
+        <!--可用區域-->
+        <div class="col-4">
+          <div class="d-flex justify-content-start">
+            <h4 class="font-weight-bold mt-2">{{ 'az' | translate | uppercase }}</h4>
+          </div>
+          <angular2-multiselect [data]="sidebarFilterView['az']" [(ngModel)]="sidebarFilterDatas['az']" [settings]="settings"
+            (onClose)="handleSidebarFilterEvent('az')" (onOpen)="openSidebarEvent('az')">
+          </angular2-multiselect>
+        </div>
+
+        <!--平台-->
+        <div class="col-4">
+          <div class="d-flex justify-content-start">
+            <h4 class="font-weight-bold mt-2">{{ 'platform' | translate | uppercase }}</h4>
+          </div>
+          <angular2-multiselect [data]="sidebarFilterView['platform']" [(ngModel)]="sidebarFilterDatas['platform']"
+            [settings]="settings" (onClose)="handleSidebarFilterEvent('platform')"
+            (onOpen)="openSidebarEvent('platform')">
+          </angular2-multiselect>
+        </div>
+
+        <!--購買選項-->
+        <div class="col-4">
+          <div class="d-flex justify-content-start">
+            <h4 class="font-weight-bold mt-2">{{ 'purchase type' | translate | uppercase }}</h4>
+          </div>
+          <angular2-multiselect [data]="sidebarFilterView['purchaseType']" [(ngModel)]="sidebarFilterDatas['purchaseType']"
+            [settings]="settings" (onClose)="handleSidebarFilterEvent('purchaseType')"
+            (onOpen)="openSidebarEvent('purchaseType')">
+          </angular2-multiselect>
+        </div>
+      </div>
+      <!-- step2. end -->
+    </div>
+
+    <!-- footer -->
+    <div *ngIf="!ui.isLoadFilter"
+         class="card-footer text-right"
+         style="background-color: #e8e8e8;">
+      <!-- 取消 -->
+      <button *ngIf="ui.step === 1"
+              class="btn btn-secondary btn-sm mr-2"
+              type="button"
+              (click)="closeCondition()">
+        {{ 'cancel' | translate | titlecase }}
+      </button>
+      <!-- 下一步 -->
+      <button *ngIf="ui.step === 1"
+              class="btn btn-primary btn-sm"
+              type="button"
+              (click)="getAWSFilter()"
+              [disabled]="sidebarFilterDatas['accountIds'].length === 0">
+        {{ 'next step' | translate | titlecase }}
+      </button>
+      <!-- 上一步 -->
+      <button *ngIf="ui.step === 2"
+              class="btn btn-secondary btn-sm mr-2"
+              type="button"
+              (click)="ui.step = 1">
+        {{ 'previous step' | translate | titlecase }}
+      </button>
+      <!-- 送出 -->
+      <button *ngIf="ui.step === 2"
+              class="btn btn-primary btn-sm"
+              type="button"
+              (click)="closeCondition(); getAWSCostExplorer();">
+        {{ 'submit' | translate | titlecase }}
+      </button>
+    </div>
+  </div>
+</ng-template>

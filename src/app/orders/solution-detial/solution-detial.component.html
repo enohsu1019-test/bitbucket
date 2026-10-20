@@ -1,0 +1,619 @@
+<ng-template #typeaheadItemTemplate
+             let-model="item"
+             let-index="index">
+  <div class="w-100">
+    <label>{{ model.email }} {{ model.name ? model.name : '無姓名' }} ({{ model.employeeId ? model.employeeId : '無員編'
+      }})</label>
+  </div>
+</ng-template>
+
+
+
+
+<div class="mb-2">
+  <div class="card-body">
+    <!-- 預設欄位 -->
+    <div class="form-group row">
+      <!-- 子單編號 -->
+      <div class="col-4">
+        <label class="col-form-label">{{ 'sub order id' | translate }}</label>
+        <input type="text"
+               class="form-control"
+               [(ngModel)]="solutionHeaderData.id"
+               [attr.disabled]="true">
+      </div>
+
+      <!-- payerId -->
+      <!-- <div class="col-4">
+        <label class="col-form-label">{{ 'payerId' | translate }}</label>
+        <select class="custom-select pt-2"
+                [(ngModel)]="solutionHeaderData.payerId"
+                (ngModelChange)="handleRequired()">
+          <option [ngValue]="''">請選擇payerId</option>
+          <option *ngFor="let payerId of payerIdDropdown"
+                  [ngValue]="payerId.value">{{ payerId.name }}
+          </option>
+        </select>
+      </div> -->
+      <!-- 負責業務 -->
+      <div class="col-4">
+        <label class="col-form-label required">{{ 'responsible for business' | translate }}</label>
+        <input type="text"
+               class="form-control"
+               style="font-size: 16px;"
+               [ngModelOptions]="{standalone: true}"
+               [typeaheadItemTemplate]="typeaheadItemTemplate"
+               [(ngModel)]="contactPersonInput"
+               [typeahead]="autoInputSaleTypeHead()"
+               [typeaheadAsync]="true"
+               [typeaheadMinLength]="2"
+               [typeaheadWaitMs]="1000"
+               [typeaheadOptionsInScrollableView]="5"
+               [typeaheadOptionsLimit]="3000"
+               [typeaheadScrollable]="true"
+               (typeaheadLoading)="changeCustomerLoading($event)"
+               placeholder="{{ 'Please input keyword of sales name.' | translate }}"
+               (typeaheadOnSelect)="autoInputEndUser($event)">
+      </div>
+
+      <!-- 合約狀態 -->
+      <div class="col-4">
+        <label class="col-form-label">{{ 'contract status' | translate }}</label>
+        <select class="custom-select pt-2"
+                [(ngModel)]="solutionHeaderData.status">
+          <option *ngFor="let contract of contractStatusDropdown"
+                  [disabled]="isSales ? contract.isSales : false"
+                  [ngValue]="contract.value">{{ contract.name |
+            translate}}
+          </option>
+        </select>
+      </div>
+
+      <!-- 帳單聯絡人eamil -->
+      <div class="col-4">
+        <label class="col-form-label required">{{ 'billing Contact' | translate }}email</label>
+        <input type="text"
+               class="form-control"
+               (ngModelChange)="handleRequired()"
+               [(ngModel)]="solutionHeaderData.billingContactEmail">
+      </div>
+
+      <!-- 建單者 -->
+      <div class="col-4">
+        <label class="col-form-label">{{ 'order creator' | translate }}</label>
+        <input type="text"
+               class="form-control"
+               [attr.disabled]="true"
+               [(ngModel)]="solutionHeaderData.creator.name"
+               [attr.disabled]="true">
+      </div>
+
+      <!-- cloudId -->
+      <!-- <div class="col-4">
+        <label class="col-form-label"
+               [ngClass]="{'required': (brandIsMicrosoft() ? !!solutionHeaderData.payerId : true), '': (brandIsMicrosoft() ? !solutionHeaderData.payerId : false)}">cloudId</label>
+        <input type="text"
+               class="form-control"
+               (change)="handleRequired()"
+               [(ngModel)]="solutionHeaderData.cloudId">
+      </div> -->
+
+      <!-- erp編號 -->
+      <div class="col-4">
+        <label class="col-form-label required">{{ 'erp serial number' | translate }}</label>
+        <input type="text"
+               class="form-control"
+               (ngModelChange)="handleRequired()"
+               [(ngModel)]="solutionHeaderData.erpNumber">
+      </div>
+
+      <!-- 方案 -->
+      <div class="col-4">
+        <label class="col-form-label required">{{ 'solution' | translate }}</label>
+        <select class="custom-select pt-2"
+                [(ngModel)]="solutionHeaderData.solutionId"
+                (change)="handleRequired()">
+          <option disabled
+                  [ngValue]="''">請選擇方案</option>
+          <option *ngFor="let solution of solutionDropdown"
+                  [ngValue]="solution.value">{{ solution.name }}</option>
+        </select>
+      </div>
+
+      <!-- 合約起始日 -->
+      <div class="col-4">
+        <label class="col-form-label required">{{ 'contract start date' | translate }}</label>
+        <input type="text"
+               class="form-control"
+               #dp="bsDatepicker"
+               bsDatepicker
+               [(ngModel)]="solutionHeaderData.startDate"
+               [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD' }"
+               [maxDate]="convertToDate(solutionHeaderData.endDate)"
+               (ngModelChange)="convertToDate(solutionHeaderData.endDate); convertToString(solutionHeaderData.startDate); handleRequired() "
+               (bsValueChange)="onValueChange($event, true)"
+               autocomplete="off">
+
+        <!-- <span class="form-text text-danger"
+            *ngIf="!orderForm.get('startDate')?.valid && orderForm.get('startDate')?.touched">
+            {{ 'This field is required!' | translate }}
+          </span> -->
+      </div>
+
+      <!-- 合約結束日期 -->
+      <!-- <div class="col-4" *ngIf="status !== 'DRAFT'">
+        <label class="col-form-label">{{ 'contract end date' | translate }}</label>
+        <input type="text"
+         placeholder="Datepicker"
+         class="form-contro
+         [(ngModel)]="solutionHeaderData.endDate"
+         bsDatepicker>
+      </div> -->
+
+      <div class="col-4">
+        <label class="col-form-label ">{{ 'contract end date' | translate | titlecase }}</label>
+        <div class="btn-group w-100"
+             style="display: block"
+             dropdown
+             #endDateDropdown="bs-dropdown"
+             [autoClose]="false">
+          <button id="button-custom-html"
+                  dropdownToggle
+                  type="button"
+                  class="btn btn-light dropdown-toggle w-100"
+                  aria-controls="dropdown-custom-html">
+            <!-- <span *ngIf="endDateSelected">
+              {{ solutionHeaderData.endDate }} (<span class="text-info">{{ endDateSelected?.value === 0 ? '' :
+                endDateSelected?.value}}
+                {{ endDateSelected?.unit | translate }}</span>)
+            </span> -->
+            <span *ngIf="!endDateSelected">
+              {{ endate }}
+            </span>
+            <span *ngIf="endDateSelected && endDateSelected?.value !== 0">
+              {{ solutionHeaderData.endDate }} (<span class="text-info">{{ endDateSelected?.value === 0 ? '' :
+                endDateSelected?.value}}
+                {{ endDateSelected?.unit | translate }}</span>)
+            </span>
+            <span class="text-info"
+                  *ngIf="endDateSelected?.value === 0">
+              {{ endDateSelected?.unit | translate }}
+            </span>
+            <span class="caret"></span>
+          </button>
+          <ul id="dropdown-custom-html"
+              *dropdownMenu
+              class="dropdown-menu"
+              role="menu"
+              aria-labelledby="button-custom-html">
+            <li role="menuitem"
+                *ngFor="let duration of endDurations; let recordIndex = index">
+              <div class="dropdown-item"
+                   (click)="calculateEndDate(duration.value,recordIndex)">
+                <i class="fas fa-fw"
+                   [ngClass]="{'fa-check': duration.checked, 'fa-empty': !duration.checked}"></i>
+                {{ duration.value === 0 ? '' : duration.value }} {{ duration.unit | translate }}
+              </div>
+            </li>
+            <li role="menuitem">
+              <div class="dropdown-item">
+                <i class="fas fa-fw"
+                   [ngClass]="{'fa-check': !endDateSelected, 'fa-empty': !endDateSelected}"></i>
+                {{ 'customize' | translate }}
+                <input type="text"
+                       class="form-control"
+                       #dp="bsDatepicker"
+                       bsDatepicker
+                       (bsValueChange)="customizeEndDate($event); onValueChange($event, true)"
+                       [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD' }"
+                       [minDate]="convertToDate(solutionHeaderData.startDate)"
+                       (ngModelChange)="convertToDate(solutionHeaderData.startDate)"
+                       id="endDate"
+                       autocomplete="off"
+                       [(ngModel)]="solutionHeaderData.endDate">
+              </div>
+            </li>
+
+          </ul>
+        </div>
+      </div>
+
+      <!-- 出帳幣別 -->
+      <div class="col-4">
+        <label class="col-form-label">{{ 'currency type' | translate }}</label>
+        <select class="custom-select pt-2"
+                [(ngModel)]="solutionHeaderData.currencyType">
+          <option disabled
+                  [ngValue]="''">請選擇幣別</option>
+          <option *ngFor="let currencyType of currencyTypeDropdown"
+                  [ngValue]="currencyType.value">{{ currencyType.name
+            | translate}}</option>
+        </select>
+      </div>
+
+      <!-- 匯率類型 -->
+      <div class="col-4">
+        <label class="col-form-label">{{'exchange rate type'| translate}}</label>
+        <select class="custom-select pt-2"
+                [(ngModel)]="solutionHeaderData.exchangeRateType">
+          <option disabled
+                  [ngValue]="''">請選擇匯率類型</option>
+          <option *ngFor="let exchangeRateType of exchangeRateTypeDropdown"
+                  [ngValue]="exchangeRateType.value">{{
+            exchangeRateType.name | translate}}</option>
+        </select>
+      </div>
+
+      <!-- 自訂匯率 -->
+      <div class="col-4"
+           *ngIf="solutionHeaderData.exchangeRateType === 'CUSTOM'">
+        <label class="col-form-label required">{{'custom exchange rate'| translate}}</label>
+        <input type="text"
+               class="form-control"
+               (ngModelChange)="handleRequired()"
+               [(ngModel)]="solutionHeaderData.exchangeRate">
+      </div>
+
+      <!-- 付款條件 -->
+      <div class="col-4">
+        <label class="col-form-label required">{{'payment interval'| translate}}</label>
+        <input type="text"
+               class="form-control"
+               (ngModelChange)="handleRequired()"
+               [(ngModel)]="solutionHeaderData.timeInterval">
+      </div>
+
+      <!-- 付費日 -->
+      <div class="col-4">
+        <label class="col-form-label required">{{'pay day'| translate}}</label>
+        <input type="text"
+               class="form-control"
+               (ngModelChange)="handleRequired()"
+               [(ngModel)]="solutionHeaderData.paymentDate">
+      </div>
+
+    </div>
+    <!-- 品牌自訂義欄位 -->
+    <!-- 微軟 -->
+    <app-microsoft-field *ngIf="solutionHeaderData.brand.id === '7f1924cd-851b-4d6f-b6eb-2c24f0d77357'"
+                         [status]="status"
+                         [salesModel]="salesModel"
+                         [customerId]="customerId"
+                         (outPutCustomFiledRequired)="customFieldsRequire($event)"
+                         [solutionHeaderData]="solutionHeaderData"
+                         [orderHeader]="orderHeader"
+                         [headerForm]="headerForm"
+                         [mode]="mode"></app-microsoft-field>
+    <!-- aws -->
+    <app-aws-field *ngIf="solutionHeaderData.brand.id === 'e936c95b-4295-432e-af0e-d6ecfb9d8368'"
+                   [status]="status"
+                   (outPutCustomFiledRequired)="customFieldsRequire($event)"
+                   [solutionHeaderData]="solutionHeaderData">
+    </app-aws-field>
+    <!-- Google -->
+    <app-google-field *ngIf="solutionHeaderData.brand.id === 'ed933ca8-1b44-4e58-9dfb-77d731b935c3'"
+                      [status]="status"
+                      (outPutCustomFiledRequired)="customFieldsRequire($event)"
+                      [solutionHeaderData]="solutionHeaderData">
+    </app-google-field>
+
+    <!-- Cisco -->
+    <app-cisco-field *ngIf="solutionHeaderData.brand.id === '6e420d8e-b898-48ab-be82-ba148870609d'"
+                     [status]="status"
+                     (outPutCustomFiledRequired)="customFieldsRequire($event)"
+                     [solutionHeaderData]="solutionHeaderData">
+    </app-cisco-field>
+
+    <!-- Akamai -->
+    <app-akamai-field *ngIf="solutionHeaderData.brand.id === 'a5ce669b-51ba-4698-919f-84b65bf7174e'"
+                      [status]="status"
+                      (outPutCustomFiledRequired)="customFieldsRequire($event)"
+                      [solutionHeaderData]="solutionHeaderData">
+    </app-akamai-field>
+
+    <!-- 非微軟或aws -->
+    <!-- <div *ngIf="solutionHeaderData.brand.id !== '7f1924cd-851b-4d6f-b6eb-2c24f0d77357' &&
+                solutionHeaderData.brand.id !== 'e936c95b-4295-432e-af0e-d6ecfb9d8368'"
+         class="col-4">
+      <label class="col-form-label"
+             [ngClass]="{'required': (brandIsMicrosoft() ? !!solutionHeaderData.payerId : true), '': (brandIsMicrosoft() ? !solutionHeaderData.payerId : false)}">Cloud ID</label>
+      <input type="text"
+             class="form-control"
+             (change)="handleRequired()"
+             [(ngModel)]="solutionHeaderData.cloudId">
+    </div> -->
+
+  </div> <!-- card-body -->
+</div> <!-- card -->
+
+
+
+<!-- 原廠合約編號 -->
+<div class="form-group row mt-3 ">
+  <div class="col-12">
+    <label class="bodyFont">{{ 'vendor contract number list' | translate | titlecase }}</label>
+    <div class="card bg-light">
+      <div class="card-body">
+        <div class="mb-3 d-flex">
+          <input type="text"
+                 class="form-control flex-grow-1"
+                 [(ngModel)]="contractIdInput"
+                 [ngModelOptions]="{standalone: true}"
+                 (keydown.enter)="addContractId()"
+                 placeholder="{{ 'Please input vendor contract number.' | translate }}">
+          <button type="button"
+                  class="btn btn-success flex-shrink-0 ml-1"
+                  [disabled]="!contractIdInput"
+                  (click)="addContractId() ">
+            <i class="fas fa-plus"></i><span class="d-none d-sm-inline">
+              {{ 'add vendor contract number' | translate | titlecase }}</span>
+          </button>
+        </div>
+
+
+        <table mat-table
+               [dataSource]="solutionHeaderData.contractIds"
+               class="w-100 border">
+
+          <ng-container matColumnDef="itemIndex">
+            <th mat-header-cell
+                *matHeaderCellDef>#</th>
+            <td mat-cell
+                *matCellDef="let element; let i = index;">{{i + 1}}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="contractid">
+            <th mat-header-cell
+                *matHeaderCellDef> {{ 'vendor contract number' | translate | titlecase }} </th>
+            <td mat-cell
+                *matCellDef="let element">
+              {{element}}
+            </td>
+          </ng-container>
+
+
+
+          <ng-container matColumnDef="option">
+            <th mat-header-cell
+                *matHeaderCellDef>操作</th>
+            <td mat-cell
+                *matCellDef="let element; let i = index;"> <i class="fas fa-lg fa-times text-danger ml-2"
+                 (click)="removeContractId(i)"></i> </td>
+          </ng-container>
+
+          <tr mat-header-row
+              *matHeaderRowDef="contractIdsTalbleKey"></tr>
+          <tr mat-row
+              *matRowDef="let row; columns: contractIdsTalbleKey;"></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- 訂單產品列表 -->
+<!-- 微軟 -->
+<div class="mt-3">
+  <label class="bodyFont">{{ 'order product list' | translate | titlecase }}</label>
+  <app-microsoft-product [solutionData]="solutionHeaderData"
+                         [orderHeader]="orderHeader"
+                         *ngIf="solutionHeaderData.brand.id === '7f1924cd-851b-4d6f-b6eb-2c24f0d77357'"
+                         [status]="status"
+                         [partnerId]="solutionHeaderData.originalInfo['partnerId']"
+                         [cloudId]="solutionHeaderData.cloudId"
+                         class="card bg-light p-2"
+                         (productRequired)="productRequire($event)"
+                         [dealer]="dealer"
+                         [endUserName]="endUserName">
+  </app-microsoft-product>
+  <!-- aws -->
+  <app-aws-product [solutionData]="solutionHeaderData"
+                   [orderHeader]="orderHeader"
+                   *ngIf="solutionHeaderData.brand.id === 'e936c95b-4295-432e-af0e-d6ecfb9d8368'"
+                   [status]="status"
+                   class="card bg-light p-2"
+                   (productRequired)="productRequire($event)"
+                   [dealer]="dealer"
+                   [endUserName]="endUserName">
+  </app-aws-product>
+  <!-- Google -->
+  <app-google-product [solutionData]="solutionHeaderData"
+                      [orderHeader]="orderHeader"
+                      *ngIf="solutionHeaderData.brand.id === 'ed933ca8-1b44-4e58-9dfb-77d731b935c3'"
+                      [status]="status"
+                      class="card bg-light p-2"
+                      (productRequired)="productRequire($event)"
+                      [dealer]="dealer"
+                      [endUserName]="endUserName">
+  </app-google-product>
+
+  <!-- cisco -->
+  <app-cisco-product [solutionData]="solutionHeaderData"
+                     [orderHeader]="orderHeader"
+                     *ngIf="solutionHeaderData.brand.id === '6e420d8e-b898-48ab-be82-ba148870609d'"
+                     [status]="status"
+                     class="card bg-light p-2"
+                     (productRequired)="productRequire($event)"
+                     [dealer]="dealer"
+                     [endUserName]="endUserName">
+  </app-cisco-product>
+
+
+  <!-- Akamai -->
+  <app-akamai-product [solutionData]="solutionHeaderData"
+                      [orderHeader]="orderHeader"
+                      *ngIf="solutionHeaderData.brand.id === 'a5ce669b-51ba-4698-919f-84b65bf7174e'"
+                      [status]="status"
+                      class="card bg-light p-2"
+                      (productRequired)="productRequire($event)"
+                      [dealer]="dealer"
+                      [endUserName]="endUserName">
+  </app-akamai-product>
+
+  <!-- <app-order-product-list [solutionData]="solutionHeaderData"
+                          [status]="status"
+                          class="card bg-light p-2"
+                          (productRequired)="productRequire($event)"></app-order-product-list> -->
+</div>
+<!-- 訂單預繳列表 -->
+<!-- <div class="bg-white mt-3">
+  <div class="d-flex">
+    <p class="bodyFont">{{'order advance payment list' | translate}}</p>
+    <button type="button" class="btn btn-success  ml-1" (click)="addAdvancePaymentItem()">
+      <i class="fas fa-plus"></i><span class="d-none d-sm-inline">
+        {{ 'add advance payment' | translate | titlecase }}</span>
+    </button>
+  </div>
+
+  <div class="mb-3 mt-2">
+    <ng-container>
+      <in-table [data]="advancePaymentsIntable" [listViewClass]="'d-none d-md-block'"
+        [cardViewClass]="'d-block d-md-none'" [isLoading]="ui.isLoading"
+        [shownodata]="advancePaymentsIntable.length === 0 ? true : false" [inTableTranslate]="{
+                  'no data found': 'No Data Found' | translate,
+                  'items per page': 'items per page' | translate
+                }">
+
+        <in-table-column label="#">
+          <ng-template #tpl let-index="rowIndex">
+            {{ index + 1}}
+          </ng-template>
+        </in-table-column>
+
+
+        <in-table-column class="text-truncate ml-1 mr-1" prop="remittanceDate" label="{{ 'remittance date' | translate }}">
+          <ng-template #tpl let-order="item" let-i>
+            <input type="text" class="form-control" [(ngModel)]="order.remittanceDate"
+              bsDatepicker [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD' }">
+          </ng-template>
+        </in-table-column>
+
+
+        <in-table-column class="text-truncate ml-1 mr-1" prop="amount" label="{{ 'amount' | translate }}">
+          <ng-template #tpl let-order="item" let-i>
+            <input type="text" class="form-control" [(ngModel)]="order.amount">
+          </ng-template>
+        </in-table-column>
+
+        <in-table-column class="text-truncate ml-1 mr-1" label="{{ 'operation' | translate }}">
+          <ng-template #tpl let-order="item" let-i>
+
+            <i class="fas fa-lg fa-times text-danger" (click)="deleteAdvancePayments(i)"></i>
+          </ng-template>
+        </in-table-column>
+
+
+      </in-table>
+    </ng-container>
+
+  </div>
+</div> -->
+<!-- 附加檔案列表 -->
+<div class="form-group row"
+     *ngIf=" mode === 'edit'">
+  <div class="col-12">
+    <label class="col-form-label bodyFont">{{ ('attachment file list' | translate | titlecase)}}
+      <!-- <i class="fas fa-spin fa-spinner" ></i> -->
+    </label>
+    <label>{{'('+attachmentAccepts+ ')'}}</label>
+    <div class="card bg-light">
+      <div class="card-body">
+        <table class="table table-sm table-striped table-hover">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th title="{{ 'name' | translate | titlecase }}"><i class="fas fa-tag"></i><span
+                      class="d-none d-sm-inline ml-1">{{ 'name' | translate | titlecase }}</span></th>
+              <th title="{{ 'created date' | translate | titlecase }}"
+                  class="d-none d-sm-table-cell"><i class="fas fa-plus-circle"></i><span
+                      class="d-none d-sm-inline ml-1">{{ 'created date' | translate |
+                  titlecase }}</span></th>
+              <th title="{{ 'modified date' | translate | titlecase }}"
+                  class="d-none d-sm-table-cell"><i class="fas fa-sync-alt"></i><span class="d-none d-sm-inline ml-1">{{
+                  'modified date' | translate |
+                  titlecase }}</span></th>
+              <th title="{{ 'operation' | translate | titlecase }}"><i class="fas fa-bars"></i><span
+                      class="d-none d-sm-inline ml-1">{{ 'operation' | translate | titlecase }}</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let file of attachmentFiles; let i = index;">
+              <td>{{ i + 1 }}</td>
+              <td>{{ file.filename }}</td>
+              <td class="d-none d-sm-table-cell">{{ file.createDate | date: 'yyyy-MM-dd HH:mm:ss' }}</td>
+              <td class="d-none d-sm-table-cell">{{ file.modifyDate | date: 'yyyy-MM-dd HH:mm:ss' }}</td>
+              <td>
+
+                <a class="btn btn-sm text-primary"
+                   title="download this item"
+                   (click)="$event.stopPropagation();"
+                   href="{{ getFilePath(file.id) }}"
+                   target="_blank">
+                  <i class="fas fa-lg fa-download"></i>
+                </a>
+                <button type="button"
+                        class="btn btn-sm"
+                        title="{{ 'delete this item' | translate }}"
+                        (click)="deleteFile($event, i)">
+                  <!-- <i class="fas fa-lg"
+                    [ngClass]="{ 'fa-times text-danger': !ui.isFileDeleting[file.id], 'fa-spin fa-spinner': ui.isFileDeleting[file.id] }"></i> -->
+                  <i class="fas fa-lg  fa-times text-danger"></i>
+                </button>
+              </td>
+            </tr>
+            <tr *ngFor="let file of newAttachmentFiles; let i = index;">
+              <td></td>
+              <td>{{ file.name }}</td>
+              <td><span class="faa-flash faa-slow animated">{{ 'Press button "Add Order" to upload' | translate
+                  }}...</span>
+              </td>
+              <td></td>
+              <td>
+                <!-- <button type="button" class="btn btn-sm" title="{{ 'remove this item' | translate }}"
+                  (click)="deleteNewFile($event, i, FileType.attachment)">
+                  <i class="fas fa-lg fa-times text-danger"></i>
+                </button> -->
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <ng-container>
+          <label class="mb-0 btn btn-sm btn-primary"
+                 title="{{ 'select file to upload' | translate }}">
+            <input #input3
+                   style="display:none;"
+                   type="file"
+                   value=""
+                   (change)="selectFileToUpload($event)"
+                   [accept]="attachmentAccepts"
+                   multiple>
+            <i class="fas fa-folder-open"></i> {{ 'select file to upload' | translate | titlecase }}
+          </label>
+        </ng-container>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+<!-- <div class="text-right">
+
+  <button class="btn btn-primary m-2"
+          *ngIf="solutionHeaderData.id "
+          [disabled]="ui.isLoading || solutionHeaderData.requiredStatus"
+          (click)="updateSolution()">
+    <i class="fas fa-save"></i>
+    {{ 'save' | translate | titlecase }}
+    {{ 'solution' | translate | titlecase }}
+  </button>
+  <button class="btn btn-primary m-2"
+          *ngIf="!solutionHeaderData.id && mode === 'edit'"
+          [disabled]="ui.isLoading || solutionHeaderData.requiredStatus"
+          (click)="addSolution()">
+    <i class="fas fa-save"></i>
+    {{ 'add' | translate | titlecase }}
+    {{ 'solution' | translate | titlecase }}
+  </button>
+</div> -->

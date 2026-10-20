@@ -1,0 +1,10 @@
+<router-outlet></router-outlet>
+  <div class="top-right-alert">
+    <div *ngFor="let item of alert.alerts; let i = index;">
+      <alert [type]="item.type" [dismissOnTimeout]="item.timeout" [dismissible]="true">
+        <i class="fa {{item.fa}}" *ngIf="item.fa"></i>
+        <!-- {{ item.msg }} -->
+        <span [innerHtml]="item.msg"></span>
+      </alert>
+    </div>
+  </div>

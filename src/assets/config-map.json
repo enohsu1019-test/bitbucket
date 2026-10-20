@@ -1,0 +1,47 @@
+{
+  "apiUrl": "https://cmp-dev.sysage.com.tw",
+  "loginUrl": "http://cmp.lb.sysage.tzu/login",
+  "oauthUrl": "https://cmp-dev.sysage.com.tw/token",
+  "oauthSignOutUrl": "https://cmp-dev.sysage.com.tw/sign-out",
+  "gateway": {
+    "iam": "iam-v1/",
+    "user": "user-v1/",
+    "customer": "customer-v1/",
+    "brand": "brand-v1/",
+    "order": "order-v1/",
+    "invoice": "invoice-v1/",
+    "product": "product-v1/",
+    "dashboard": "dashboard-v1/",
+    "account": "account-v1/",
+    "billing": "billing-v1/",
+
+    "awsCostAnalysis": "aws-cost-analysis-v1/"
+  },
+  "crmInfo": {
+    "apiUrl": "https://pipe-dev-api.sysage.com.tw/",
+    "token": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ7XCJpZFwiOlwiZjYyZDQzMjg1NGRmNDIxZTlhYmUyY2Q5ZGM3NTZiMDFcIixcInRpbWVcIjpcIjE2MDI4NjAyODM0NzBcIixcInJvbGVJZHNcIjpbXCJhZG1pblwiXSxcInN0YXR1c1wiOlwiQUNUSVZFXCIsXCJ1c2VyVHlwZVwiOlwiRW1wbG95ZWVcIixcImVtcGxveWVlSWRcIjpcInh4eDg4OFwiLFwic2Vzc2lvbklkXCI6XCJhZTM3N2NkNDIyNTQ0MGZhYjRhZWUxM2YxZDExZDk5M1wiLFwicGF0aHNcIjpbXCIv57i96YOoXCJdfSJ9.X8bYsxB8M7iovULVpYjM4I0fZylcZw8Gr5ff0WIuVO8",
+    "gateway": {
+      "customer": "customer-v1/",
+      "pricebook": "pricebook-v1/"
+    }
+  },
+  "singleSignOn": {
+    "adLogin": {
+      "urlTemplate": "https://login.microsoftonline.com/{{tenantId}}/oauth2/v2.0/authorize?client_id={{clientId}}&response_type=code&redirect_uri={{redirectUrl}}&scope=directory.read.all&response_mode=query&state={{state}}&nonce={{nonce}}",
+      "params": {
+        "tenantId": "a1309a7c-8422-4d7e-832a-a46a3b67485c",
+        "redirectUrl": "{{origin}}/adLogin",
+        "clientId": "87bdfd64-b194-4104-be8a-bd5966d985f6",
+        "state": "{{uuid}}",
+        "nonce": "{{uuid}}"
+      }
+    },
+    "adLogout": {
+      "urlTemplate": "https://login.microsoftonline.com/{{tenantId}}/oauth2/v2.0/logout?post_logout_redirect_uri={{loginUrl}}",
+      "params": {
+        "tenantId": "a1309a7c-8422-4d7e-832a-a46a3b67485c",
+        "loginUrl": "{{origin}}"
+      }
+    }
+  }
+}

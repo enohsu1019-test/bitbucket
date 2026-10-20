@@ -1,0 +1,22 @@
+.btn-menu-on {
+    position: fixed;
+    // padding: 1rem 0.4rem;
+    z-index: 100;
+    &:hover {
+        opacity: 0.5;
+    }
+}
+
+.btn-menu-off {
+    position: absolute;
+    top: 0px;
+    right: 0px;
+    &:hover {
+        opacity: 0.5;
+    }
+}
+
+.toggle-space {
+    margin-left: 2rem;
+}
+  

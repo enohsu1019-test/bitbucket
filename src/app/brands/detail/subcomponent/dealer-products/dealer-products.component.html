@@ -1,0 +1,81 @@
+<div class="card"
+     style="border-top: none">
+  <div class="card-body">
+    <in-table [data]="intableDatas"
+              [listViewClass]="'d-none d-md-block'"
+              [cardViewClass]="'d-block d-md-none'"
+              [isLoading]="ui.isLoading"
+              [listHeaderClass]="'bg-primary text-white'"
+              [shownodata]="true"
+              [inTableTranslate]="{
+        'no data found': 'No Data Found' | translate,
+        'items per page': 'items per page' | translate
+      }"
+              #inTable>
+      <in-table-column label="#">
+        <ng-template #tpl
+                     let-index="rowIndex"
+                     let-xxx>
+          {{index + 1}}
+        </ng-template>
+      </in-table-column>
+      <!-- 中文名稱 -->
+      <in-table-column class="text-truncate ml-1 mr-1"
+                       prop="name.nickCh">
+        <ng-template #tplLabel>
+          <label >{{ 'Chinese name' | translate }}</label>
+        </ng-template>
+        <ng-template #tpl
+                     let-dealer="item"
+                     let-i>
+          <label>{{dealer.name.nickCh}}</label>
+        </ng-template>
+      </in-table-column>
+
+      <!-- 英文 -->
+      <in-table-column class="text-truncate ml-1 mr-1"
+                       prop="name.nickEn"
+                       label="{{ 'English name' | translate }}">
+        <ng-template #tpl
+                     let-dealer="item"
+                     let-i>
+          <label>{{dealer.name.nickEn}}</label>
+        </ng-template>
+      </in-table-column>
+      <!--經銷商方案 -->
+      <in-table-column class="text-truncate ml-1 mr-1"
+                       prop="solutionName">
+        <ng-template #tplLabel>
+          <label>{{ 'reseller solution' | translate }}</label>
+        </ng-template>
+        <ng-template #tpl
+                     let-dealer="item"
+                     let-i>
+          <label>{{dealer.solutionName}}</label>
+        </ng-template>
+      </in-table-column>
+
+      <!-- 到期日 -->
+      <in-table-column class="text-truncate ml-1 mr-1"
+                       prop="dueDate"
+                       label="{{ 'due date' | translate }}">
+        <ng-template #tpl
+                     let-dealer="item"
+                     let-i>
+          <label>{{dealer.dueDate}}</label>
+        </ng-template>
+      </in-table-column>
+
+      <!-- partner ID(網域) -->
+      <in-table-column class="text-truncate ml-1 mr-1"
+                       prop="partnerId"
+                       label="{{ 'Partner ID (網域 )' }}">
+        <ng-template #tpl
+                     let-dealer="item"
+                     let-i>
+          <label>{{dealer.partnerId}}</label>
+        </ng-template>
+      </in-table-column>
+    </in-table>
+  </div>
+</div>

@@ -1,0 +1,238 @@
+<!-- rightsizing -->
+<div class="p-3">
+  <h3>{{ 'appropriate recommended size' | translate }}</h3>
+  <p style="color:rgb(128, 128, 120)">正確規模建議會查看歷史記錄裡的 EC2 使用情況，藉此找出改善成本及使用效率的機會。根據預設，建議會考慮過去 14 天的使用情況。如果您啟用了某個資源的
+    Compute Optimizer 增強型基礎設施指標付費功能，那麼對該資源的建議將考慮過去 3 個月的使用情況。</p>
+  <!-- 建議參數 -->
+  <div class="mb-3">
+    <div class="p-4 " style="background-color:rgb(245, 245, 240)">
+      <!-- 建議參數 header -->
+      <p class="font-weight-bold " style="font-size: 18px;">{{ 'recommended parameters' | translate }}</p>
+    </div>
+    <!-- 建議參數 body -->
+    <div class="m-0 bg-white p-4 row border-bottom border-secondary" [formGroup]="profileForm">
+      <!-- 顯示建議 -->
+      <div class="col-4 border-right p-0">
+        <p>{{ 'show suggestions' | translate}}</p>
+        <div class="row m-0">
+          <input class="mr-2" type="radio" name="target" value="SAME_INSTANCE_FAMILY" formControlName="target"
+            (change)="getRightsizingAPI()" />
+          <span>在相同的執行個體系列中</span>
+        </div>
+
+        <div class="row m-0">
+          <input class="mr-2" type="radio" name="target" value="CROSS_INSTANCE_FAMILY" formControlName="target"
+            (change)="getRightsizingAPI()" />
+          <span>跨執行個體系列</span>
+        </div>
+
+      </div>
+
+      <!-- 問題清單類型 -->
+      <div class="col-4 p-2 border-right">
+        <p>{{ 'question list type' | translate}}</p>
+        <div class="row m-0">
+          <input class="mr-2" type="checkbox" formControlName="Modify" (change)="getRightsizingAPI()" />
+          <span>閒置的執行個體</span>
+        </div>
+
+        <div class="row m-0">
+          <input class="mr-2" type="checkbox" formControlName="Terminate" (change)="getRightsizingAPI()" />
+          <span>使用量過低的執行個體</span>
+        </div>
+
+
+      </div>
+
+      <!-- 進階選項 -->
+      <div class="col-4 p-2">
+        <p>{{ 'advanced options' | translate}}</p>
+        <div class="row m-0">
+          <input class="mr-2" type="checkbox" formControlName="advancedOptions" (change)="getRightsizingAPI()" />
+          <span>包含 Savings Plans 和預留執行個體</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- 建議 -->
+  <div>
+    <div class="p-4 " style="background-color:rgb(245, 245, 240)">
+      <!-- 建議參數 header -->
+      <p class="font-weight-bold " style="font-size: 18px;">{{ 'recommendation1' | translate }}</p>
+    </div>
+    <!-- 建議參數 body -->
+    <div class="m-0 bg-white p-4 row border-bottom">
+      <!-- 優化機會 -->
+      <div class="col-4 border-right p-0">
+        <p style="font-size: 12px;" class="text-muted">{{ 'optimization opportunities' | translate}}</p>
+        <p *ngIf="ui.isLoading">$ <i class="fas fa-spinner fa-spin"></i></p>
+        <p *ngIf="!ui.isLoading">{{optimizationOpportunities}}</p>
+      </div>
+
+      <!-- 預估每月節省 -->
+      <div class="col-4 border-right p-0 pl-2">
+        <p style="font-size: 12px;" class="text-muted">${{ 'estimated monthly savings' | translate}}</p>
+        <p *ngIf="ui.isLoading">$ <i class="fas fa-spinner fa-spin"></i></p>
+        <p *ngIf="!ui.isLoading">${{estimatedMonthlySavings}}</p>
+      </div>
+
+      <!-- 預估可省下的費用 -->
+      <div class="col-4 p-2">
+        <p style="font-size: 12px;" class="text-muted">{{ 'estimated savings amount' | translate}}</p>
+        <p *ngIf="ui.isLoading">$ <i class="fas fa-spinner fa-spin"></i></p>
+        <p *ngIf="!ui.isLoading">{{estimatedSavingsPercentage}}%</p>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- 問題清單 -->
+  <div>
+    <!-- 問題清單 Header -->
+    <div style="background-color:rgb(238, 238, 236)">
+      <div class="d-flex justify-content-between p-2 ">
+        <p class="font-weight-bold ">{{'question list' | translate}}</p>
+        <button (click)="excelDownLoad()" class="btn btn-warning" style="height: 35px">
+          <i [ngClass]="{'far fa-save': !ui.dropdownExcel, 'fas fa-spin fa-spinner': ui.dropdownExcel}"></i>
+          {{ "download" | translate }}Excel
+        </button>
+      </div>
+      <div class="row m-0">
+        <!-- payer id -->
+        <div class="col-3 p-2">
+          <p>{{ 'Payer ID' }}</p>
+          <angular2-multiselect [data]="selectList.view.payerId"
+                                [(ngModel)]="selectList.select.payerId"
+                                [settings]="payerIdSettings"
+                                (ngModelChange)="payerChange()">
+          </angular2-multiselect>
+        </div>
+        <!-- 帳戶ＩＤ -->
+        <div class="col-3 p-2">
+          <p>{{ 'Account ID' }}</p>
+          <angular2-multiselect [data]="selectList.view.accountId"
+                                [(ngModel)]="selectList.select.accountId"
+                                [settings]="settings"
+                                (onClose)="getAWSFilter()">
+          </angular2-multiselect>
+        </div>
+        <!-- 區域 -->
+        <div class="col-3 p-2">
+          <div class="row m-0">
+            <p>{{'region' |translate }}</p>
+            <span class="ml-2"><i class="fas fa-spin fa-spinner " *ngIf="ui.isLoadRegion"></i></span>
+          </div>
+
+          <angular2-multiselect [data]="regionViews" [(ngModel)]="regionDatas" [settings]="settings"
+            (onClose)="getRightsizingAPI()">
+          </angular2-multiselect>
+        </div>
+        <!-- 標籤 -->
+        <div class="col-3 p-2">
+
+          <div class="row m-0">
+            <p>{{'tag' |translate }}</p>
+            <span class="ml-2"><i class="fas fa-spin fa-spinner " *ngIf="ui.isLoadRegion"></i></span>
+          </div>
+          <angular2-multiselect [data]="tagViews" [(ngModel)]="tagDatas" [settings]="tagSettings"
+            (onClose)="getRightsizingAPI()">
+          </angular2-multiselect>
+        </div>
+      </div>
+
+
+    </div>
+
+    <!-- 問題清單 body -->
+    <div style="height: 650px;">
+      <ng-container>
+        <in-table [data]="intableDatas"
+                  [listViewClass]="'d-none d-md-block'"
+                  [cardViewClass]="'d-block d-md-none'"
+                  [listHeaderClass]="'sticky-header-color'"
+                  (pageChanged)="setIntableTableData()"
+                  [shownodata]="!ui.isLoading || ui.isData"
+                  [isLoading]="ui.isLoading"
+                  [config]="inTableConfig"
+                  [inTableTranslate]="{
+                    'no data found': 'No Data Found' | translate,
+                    'items per page': 'items per page' | translate
+                  }">
+
+          <in-table-column [style]="{'flex': '1'}" label="#">
+            <ng-template #tpl let-index="rowIndex" let-xxx>
+              {{ ( pageConfig.currentPage -1 ) * pageConfig.itemsPerPage + index + 1 }}
+            </ng-template>
+          </in-table-column>
+          <!-- 執行個體ID-->
+          <in-table-column [style]="{'flex': '2'}" class=" ml-1 mr-1" prop="resourceId"
+            label="{{ 'executive ID' | translate }}">
+            <ng-template #tpl let-rightsizing="item">
+              <p [popover]="rightsizing.resourceId" triggers="mouseenter:mouseleave" placement="top"
+                  class="truncate-cell popover-left-10">{{rightsizing.resourceId}}</p>
+            </ng-template>
+          </in-table-column>
+          <!-- 預估可省下費用 -->
+          <in-table-column [style]="{'flex': '2'}" class="text-truncate ml-1 mr-1" prop="estimatedSavings"
+            label="{{ 'estimated savings amount' | translate }}">
+            <ng-template #tpl let-rightsizing="item">
+              <p class="text-right">
+                {{ rightsizing.estimatedSavings | translate }}
+              </p>
+            </ng-template>
+          </in-table-column>
+          <!-- 問題清單 -->
+          <in-table-column [style]="{'flex': '1'}" class="text-truncate ml-1 mr-1" prop="finding"
+            label="{{ 'question list' | translate }}">
+            <ng-template #tpl let-rightsizing="item">
+              {{ rightsizing.finding | translate }}
+            </ng-template>
+          </in-table-column>
+
+          <!-- 問題清單原因 -->
+          <in-table-column class=" ml-1 mr-1" prop="findingReason" label="{{ 'list of problems reasons' | translate }}">
+            <ng-template #tpl let-rightsizing="item">
+              <p class="truncate-cell" *ngIf="rightsizing.findingReason.length=== 0">-</p>
+              <p class="truncate-cell" *ngIf="rightsizing.findingReason.length=== 1">{{rightsizing.findingReason[0]}}
+              </p>
+              <p class="truncate-cell popover-left-10" *ngIf="rightsizing.findingReason.length>= 2" [popover]="rightsizing.findingReason" triggers="mouseenter:mouseleave" placement="top">
+                {{rightsizing.findingReason[0]}}、還有{{rightsizing.findingReason.length}}個</p>
+            </ng-template>
+          </in-table-column>
+
+          <!-- 帳戶ID -->
+          <in-table-column [style]="{'flex': '1'}" class=" ml-1 mr-1" prop="accountId"
+            label="{{ 'accountId' | translate }}">
+            <ng-template #tpl let-rightsizing="item">
+              <p [popover]="rightsizing.accountId" triggers="mouseenter:mouseleave" placement="top"
+                  class="truncate-cell popover-left-10">{{rightsizing.accountId}}</p>
+            </ng-template>
+          </in-table-column>
+
+          <!-- 執行個體類型 -->
+          <in-table-column [style]="{'flex': '1'}" class="text-truncate ml-1 mr-1" prop="instanceType"
+            label="{{ 'instance type' | translate }}">
+            <ng-template #tpl let-rightsizing="item">
+              {{rightsizing.instanceType}}
+            </ng-template>
+          </in-table-column>
+
+          <!-- CUP -->
+          <in-table-column [style]="{'flex': '1'}" class="text-truncate ml-1 mr-1" prop="CPU"
+            label="{{ 'CPU' | translate }}">
+            <ng-template #tpl let-rightsizing="item">
+              <p class="text-right">
+                {{rightsizing.CPU}}%
+              </p>
+            </ng-template>
+          </in-table-column>
+        </in-table>
+      </ng-container>
+    </div>
+
+  </div>
+
+
+</div>

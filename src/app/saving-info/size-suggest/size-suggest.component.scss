@@ -1,0 +1,7 @@
+.truncate-cell {
+  max-width:200px; /* feel free to include any other value */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+

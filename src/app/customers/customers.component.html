@@ -1,0 +1,195 @@
+<div>
+  <div class="card mb-4">
+    <div class="card-header bg-primary text-white">
+      <h5 class="mb-0">{{ 'customers' | translate | titlecase }}
+        <!-- 新增 -->
+        <button *appPermissionIf="['customer-v1.addCustomer']"
+                type="button"
+                class="btn btn-sm btn-success ml-2"
+                [routerLink]="'./add'">
+          <i class="fas fa-plus mr-1"></i>{{ 'add' | translate | titlecase }}
+        </button>
+      </h5>
+    </div>
+    <div class="card-body">
+      <form [formGroup]="filterForm">
+        <div class="form-group row">
+
+          <!-- 公司 -->
+          <div class="col-12 col-sm-6 col-md-4 col-lg-4">
+            <label class="col-form-label">{{ 'company' | translate }}</label>
+            <input type="text"
+                   class="form-control"
+                   placeholder="{{ 'please enter company name' | translate | titlecase }}"
+                   id="company"
+                   formControlName="company">
+          </div>
+
+          <!-- 統一編號 -->
+          <div class="col-12 col-sm-6 col-md-4 col-lg-4">
+            <label class="col-form-label">{{ 'serialNo' | translate }}</label>
+            <input type="text"
+                   class="form-control"
+                   placeholder="{{ 'please enter serial' | translate | titlecase }}"
+                   id="serialNo"
+                   formControlName="serialNo">
+          </div>
+
+          <!-- 身份 -->
+          <div class="col-12 col-sm-6 col-md-4 col-lg-4">
+            <label class="col-form-label">{{ 'identity' | translate }}</label>
+            <select class="form-control"
+                    id="identity"
+                    formControlName="identity">
+              <option value=""
+                      selected>{{'select identity' | translate | titlecase}}</option>
+              <option *ngFor="let identity of identityList"
+                      [ngValue]="identity.value">{{identity.name}}</option>
+            </select>
+          </div>
+        </div>
+      </form>
+
+      <div>
+        <!-- 重設 -->
+        <button type="submit"
+                class="btn btn-sm btn-secondary mr-2 mb-2"
+                (click)="reset()"
+                [disabled]="loading">
+          {{ 'reset' | translate | titlecase }}
+        </button>
+        <!-- 搜尋 -->
+        <button type="submit"
+                class="btn btn-sm btn-primary mr-2 mb-2"
+                (click)="search()"
+                [disabled]="loading">
+          <i *ngIf="loading" class="fas fa-spin fa-spinner"></i>
+          {{ 'search' | translate | titlecase }}
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="mt-1">
+    <ng-container>
+      <in-table [data]="customerList"
+                [listViewClass]="'d-none d-md-block'"
+                [cardViewClass]="'d-block d-md-none'"
+                [listHeaderClass]="'sticky-header-color'"
+                [pageConfig]="pageConfig"
+                (pageChanged)="pageChange($event)"
+                [isLoading]="loading"
+                [shownodata]="customerList.length === 0 ? true : false"
+                [config]="inTableConfig"
+                [inTableTranslate]="{
+                  'no data found': 'no data found' | translate | titlecase,
+                  'items per page': 'items per page' | translate | titlecase
+                }">
+
+        <!-- 編號 -->
+        <in-table-column [style]="{'flex': '1'}"
+                         label="#">
+          <ng-template #tpl
+                       let-index="rowIndex"
+                       let-xxx>
+            {{ ( pageConfig.currentPage -1 ) * pageConfig.itemsPerPage + index + 1 }}
+          </ng-template>
+        </in-table-column>
+
+        <!-- 公司 -->
+        <in-table-column [style]="{'flex': '2'}"
+                         class="text-truncate ml-1 mr-1"
+                         prop="company"
+                         label="{{ 'company' | translate }}">
+          <ng-template #tpl
+                       let-customer="item"
+                       let-i>
+            <ng-container>
+              <span [popover]="customer.customerName.fullCh"
+                    triggers="mouseenter:mouseleave"
+                    placement="top">
+                {{ customer.customerName.fullCh }}
+              </span>
+            </ng-container>
+          </ng-template>
+        </in-table-column>
+
+        <!-- 統一編號 -->
+        <in-table-column [style]="{'flex': '2'}"
+                         class="text-truncate ml-1 mr-1"
+                         prop="serialNumber"
+                         label="{{ 'serialNo' | translate }}">
+        </in-table-column>
+
+        <!-- 身份 -->
+        <in-table-column [style]="{'flex': '2'}"
+                         class="text-truncate ml-1 mr-1"
+                         prop="identityType"
+                         label="{{ 'identity' | translate }}">
+          <ng-template #tpl
+                       let-customer="item"
+                       let-i>
+            <ng-container>
+              <span [popover]="identityTypeToString(customer.identityType)"
+                    triggers="mouseenter:mouseleave"
+                    placement="top">
+                {{ identityTypeToString(customer.identityType) }}
+              </span>
+            </ng-container>
+          </ng-template>
+        </in-table-column>
+
+        <!-- 品牌 -->
+        <in-table-column *appPermissionIf="['layout.iam.adminInput']"
+                         [style]="{'flex': '2'}"
+                         class="text-truncate ml-1 mr-1"
+                         prop="brandName"
+                         label="{{ 'brands' | translate }}">
+        </in-table-column>
+
+        <!-- 建立者 -->
+        <in-table-column *appPermissionIf="['layout.iam.adminInput']"
+                         [style]="{'flex': '2'}"
+                         class="text-truncate ml-1 mr-1"
+                         prop="companyName"
+                         label="{{ 'founder' | translate }}">
+          <ng-template #tpl
+                       let-customer="item"
+                       let-i>
+            <ng-container>{{ customer.companyName.nickCh }}</ng-container>
+          </ng-template>
+        </in-table-column>
+
+        <!-- 動作 -->
+        <in-table-column class="text-truncate mx-1"
+                         label="{{ 'action' | translate | titlecase }}">
+          <ng-template #tpl
+                       let-customer="item"
+                       let-i>
+            <i class="fa-solid fa-pen-to-square fa btn-fontawesome mr-3"
+               [routerLink]="'./' + customer.customerId"></i>
+            <!-- <i class="fa-solid fa-trash-can btn-fontawesome text-danger"
+               (click)="openCheckModal(delCustomerWarn, customer)"></i> -->
+          </ng-template>
+        </in-table-column>
+
+      </in-table>
+    </ng-container>
+  </div>
+</div>
+
+<!-- 刪除客戶 -->
+<ng-template #delCustomerWarn>
+  <div class="mt-3 mb-3" style="text-align: center;">
+    <h4><i class="fas fa-exclamation-triangle text-warning"></i> {{ 'delete really' | translate }}</h4>
+  </div>
+  <div class="mb-2" style="text-align: center;">
+    <button type="button"
+            class="btn btn-lg btn-primary mr-2 mb-2"
+            (click)="delCustomer(areYouSureToDel)">{{ 'yes' | translate }}</button>
+    <button type="button"
+            class="btn btn-lg btn-dark mr-2 mb-2"
+            (click)="hidemodal()">{{ 'no' | translate }}</button>
+  </div>
+</ng-template>

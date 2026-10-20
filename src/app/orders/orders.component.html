@@ -1,0 +1,417 @@
+<ng-template #template>
+  <div class="modal-body text-center">
+    <p>{{'Do you want to copy the purchase order' | translate}}</p>
+    <button type="button"
+            class="btn btn-primary"
+            (click)="confirm()">{{'submit' | translate}}<i class="fas fa-spin fa-spinner ml-1"
+         *ngIf="ui.isCopyOrderStatus"></i></button>
+    <button type="button"
+            class="btn btn-secondary ml-2"
+            (click)="decline()">{{'cancel' | translate}}</button>
+  </div>
+</ng-template>
+
+
+<div>
+  <form [formGroup]="filterForm">
+    <div class="card mb-5">
+      <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">{{ 'orders' | translate | titlecase }}
+          <button type="button"
+                  class="btn btn-success btn-sm ml-2"
+                  [routerLink]="['add']"
+                  routerLinkActive="router-link-active">
+            <i class="fas fa-plus"></i> {{ 'add' | translate | titlecase }}
+          </button>
+        </h5>
+      </div>
+      <div class="card-body">
+        <div class="form-group row">
+
+          <!-- 負責業務 -->
+          <div class="col-12 col-sm-4">
+            <label class="col-form-label">{{ 'sales who in charge of' | translate }}</label>
+            <input type="text"
+                   class="form-control"
+                   formControlName="sales">
+          </div>
+
+          <!-- 312編號 -->
+          <div class="col-12 col-sm-4">
+            <label class="col-form-label">312{{ 'no.' | translate }}</label>
+            <input type="text"
+                   class="form-control"
+                   formControlName="order">
+          </div>
+
+          <!-- 經銷商（下拉選單） -->
+          <div class="col-12 col-sm-4">
+            <label class="col-form-label">{{ 'dealer' | translate }}</label>
+            <input type="text"
+                   class="form-control"
+                   formControlName="dealer">
+          </div>
+
+          <!-- 最終使用者（下拉選單） -->
+          <div class="col-12 col-sm-4">
+            <label class="col-form-label">{{ 'end_user' | translate }}</label>
+            <input type="text"
+                   class="form-control"
+                   formControlName="endUser">
+          </div>
+
+          <!-- clounId -->
+          <div class="col-12 col-sm-4">
+            <label class="col-form-label">{{ cloudIdName }}</label>
+            <input type="text"
+                   class="form-control"
+                   formControlName="clounId">
+          </div>
+
+          <!-- 合約狀態（選項複選預設全部） -->
+          <div class="col-12 col-sm-4">
+            <label class="col-form-label">{{ 'contract status' | translate }}</label>
+            <angular2-multiselect [data]="contractStatusList"
+                                  [(ngModel)]="selectStatusList.contract"
+                                  [ngModelOptions]="{standalone: true}"
+                                  [settings]="setting">
+            </angular2-multiselect>
+          </div>
+
+          <!-- 訂單狀態（選項複選預設全部） -->
+          <div class="col-12 col-sm-4">
+            <label class="col-form-label">{{ 'order status' | translate }}</label>
+            <angular2-multiselect [data]="orderStatusList"
+                                  [(ngModel)]="selectStatusList.order"
+                                  [ngModelOptions]="{standalone: true}"
+                                  [settings]="setting">
+            </angular2-multiselect>
+          </div>
+
+          <!-- 訂購時間起訖（日期範圍) -->
+          <div class="col-12 col-sm-4">
+            <label class="col-form-label">{{ 'order time sta end' | translate }}</label>
+            <input bsDaterangepicker
+                   type="text"
+                   class="form-control"
+                   placeholder="{{ 'please select sta end day' | translate | titlecase }}"
+                   [(bsValue)]="pickerRangeDates"
+                   [maxDate]="maxDate"
+                   [minDate]="minDate">
+          </div>
+        </div> <!-- form-group -->
+
+        <div>
+          <!-- 重設按鈕 -->
+          <button type="button"
+                  class="btn btn-secondary btn-sm mr-2"
+                  (click)="filterReset()">
+            {{ 'reset' | translate | titlecase }}
+          </button>
+          <!-- 搜尋按鈕 -->
+          <button type="button"
+                  class="btn btn-primary btn-sm mr-2"
+                  [disabled]="ui.isLoading || !filterForm.valid"
+                  (click)="search()">
+            <i *ngIf="ui.isLoading"
+               class="fas fa-spin fa-spinner mr-1"></i>
+            {{ 'search' | translate | titlecase }}
+          </button>
+        </div>
+
+      </div> <!-- card-body -->
+    </div> <!-- card -->
+  </form>
+
+  <div class="bg-white">
+    <div class="mb-3">
+      <ng-container>
+        <in-table [data]="orderDatas"
+                  [listViewClass]="'d-none d-md-block'"
+                  [cardViewClass]="'d-block d-md-none'"
+                  [listHeaderClass]="'sticky-header-color'"
+                  [isLoading]="ui.isLoading"
+                  [pageConfig]="pageConfig"
+                  [enableHorizontalScroll]="true"
+                  (pageChanged)="pageChange($event)"
+                  [shownodata]="orderDatas.length === 0"
+                  [config]="inTableConfig"
+                  [inTableTranslate]="{
+                    'no data found': 'No Data Found' | translate,
+                    'items per page': 'items per page' | translate
+                  }">
+
+          <!-- 編號 -->
+          <in-table-column [styleColumn]="{'min-width': '50px'}"
+                           label="#">
+            <ng-template #tplLabel
+                         let-ui="ui">
+              # <i class="far fa-plus-square text-light"
+                 [ngClass]="{'fa-plus-square': !ui?.showAllSubRow, 'fa-minus-square': ui?.showAllSubRow}"
+                 (click)="ui?.toggleShowAllSubRow(); showSubToggleAll(ui?.showSubRow); stopListRoute($event);"></i>
+            </ng-template>
+
+            <ng-template #tpl
+                         let-i
+                         let-ui="ui"
+                         let-order="item">
+              {{ ( pageConfig.currentPage - 1 ) * pageConfig.itemsPerPage + i + 1 }}
+              <i class="far fa-plus-square text-primary"
+                 [ngClass]="{'fa-plus-square': !ui?.showSubRow[i], 'fa-minus-square': ui?.showSubRow[i]}"
+                 *ngIf="order.products && order.products.length > 0"
+                 (click)="ui?.showSubRow[i] = !ui?.showSubRow[i]; showSubToggle(i); stopListRoute($event);"></i>
+            </ng-template>
+
+          </in-table-column>
+
+          <!-- 負責業務 -->
+          <in-table-column [styleColumn]="{'max-width': '120px'}"
+                           class="text-truncate ml-1 mr-1"
+                           prop="sales"
+                           label="{{ 'sales who in charge of' | translate }}">
+            <ng-template #tpl
+                         let-order="item"
+                         let-i>
+              {{ order.sales ? order.sales.name : '' | translate }}
+            </ng-template>
+          </in-table-column>
+
+          <!-- 312編號 -->
+          <in-table-column [styleColumn]="{'min-width': '120px'}"
+                           class="text-truncate ml-1 mr-1"
+                           prop="orderErpNumber"
+                           label="312{{ 'no.' | translate }}">
+          </in-table-column>
+
+          <!-- cloudId -->
+          <in-table-column [styleColumn]="{'min-width': '150px'}"
+                           class="text-truncate ml-1 mr-1"
+                           prop="cloudId"
+                           label="{{ 'Account Id' | translate }}">
+            <ng-template #tpl
+                         let-order="item">
+              <div [popover]="order.cloudId"
+                   placement="top left"
+                   triggers="mouseenter:mouseleave"
+                   container="body"
+                   placement="top">
+                {{ order.cloudId }}</div>
+            </ng-template>
+          </in-table-column>
+
+          <!-- 合約狀態 -->
+          <in-table-column [styleColumn]="{'max-width': '120px'}"
+                           class="text-truncate ml-1 mr-1"
+                           prop="contract"
+                           label="{{ 'contract status' | translate }}">
+            <ng-template #tpl
+                         let-order="item"
+                         let-i>
+              {{ order.orderStatus | translate }}
+            </ng-template>
+          </in-table-column>
+
+          <!-- 經銷商 -->
+          <in-table-column [styleColumn]="{'min-width': '200px'}"
+                           class="text-truncate ml-1 mr-1"
+                           prop="customer"
+                           label="{{ 'dealer' | translate }}">
+            <ng-template #tpl
+                         let-order="item"
+                         let-i>
+              <span [popover]="order.customer ? cutSlash(order.customer.name) : ''"
+                    triggers="mouseenter:mouseleave"
+                    placement="top">
+                {{ order.customer ? cutSlash(order.customer.name) : '' }}
+              </span>
+            </ng-template>
+          </in-table-column>
+
+          <!-- 最終使用者 -->
+          <in-table-column [styleColumn]="{'min-width': '200px'}"
+                           class="text-truncate ml-1 mr-1"
+                           prop="endUser"
+                           label="{{ 'end_user' | translate }}">
+            <ng-template #tpl
+                         let-order="item"
+                         let-i>
+              <span [popover]="order.endUser ? cutSlash(order.endUser.name) : ''"
+                    triggers="mouseenter:mouseleave"
+                    placement="top">
+                {{ order.endUser ? cutSlash(order.endUser.name) : '' }}
+              </span>
+            </ng-template>
+          </in-table-column>
+
+          <!-- sub id -->
+          <in-table-column [styleColumn]="{'min-width': '200px'}"
+                           class="text-truncate ml-1 mr-1"
+                           prop="subOrderId"
+                           label="{{ 'sub order id' | translate }}">
+            <ng-template #tpl
+                         let-order="item"
+                         let-i>
+              <span [popover]="order.subOrderId"
+                    triggers="mouseenter:mouseleave"
+                    placement="top">
+                {{ order.subOrderId }}
+              </span>
+            </ng-template>
+          </in-table-column>
+
+          <!-- 訂單狀態 -->
+          <!-- <in-table-column [styleColumn]="{'min-width': '100px'}"
+                           class="text-truncate ml-1 mr-1"
+                           prop="order"
+                           label="{{ 'order status' | translate }}">
+          </in-table-column> -->
+
+          <!-- 動作 -->
+          <in-table-column
+          [styleColumn]="{'min-width': '150px'}"
+                           class="ml-1 mr-1"
+                           label="{{ 'action' | translate }}">
+            <ng-template #tpl
+                         let-order="item"
+                         let-i>
+              <!-- 編輯 -->
+              <a class="btn btn-lg mr-1"
+                 [popover]="'編輯'"
+                 triggers="mouseenter:mouseleave"
+                 placement="top"
+                 [routerLink]="'./' + order.orderId">
+                <i class="fa-solid fa-pen-to-square fa btn-fontawesome"></i>
+              </a>
+              <button class="btn btn-lg">
+                <i class="fa-solid fa-copy btn-fontawesome"
+                   (click)="openModal(template, order.orderId)"
+                   [popover]="'複製採購單'"
+                   *appPermissionIf="'order-v1.copyOrder'"
+                   triggers="mouseenter:mouseleave"
+                   placement="top"></i>
+              </button>
+
+            </ng-template>
+          </in-table-column>
+
+          <!-- sub item -->
+          <in-table-row-footer>
+            <ng-template #tpl
+                         let-item="item"
+                         let-i>
+              <div *ngIf="item.products.length !== 0 && showSub[i]"
+                   class="p-2"
+                   style="background-color: #efefef;">
+                <in-table [data]="item.products"
+                          [listViewClass]="'d-none d-md-block'"
+                          [cardViewClass]="'d-block d-md-none'"
+                          [listHeaderClass]="'sticky-header-color'"
+                          [shownodata]="item.products.length === 0"
+                          [config]="subInTableConfig"
+                          [inTableTranslate]="{
+                            'no data found': 'No Data Found' | translate,
+                            'items per page': 'items per page' | translate
+                          }">
+
+                  <!-- 編號 -->
+                  <in-table-column [styleColumn]="{'max-width': '60px'}"
+                                   label="">
+                    <ng-template #tpl
+                                 let-index="rowIndex"
+                                 let-xxx>
+                      {{ i + 1 }}-{{ xxx + 1 }}
+                    </ng-template>
+                  </in-table-column>
+
+                  <!-- 訂購時間 -->
+                  <in-table-column [styleColumn]="{'max-width': '120px'}"
+                                   class="text-truncate ml-1 mr-1"
+                                   prop="startDate"
+                                   label="{{ 'order time' | translate }}">
+                  </in-table-column>
+
+                  <!-- 商品名稱 -->
+                  <in-table-column [styleColumn]="{'min-width': '200px'}"
+                                   class="text-truncate ml-1 mr-1"
+                                   prop="name"
+                                   label="{{ 'commodity name' | translate }}">
+                    <ng-template #tpl
+                                 let-order="item"
+                                 let-i>
+                      <span [popover]="order.name"
+                            triggers="mouseenter:mouseleave"
+                            placement="top">
+                        {{ order.name }}
+                      </span>
+                    </ng-template>
+                  </in-table-column>
+
+                  <!-- 數量 -->
+                  <in-table-column [styleColumn]="{'max-width': '60px'}"
+                                   class="text-truncate ml-1 mr-1"
+                                   prop="quantity"
+                                   label="{{ 'quantity' | translate }}">
+                  </in-table-column>
+
+                  <!-- 期數 -->
+                  <in-table-column [styleColumn]="{'max-width': '60px'}"
+                                   class="text-truncate ml-1 mr-1"
+                                   prop="leaseMode"
+                                   label="{{ 'period' | translate }}">
+                  </in-table-column>
+
+                  <!-- 合約狀態 -->
+                  <in-table-column [styleColumn]="{'max-width': '100px'}"
+                                   class="text-truncate ml-1 mr-1"
+                                   prop="orderStatus"
+                                   label="{{ 'contract status' | translate }}">
+                    <ng-template #tpl
+                                 let-order="item"
+                                 let-i>
+                      {{ item.orderStatus | translate }}
+                    </ng-template>
+                  </in-table-column>
+
+                  <!-- 動作 -->
+                  <!-- <in-table-column [styleColumn]="{'min-width': '200px'}"
+                                   class="text-truncate ml-1 mr-1"
+                                   prop="action"
+                                   label="{{ 'action' | translate }}">
+                    <ng-template #tpl
+                                 let-order="item"
+                                 let-i>
+                      -- {{ '啟用' }} {{ '暫停' }} {{ '取消採購' }} --
+                      -- <a class="btn"><i class="fas fa-play text-primary"></i></a>
+                      <a class="btn"><i class="fas fa-pause text-secondary"></i></a>
+                      <a class="btn"><i class="fas fa-stop text-danger"></i></a> --
+                      -- 啟用 --
+                      <button type="button"
+                              class="btn btn-primary mr-2">
+                        {{ 'enable' | translate | titlecase }}
+                      </button>
+
+                      -- 暫停 --
+                      <button type="button"
+                              class="btn btn-primary mr-2">
+                        {{ 'pause' | translate | titlecase }}
+                      </button>
+
+                      -- 取消採購 --
+                      <button *ngIf="item.solution !== '用量型'"
+                              type="button"
+                              class="btn btn-danger">
+                        {{ 'cancel purchase' | translate | titlecase }}
+                      </button>
+                    </ng-template>
+                  </in-table-column> -->
+
+                </in-table>
+              </div>
+            </ng-template>
+          </in-table-row-footer>
+
+        </in-table>
+      </ng-container>
+    </div>
+  </div>
+</div>

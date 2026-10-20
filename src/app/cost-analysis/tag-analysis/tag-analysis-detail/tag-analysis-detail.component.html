@@ -1,0 +1,361 @@
+<div class="card md-4">
+  <div class="card-body">
+
+    <div class="form-group row">
+      <div class="col-12">
+        <div class="d-flex">
+          <h4>{{ 'analysis tag' | translate | titlecase }}</h4>
+          <span class="ml-2 pt-2"><i class="fas fa-spin fa-spinner " *ngIf="listLoading"></i></span>
+        </div>
+      </div>
+      <div class="col-5">
+        <form [formGroup]="inputForm" class="d-flex">
+          <!-- 選擇標籤 -->
+          <select class="form-control required mr-2 col-6"
+                  id="tagName"
+                  formControlName="tagName"
+                  (change)="this.inputForm.get('tagName')?.value ? getServiceList() : resetList()"
+                  [attr.disabled]="listLoading ? true : null">
+            <option selected
+                    value="">{{ 'please select tag name' | translate | titlecase }}</option>
+            <option *ngFor="let opt of tagList"
+                    [value]="opt">{{ opt }}</option>
+          </select>
+          <!-- 選擇服務 -->
+          <!-- <select class="form-control required"
+                  id="serverName"
+                  formControlName="serverName"
+                  [attr.disabled]="listLoading ? true : null">
+            <option selected
+                    value="">{{ 'please select service name' | translate | titlecase }}</option>
+            <option *ngFor="let opt of serverList"
+                    [value]="opt">{{ opt }}</option>
+          </select> -->
+          <angular2-multiselect [data]="showServiceList" [(ngModel)]="userSelectList" [ngModelOptions]="{standalone: true}"
+                [settings]="filterConfig" (onClose)="closeFilter()"
+                (onOpen)="openFilter()">
+          </angular2-multiselect>
+        </form>
+      </div>
+      <div>
+        <button class="btn btn-success mb-3"
+                (click)="addTag()"
+                [disabled]="checkInput() || loading">
+          <i class="fas fa-plus"></i> {{ 'add' | translate | titlecase }}
+        </button>
+      </div>
+      <div class="col-12">
+        <in-table [data]="tagGroup"
+                  [listViewClass]="'d-none d-md-block'"
+                  [cardViewClass]="'d-block d-md-none'"
+                  [listHeaderClass]="'sticky-header-color'"
+                  [isLoading]="loading"
+                  [shownodata]="tagGroup.length === 0 ? true : false"
+                  [subRowKeyInData]="'item'"
+                  [config]="inTableConfig"
+                  [inTableTranslate]="{
+                    'no data found': 'no data found' | translate | titlecase,
+                    'items per page': 'items per page' | translate | titlecase
+                  }">
+
+          <!-- ====== 編號 ====== -->
+          <in-table-column [styleColumn]="{'max-width': '10%'}"
+                           class="mt-3 h-100"
+                           label="#">
+            <ng-template #tplLabel
+                         let-ui="ui">
+              # <i class="far fa-plus-square text-light"
+                [ngClass]="{'fa-plus-square': !ui?.showAllSubRow, 'fa-minus-square': ui?.showAllSubRow}"
+                (click)="ui?.toggleShowAllSubRow(); stopListRoute($event);"></i>
+            </ng-template>
+
+            <ng-template #tpl
+                         let-i
+                         let-ui="ui"
+                         let-project="item">
+              {{ ( pageConfig.currentPage - 1 ) * pageConfig.itemsPerPage + i + 1 }}
+              <i class="far fa-plus-square text-primary"
+                 [ngClass]="{'fa-plus-square': !ui?.showSubRow[i], 'fa-minus-square': ui?.showSubRow[i]}"
+                 *ngIf="project.item && project.item.length > 1"
+                 (click)="ui?.showSubRow[i] = !ui?.showSubRow[i]; stopListRoute($event);"></i>
+            </ng-template>
+
+            <ng-template #tplSub
+                         let-iSub
+                         let-i="rowIndex">
+              {{ ( pageConfig.currentPage - 1 ) * pageConfig.itemsPerPage + i + 1 }}-{{ iSub + 1 }}
+            </ng-template>
+          </in-table-column>
+
+          <!-- ====== 標籤名稱 ====== -->
+          <in-table-column [styleColumn]="{'max-width': '20%'}"
+                           class="text-truncate ml-1 mr-1 mt-3 h-100"
+                           prop="name"
+                           label="{{ 'tag name' | translate }}">
+            <ng-template #tpl
+                         let-project="item"
+                         let-i>
+              <ng-container *ngIf="project.item && project.item.length > 1">
+                <ng-container *ngTemplateOutlet="tplName; context: {$implicit: i}"></ng-container>
+              </ng-container>
+              <ng-container *ngIf="project.item && project.item.length === 1">
+                <ng-container
+                              *ngTemplateOutlet="tplSubName; context: {$implicit: 0, item: project.item[0], rowIndex: i, project: project.item}">
+                </ng-container>
+              </ng-container>
+            </ng-template>
+
+            <ng-template #tplSub
+                         let-iSub
+                         let-item="item"
+                         let-i="rowIndex"
+                         let-project="parentItem">
+              <ng-container *ngIf="project.item && project.item.length > 1">
+                <ng-container *ngTemplateOutlet="tplSubName; context: {$implicit: iSub, item: '', rowIndex: i, project: project.item}">
+                </ng-container>
+              </ng-container>
+            </ng-template>
+
+            <ng-template #tplName
+                         let-project="item"
+                         let-i>
+              <ng-container>
+                {{ getTagName(i) }}
+              </ng-container>
+            </ng-template>
+
+            <ng-template #tplSubName
+                         let-project="project"
+                         let-iSub
+                         let-item="item"
+                         let-i="rowIndex">
+              <ng-container>
+                {{ item.tag }}
+              </ng-container>
+            </ng-template>
+          </in-table-column>
+
+          <!-- ====== 服務名稱 ====== -->
+          <in-table-column [styleColumn]="{'max-width': '20%'}"
+                           class="text-truncate ml-1 mr-1 mt-3 h-100"
+                           prop="name"
+                           label="{{ 'service name' | translate }}">
+            <ng-template #tpl
+                         let-project="item"
+                         let-i>
+              <ng-container *ngIf="project.item && project.item.length > 1">
+                <ng-container *ngTemplateOutlet="tplServiceName; context: {$implicit: i}"></ng-container>
+              </ng-container>
+              <ng-container *ngIf="project.item && project.item.length === 1">
+                <ng-container
+                              *ngTemplateOutlet="tplSubServiceName; context: {$implicit: 0, item: project.item[0], rowIndex: i, project: project.item}">
+                </ng-container>
+              </ng-container>
+            </ng-template>
+
+            <ng-template #tplSub
+                         let-iSub
+                         let-item="item"
+                         let-i="rowIndex"
+                         let-project="parentItem">
+              <ng-container *ngIf="project.item && project.item.length > 1">
+                <ng-container *ngTemplateOutlet="tplSubServiceName; context: {$implicit: iSub, item: item, rowIndex: i, project: project.item}">
+                </ng-container>
+              </ng-container>
+            </ng-template>
+
+            <ng-template #tplServiceName
+                         let-project="item"
+                         let-i>
+              <ng-container>
+                {{ '' }}
+              </ng-container>
+            </ng-template>
+
+            <ng-template #tplSubServiceName
+                         let-project="project"
+                         let-iSub
+                         let-item="item"
+                         let-i="rowIndex">
+              <ng-container>
+                {{ item.name }}
+              </ng-container>
+            </ng-template>
+          </in-table-column>
+
+          <!-- ====== 專案項目 ====== -->
+          <in-table-column [styleColumn]="{'max-width': '40%'}"
+                           class="text-truncate ml-1 mr-1"
+                           prop="projectInfo">
+            <ng-template #tpl
+                         let-project="item"
+                         let-i>
+              <ng-container *ngIf="project.item && project.item.length > 1">
+                <ng-container *ngTemplateOutlet="tplProject; context: {$implicit: i}"></ng-container>
+              </ng-container>
+              <ng-container *ngIf="project.item && project.item.length === 1">
+                <ng-container
+                              *ngTemplateOutlet="tplSubProject; context: {$implicit: 0, item: project.item[0], rowIndex: i, project: project.item}">
+                </ng-container>
+              </ng-container>
+            </ng-template>
+
+            <ng-template #tplSub
+                         let-iSub
+                         let-item="item"
+                         let-i="rowIndex"
+                         let-project="parentItem">
+              <ng-container *ngIf="project.item && project.item.length > 1">
+                <ng-container *ngTemplateOutlet="tplSubProject; context: {$implicit: iSub, item: item, rowIndex: i, project: project.item}">
+                </ng-container>
+              </ng-container>
+            </ng-template>
+
+            <ng-template #tplProject
+                         let-project="item"
+                         let-i>
+              <ng-container>
+                {{ '' }}
+              </ng-container>
+            </ng-template>
+
+            <ng-template #tplSubProject
+                         let-project="project"
+                         let-iSub
+                         let-item="item"
+                         let-i="rowIndex"
+                         let-x>
+              <!-- 編輯模式 -->
+              <ng-container *ngIf="item.edit">
+                <div>
+                  <div class="form-control text-center text-danger" style="border: 0px;">{{ 'unallocated percentage' | translate }}：{{ getPercentage(i, x) }}%</div>
+                  <div *ngFor="let list of afterEditTagList[i].item[x].projectInfo; let listIdx = index" class="row ml-3">
+                    <select *ngIf="list.projectManagementId !== this.otherId"
+                            class="form-control col-md-4 mr-2"
+                            [(ngModel)]="list.projectManagementId"
+                            [ngModelOptions]="{standalone: true}"
+                            (change)="editSelectProject(i, listIdx, x)">
+                      <option *ngFor="let option of projectList"
+                              [value]="option?.id">{{ option.name | translate }}</option>
+                    </select>
+                    <input *ngIf="list.projectManagementId !== this.otherId"
+                           class="form-control col-md-2 mr-2"
+                           [(ngModel)]="list.costPercentage"
+                           [ngModelOptions]="{standalone: true}">
+                      <p *ngIf="list.projectManagementId !== this.otherId" class="mt-2">%</p>
+                  </div>
+                </div>
+                <div style="height: 30px;border: 0px;"></div>
+              </ng-container>
+
+              <!-- 檢視模式 -->
+              <ng-container *ngIf="!item.edit">
+                <div class="row">
+                  <div *ngFor="let list of item.projectInfo" class="ml-3 mb-1">
+                    <div class="btn bg-primary text-white">
+                      <span *ngIf="list.name === ''">{{ '其他' }}</span>
+                      <span *ngIf="list.name !== ''">{{ list.name }}</span>
+                      ({{ list.costPercentage }}%)
+                    </div>
+                  </div>
+                </div>
+              </ng-container>
+            </ng-template>
+          </in-table-column>
+
+          <!-- ====== 動作 ====== -->
+          <in-table-column [styleColumn]="{'max-width': '10%'}"
+                           class="text-truncate ml-1 mr-1 h-100"
+                           label="{{ 'action' | translate }}">
+            <ng-template #tpl
+                         let-project="item"
+                         let-i>
+              <ng-container *ngIf="project.item && project.item.length > 1">
+                <ng-container *ngTemplateOutlet="tplAction; context: {$implicit: i}"></ng-container>
+              </ng-container>
+              <ng-container *ngIf="project.item && project.item.length === 1">
+                <ng-container
+                              *ngTemplateOutlet="tplSubAction; context: {$implicit: 0, item: project.item[0], rowIndex: i, project: project.item}">
+                </ng-container>
+              </ng-container>
+            </ng-template>
+
+            <ng-template #tplSub
+                         let-iSub
+                         let-item="item"
+                         let-i="rowIndex"
+                         let-project="parentItem">
+              <ng-container *ngIf="project.item && project.item.length > 1">
+                <ng-container *ngTemplateOutlet="tplSubAction; context: {$implicit: iSub, item: item, rowIndex: i, project: project.item}">
+                </ng-container>
+              </ng-container>
+            </ng-template>
+
+            <ng-template #tplAction
+                         let-project="item"
+                         let-i>
+              <ng-container>
+                {{ '' }}
+              </ng-container>
+            </ng-template>
+
+            <ng-template #tplSubAction
+                         let-project="project"
+                         let-iSub
+                         let-item="item"
+                         let-i="rowIndex"
+                         let-x>
+              <!-- 編輯模式 -->
+              <ng-container *ngIf="item.edit">
+                <!-- 新增 -->
+                <button class="btn btn-success"
+                        (click)="addProject(i, x)">
+                  <i class="fas fa-plus"></i> {{ 'add' | translate | titlecase }}
+                </button>
+                <!-- 刪除 -->
+                <div *ngFor="let list of afterEditTagList[i].item[x].projectInfo; let listIdx = index"
+                     class="m-2"
+                     [ngClass]="{'cancleIcon': list.projectManagementId !== this.otherId}">
+                  <a *ngIf="list.projectManagementId !== this.otherId"
+                     (click)="delProject(i, listIdx, x)">
+                    <i class="fas fa-times fa-lg text-danger"></i>
+                  </a>
+                </div>
+                <div style="position: absolute; right: 0; bottom: 0;">
+                  <!-- 確定 -->
+                  <button class="btn btn-primary ml-3"
+                          (click)="editProject(i, x)"
+                          [disabled]="getPercentage(i, x) < 0 || saveLoading">
+                    {{ 'save' | translate | titlecase }}
+                  </button>
+                  <!-- 取消 -->
+                  <button class="btn btn-secondary ml-3"
+                          (click)="item.edit = !item.edit">
+                    {{ 'cancel' | translate | titlecase }}
+                  </button>
+                </div>
+              </ng-container>
+
+              <!-- 檢視模式 -->
+              <ng-container *ngIf="!item.edit">
+                <!-- 編輯 -->
+                <a class="btn btn-sm"
+                  (click)="showEdit(i, x)">
+                  <i class="fas fa-fw fa-edit fa-lg text-primary"></i>
+                </a>
+                <!-- 刪除 -->
+                <a class="btn btn-sm"
+                  (click)="delTag(i, x)">
+                  <i class="fas fa-times fa-lg text-danger"></i>
+                </a>
+              </ng-container>
+            </ng-template>
+          </in-table-column>
+
+        </in-table>
+    </div>
+
+    </div> <!-- form-group -->
+  </div> <!-- card-body -->
+
+</div>

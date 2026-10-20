@@ -1,0 +1,13 @@
+<div style=" max-width: 1400px; margin:0 auto;">
+
+  <div class="d-flex row">
+  <!-- <div class="d-flex row"  *ngIf="!isSiAdmin && !isSiUser" > -->
+    <app-order *appPermissionIf="['dashboard-v1.getOrders']" class="col-12"></app-order>
+  </div>
+
+  <app-future-forecast-usage *appPermissionIf="['aws-cost-analysis-v1.getCostExplorerFilter'] && ['aws-cost-analysis-v1.getCostExplorer']"></app-future-forecast-usage>
+  <!-- <app-service-amout-table *appPermissionIf="['aws-cost-analysis-v1.getCostExplorer_dailyUsage']"></app-service-amout-table> -->
+  <!-- <app-usages *ngIf="!isSiUser"></app-usages> -->
+  <app-usages *appPermissionIf="['dashboard-v1.getBilledBills']"></app-usages>
+
+</div>

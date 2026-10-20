@@ -1,0 +1,400 @@
+<div>
+  <!---------------------- 新增 & 搜尋 ---------------------->
+  <div class="mb-5 card">
+    <!------------------ 新增 ------------------>
+    <div class="card-header bg-primary text-white">
+      <h5 class="mb-0">{{ 'commodity management' | translate | titlecase }}
+        <button class="btn btn-success btn-sm ml-2"
+                [routerLink]="['add']"
+                *appPermissionIf="'product-v1.addProduct'">
+          <i class="fa-solid fa-plus fa-sm mr-1"></i>{{ 'add' | translate | titlecase }}</button>
+      </h5>
+    </div>
+    <!------------------ 表單 ------------------>
+    <div class="card-body"
+         *appPermissionIf="'product-v1.queryProducts'">
+      <form [formGroup]="searchForm">
+        <div class="form-row mb-1">
+          <!-------------- 商品編號 -------------->
+          <div class="col-12 col-sm-4 mb-3">
+            <label for="productId">{{ 'commodity id' | translate | titlecase }}</label>
+            <input type="text"
+                   class="form-control"
+                   id="productId"
+                   formControlName="productId"
+                   placeholder="{{ 'please fill input' | translate:{input: 'commodity id' | translate} | titlecase }}">
+          </div>
+
+          <!-------------- 商品名稱 -------------->
+          <div class="col-12 col-sm-4 mb-3">
+            <label for="productName">{{ 'commodity name' | translate | titlecase }}</label>
+            <input type="text"
+                   class="form-control"
+                   id="productName"
+                   formControlName="productName"
+                   placeholder="{{ 'please fill input' | translate:{input: 'commodity name' | translate} | titlecase }}">
+          </div>
+
+          <!-------------- 公司 (代理商) -------------->
+          <!-- 系統管理員有代理商欄位 ------------------->
+          <!-- 代理商不需要此欄位 ---------------------->
+          <div class="col-12 col-sm-4 mb-3"
+               *appPermissionIf="'layout.iam.adminInput'">
+            <label class="d-block">{{ 'company' | translate | titlecase }} ({{ 'agent' | translate | titlecase }})</label>
+            <!-- <select class="form-control"
+                    id="customerId"
+                    formControlName="customerId">
+              <option selected
+                      value="">{{ 'please select' | translate | titlecase }}</option>
+              <option *ngFor="let opt of companyDDL"
+                      [value]="opt.id">{{ opt.fullCh | translate }}</option>
+            </select> -->
+            <div class="btn-group btn-block custom-ngx-dropdown"
+                 dropdown>
+              <button id="button-animated"
+                      dropdownToggle
+                      type="button"
+                      class="form-control dropdown-toggle d-flex justify-content-between align-items-center"
+                      aria-controls="dropdown-animated">
+                {{ (selectedCompany ? selectedCompany.fullCh : 'please select' | translate | titlecase) }}
+              </button>
+              <ul id="dropdown-animated"
+                  *dropdownMenu
+                  class="dropdown-menu w-100"
+                  role="menu"
+                  aria-labelledby="button-animated">
+                <li role="menuitem"
+                    class="custom-ngx-dropdown-option pointer"
+                    *ngFor="let opt of companyDDL"
+                    [ngClass]="{'selected': opt.id === selectedCompany?.id}"
+                    (click)="onCompanySelect(opt)">
+                  <div class="text-muted menu_item pt-2"
+                       [ngClass]="{'pl-2': opt.id === selectedCompany?.id, 'pl-4': opt.id !== selectedCompany?.id}">
+                    <i class="fa-solid far fa-check text-primary"
+                       *ngIf="opt.id === selectedCompany?.id"></i>
+                    {{ opt.creator }}
+                  </div>
+                  <div class="d-block pl-4 pt-1 pb-2">{{ opt.fullCh }}</div>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <!-------------- 上架下架日期 -------------->
+          <div class="col-12 col-sm-4 mb-3">
+            <label for="availableDate">{{ 'commodity available date' | translate | titlecase }}</label>
+            <input type="text"
+                   id="availableDate"
+                   formControlName="availableDate"
+                   class="form-control"
+                   bsDaterangepicker
+                   placeholder="{{ 'please fill input' | translate:{ input: 'commodity available date' | translate } | titlecase }}"
+                   [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD' }"
+                   [placement]="bsDaterangepickerPlace"
+                   #drp="bsDaterangepicker">
+          </div>
+
+          <!-------------- CMP 料號 -------------->
+          <div class="col-12 col-sm-4 mb-3">
+            <label for="productSku">{{ 'CMP serial number' | translate }}</label>
+            <input type="text"
+                   class="form-control"
+                   id="productSku"
+                   formControlName="productSku"
+                   placeholder="{{ 'please fill input' | translate:{ input: 'CMP serial number' | translate } }}">
+          </div>
+
+          <!-------------- 原廠料號 -------------->
+          <div class="col-12 col-sm-4 mb-3">
+            <label for="originalSku">{{ 'brand serial number' | translate | titlecase }}</label>
+            <input type="text"
+                   class="form-control"
+                   id="originalSku"
+                   formControlName="originalSku"
+                   placeholder="{{ 'please fill input' | translate:{ input: 'brand serial number' | translate } }}">
+            <!-- <angular2-multiselect [data]="originalSkuDDL"
+                                  [(ngModel)]="selectedSku"
+                                  [ngModelOptions]="{standalone: true}"
+                                  [settings]="selectSettings"
+                                  [ngClass]="{'multiselect-disabled': ui.isSkuListLoading}">
+              <c-search>
+                <ng-template>
+                  <input type="text"
+                         (keyup.enter)="getCrmPriceBookList($event)"
+                         placeholder="{{ 'please fill input' | translate:{input: 'keyword' | translate} | titlecase }}"
+                         style="border: none;width: 100%; height: 100%;outline: none;" />
+                </ng-template>
+              </c-search>
+            </angular2-multiselect> -->
+          </div>
+        </div>
+        <div>
+          <button class="btn btn-secondary btn-sm mr-2"
+                  type="button"
+                  (click)="reset()"
+                  [disabled]="ui.isSearching">
+            {{ 'reset' | translate | titlecase }}</button>
+          <button class="btn btn-primary btn-sm"
+                  type="button"
+                  (click)="getCommodityList()"
+                  [disabled]="ui.isSearching">
+            {{ 'search' | translate | titlecase }}
+            <i class="fas fa-spin fa-spinner mr-1"
+               *ngIf="ui.isSearching"></i>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="mb-5 card">
+    <div class="card-header bg-primary text-white">
+      <h5 class="mb-0">{{ 'commodity management' | translate | titlecase }}
+        <button *appPermissionIf="'product-v1.addBatchProductsByExcel'"
+                class="btn btn-warning text-white btn-sm ml-2 float-right"
+                (click)="openModal(importFileTemp)">
+          <i class="fa-solid fa-file-arrow-up fa-sm mr-1"></i>{{ 'import' | translate | titlecase }}
+        </button>
+      </h5>
+    </div>
+    <div class="card-body">
+      <!---------------------- inTable ---------------------->
+      <in-table class="table table-hover"
+                [data]="commodityList"
+                [listViewClass]="'d-none d-md-block'"
+                [cardViewClass]="'d-block d-md-none'"
+                [listHeaderClass]="'thead-light sticky-header-color'"
+                [pageConfig]="pageConfig"
+                (pageChanged)="pageChange($event)"
+                [sortBy]="sortBy"
+                (sort)="sort($event)"
+                [isLoading]="ui.isSearching"
+                [enableHorizontalScroll]="true"
+                [shownodata]="true"
+                [config]="inTableConfig"
+                [inTableTranslate]="{
+                  'no data found': 'no data found' | translate | titlecase,
+                  'items per page': 'items per page' | translate | titlecase}"
+                (colWidthResized)="util.syncInTableColWidths(authTable, 'intable-commodity-list-table', true)"
+                (afterViewInit)="util.syncInTableColWidths(authTable, 'intable-commodity-list-table', false)"
+                #authTable
+                *appPermissionIf="'product-v1.queryProducts'">
+
+        <!----------- # ----------->
+        <in-table-column label="#"
+                         class="font-weight-bold"
+                         [styleColumn]="{'width': '50px'}">
+          <ng-template #tpl
+                       let-index="rowIndex"
+                       let-xxx>
+            {{ ( pageConfig.currentPage -1 ) * pageConfig.itemsPerPage + index + 1 }}
+          </ng-template>
+        </in-table-column>
+
+        <!--------------- image --------------->
+        <in-table-column class="text-truncate mx-1"
+                        prop="defaultImage"
+                        label="{{ 'Image' }}"
+                        [styleColumn]="{'width': '130px'}">
+          <ng-template #tpl
+                      let-item="item">
+            <div class="d-flex justify-content-center my-n2">
+              <img [src]="item.defaultImage ? (apiUrl + item.defaultImage) : ''"
+                  class="commodity-img">
+            </div>
+          </ng-template>
+        </in-table-column>
+
+        <!------------- 商品名稱 -------------->
+        <in-table-column class="text-truncate mx-1"
+                         prop="productName"
+                         label="{{ 'commodity name' | translate | titlecase }}"
+                         sortKey="productName"
+                         [styleColumn]="{'width': '180px'}">
+          <ng-template #tpl
+                       let-item="item"
+                       let-i>
+            <span popover="{{ item.productName }}"
+                  triggers="mouseenter:mouseleave"
+                  container="body"
+                  placement="top">{{ item.productName }}</span>
+          </ng-template>
+        </in-table-column>
+
+        <!------------- CMP 料號 -------------->
+        <in-table-column class="text-truncate mx-1"
+                         prop="productSku"
+                         label="{{ 'CMP serial number' | translate }}"
+                         sortKey="productSku"
+                         [styleColumn]="{'width': '130px'}">
+          <ng-template #tpl
+                       let-item="item"
+                       let-i>
+            <span popover="{{ item.productSku }}"
+                  triggers="mouseenter:mouseleave"
+                  container="body"
+                  placement="top">{{ item.productSku }}</span>
+          </ng-template>
+        </in-table-column>
+
+        <!------------- 原廠料號 -------------->
+        <in-table-column class="text-truncate mx-1"
+                         prop="originalSku"
+                         label="{{ 'brand serial number' | translate | titlecase }}"
+                         sortKey="originalSku"
+                         [styleColumn]="{'width': '180px'}">
+          <ng-template #tpl
+                       let-item="item"
+                       let-i>
+            <span popover="{{ item.originalSku }}"
+                  triggers="mouseenter:mouseleave"
+                  container="body"
+                  placement="top">{{ item.originalSku }}</span>
+          </ng-template>
+        </in-table-column>
+
+        <!------------- 銷售對象 -------------->
+        <in-table-column class="text-truncate mx-1"
+                         prop="salesTargets"
+                         label="{{ 'sales target' | translate | titlecase }}"
+                         [styleColumn]="{'width': '180px'}">
+          <ng-template #tpl
+                       let-item="item">
+            <div [popover]="popTemplate"
+                 triggers="mouseenter:mouseleave"
+                 container="body"
+                 placement="top">
+              <mat-chip-list>
+                <mat-chip *ngFor="let targetCompany of item.salesTargets?.customer"
+                          class="text-white companyChip"
+                          [ngClass]="{'companyChip-isDealer': item.salesTargets?.identityType === 'DEALER',
+                                    'companyChip-nonDealer': item.salesTargets?.identityType !== 'DEALER'}"
+                          (click)="$event.stopPropagation(); $event.preventDefault()">
+                  {{ targetCompany.customerName.fullCh }}
+                </mat-chip>
+              </mat-chip-list>
+            </div>
+            <ng-template #popTemplate>
+              <mat-chip-list>
+                <mat-chip *ngFor="let targetCompany of item.salesTargets?.customer"
+                          class="text-white companyChip"
+                          [ngClass]="{'companyChip-isDealer': item.salesTargets?.identityType === 'DEALER',
+                                      'companyChip-nonDealer': item.salesTargets?.identityType !== 'DEALER'}"
+                          (click)="$event.stopPropagation(); $event.preventDefault()">
+                  {{ targetCompany.customerName.fullCh }}
+                </mat-chip>
+              </mat-chip-list>
+            </ng-template>
+          </ng-template>
+        </in-table-column>
+
+        <!------------- 品名/規格 -------------->
+        <in-table-column class="text-truncate mx-1"
+                         prop="specification"
+                         label="{{ 'commodity short name' | translate | titlecase }} / {{ 'specification' | translate | titlecase }}"
+                         sortKey="specification"
+                         [styleColumn]="{'width': '180px'}">
+          <ng-template #tpl
+                       let-item="item"
+                       let-i>
+            <span popover="{{ item.specification }}"
+                  triggers="mouseenter:mouseleave"
+                  container="body"
+                  placement="top">{{ item.specification }}</span>
+          </ng-template>
+        </in-table-column>
+
+      </in-table>
+    </div>
+  </div>
+
+  <!-------------------- 若沒有搜尋 ---------------------->
+  <div *ngIf="!this.productPermission['product-v1.queryProducts'] && !this.productPermission['product-v1.addProduct']"
+       class="text-center p-4 h5">
+    {{ 'please enable related permission first' | translate | titlecase }}
+  </div>
+
+</div>
+
+<ng-template #importFileTemp>
+  <div class="card-body">
+    <label class="h4 required">{{ 'import object' | translate | titlecase }}</label>
+    <hr class="mt-0 border-primary">
+    <div class="row mb-3">
+      <div class="col-12 col-sm-6 mb-2 mb-sm-0"
+           [ngClass]="{'pointer-disabled': ui.isLoading}">
+        <h6>{{ 'dealer' | translate | titlecase }}</h6>
+        <div class="my-2">
+          <input type="checkbox"
+                 id="isAllDealer"
+                 class="mr-2"
+                 (change)="salesTargetChanged(SalesTargetIdentity.dealer)"
+                 [checked]="isAllDealer">
+          <label for="isAllDealer"
+                 class="m-0">{{ 'all salesTarget label' | translate | titlecase }}</label>
+        </div>
+        <angular2-multiselect [data]="salesTargetDealer"
+                              [(ngModel)]="dealerSelected"
+                              (onSelect)="ui.isTargetInvalid = false"
+                              (onSelectAll)="ui.isTargetInvalid = false"
+                              [ngModelOptions]="{standalone: true}"
+                              [settings]="targetSelectSettings"
+                              [ngClass]="{'multiselect-disabled': isAllDealer,
+                                          'multiselect-invalid': ui.isTargetInvalid}">
+        </angular2-multiselect>
+      </div>
+      <div class="col-12 col-sm-6 mb-2 mb-sm-0"
+           [ngClass]="{'pointer-disabled': ui.isLoading}">
+        <h6>{{ 'non-dealer'| translate | titlecase}}</h6>
+        <div class="my-2">
+          <input type="checkbox"
+                 id="isAllEndUser"
+                 class="mr-2"
+                 (change)="salesTargetChanged(SalesTargetIdentity.endUser)"
+                 [checked]="isAllEndUser">
+          <label for="isAllEndUser"
+                 class="m-0">{{ 'all salesTarget label' | translate | titlecase }}</label>
+        </div>
+        <angular2-multiselect [data]="salesTargetEnduser"
+                              [(ngModel)]="endUserSelected"
+                              (onSelect)="ui.isTargetInvalid = false"
+                              (onSelectAll)="ui.isTargetInvalid = false"
+                              [ngModelOptions]="{standalone: true}"
+                              [settings]="targetSelectSettings"
+                              [ngClass]="{'multiselect-disabled': isAllEndUser,
+                                          'multiselect-invalid': ui.isTargetInvalid}">
+        </angular2-multiselect>
+      </div>
+    </div>
+    <h4>{{ 'import file' | translate | titlecase }}<span class="h6">({{ dataFileAccepts }})</span></h4>
+    <div class="border">
+      <label class="m-2 btn btn-sm btn-primary"
+             title="{{ 'select file to upload' | translate }}"
+             for="import">
+        <input type="file"
+               id="import"
+               hidden
+               (change)="uploadFile($event)"
+               [accept]="dataFileAccepts">
+        <i class="fas fa-folder-open"></i> {{ 'select file to upload' | translate | titlecase }}
+      </label>
+      {{ importFile[0] ? importFile[0].name : '' }}
+    </div>
+  </div>
+  <div class="card-footer text-right"
+       style="background-color: #e8e8e8;">
+    <button class="btn btn-secondary btn-sm mr-2"
+            type="button"
+            (click)="tempHide()">
+      {{ 'cancel' | translate | titlecase }}
+    </button>
+    <button class="btn btn-primary btn-sm"
+            type="button"
+            (click)="importData()"
+            [disabled]="uploadExcelCheck()">
+      {{ 'submit' | translate | titlecase }}
+      <i class="fas fa-spin fa-spinner mr-1"
+         *ngIf="ui.isImportFile"></i>
+    </button>
+  </div>
+</ng-template>

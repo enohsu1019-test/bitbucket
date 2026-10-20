@@ -1,0 +1,303 @@
+<div class="mb-4" style="height: 250px;">
+  <div class="row p-0 m-0 h-100">
+    <!-- 當月未出帳累計金額 -->
+    <div class="col-6 pl-0 h-100">
+      <div class="bg-white shadow-sm rounded p-3 h-100">
+        <h4 class="font-weight-bold">{{ 'cumulative amount not billed in the current month' | translate }}</h4>
+        <!-- 遮罩 -->
+        <div class="d-flex justify-content-center align-items-center" *ngIf="ui.isLoading">
+          <i class="fas fa-spin fa-spinner fa-3x text-blue"></i>
+          {{ 'loading data' | translate }}
+        </div>
+
+        <!-- 查無資料 -->
+        <ng-container *ngIf="!ui.isLoading && !ui.isError">
+          <div class="list-group-item flex-column align-items-start" style="text-align: center; border: none;"
+            *ngIf="chartDatas.usages.length === 0">
+            <h3><i class="fa fa-exclamation-circle mr-2"></i>{{ 'Can not find data' | translate }}</h3>
+          </div>
+        </ng-container>
+
+        <!-- api 錯誤訊息 -->
+        <ng-container *ngIf="!ui.isLoading && ui.isError">
+          <div class="card-body list-group p-0" *ngIf=" chartDatas.usages.length === 0">
+            <p style="display: flex;">
+              <i class="fa fa-exclamation-circle col-sm-1" style="font-size:35px"></i>
+              {{ errorMessage }}
+            </p>
+          </div>
+        </ng-container>
+
+
+        <ng-container>
+          <div class="card-body " *ngIf="!ui.isLoading && chartDatas.usages.length > 0">
+            <h4 class=" text-right " style="font-size: 90px; ">{{ forMatCurrency(amountTotal) }}</h4>
+          </div>
+        </ng-container>
+      </div>
+
+    </div>
+    <div class="col-6 pr-0" style="height: 250px;">
+      <div class="bg-white shadow-sm rounded p-3" style="height: 250px;">
+        <!-- 當月未出帳TOP3  -->
+        <h4 class="font-weight-bold">{{ 'Unpaid TOP3 in the month' | translate }}</h4>
+        <!-- 遮罩 -->
+        <div class="d-flex justify-content-center align-items-center" *ngIf="ui.isLoading">
+          <i class="fas fa-spin fa-spinner fa-3x text-blue"></i>
+          {{ 'loading data' | translate }}
+        </div>
+
+        <!-- 查無資料 -->
+        <ng-container *ngIf="!ui.isLoading && !ui.isError">
+          <div class="list-group-item flex-column align-items-start" style="text-align: center; border: none;"
+            *ngIf="chartDatas.usages.length === 0">
+            <h3><i class="fa fa-exclamation-circle mr-2"></i>{{ 'Can not find data' | translate }}</h3>
+          </div>
+        </ng-container>
+
+        <!-- api 錯誤訊息 -->
+        <ng-container *ngIf="!ui.isLoading && ui.isError">
+          <div class="card-body list-group p-0" *ngIf=" chartDatas.usages.length === 0">
+            <p style="display: flex;">
+              <i class="fa fa-exclamation-circle col-sm-1" style="font-size:35px"></i>
+              {{ errorMessage }}
+            </p>
+          </div>
+        </ng-container>
+
+        <ng-container>
+          <div class="card-body p-0" *ngIf="!ui.isLoading && chartDatas.usages.length > 0">
+            <div class="col-12" *ngIf="chartDatas.usages.length > 0">
+              <div *ngFor="let top of accountIdTotals; let idx = index">
+                <div *ngIf="idx < 3" class="row border-bottom" [ngClass]="{'pt-3': accountIdTotals.length === 1}">
+                  <p class="col-6 pl-0" style="font-size: 18px; line-height: 44px;"><b style="font-size: 20px;">Top{{ idx + 1 }}:</b> {{top.accountId}}</p>
+                  <h4 class="col-6 text-right" Style="font-size: 34px">{{ forMatCurrency(top.values) }}</h4>
+                </div>
+              </div>
+            </div>
+          </div>
+        </ng-container>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- 當月未出帳各服務累計金額統計表(US$) -->
+<div class="shadow-sm mb-4 bg-white rounded cardHeight">
+  <div class="d-flex p-0">
+    <div class="p-3 col-9 ">
+
+      <div class="card-header p-0 border-primary d-flex justify-content-between" style="height:40px;">
+        <h4 class="font-weight-bold col-6 p-0">{{nameTitle}}{{ 'service amount table' | translate | uppercase }}</h4>
+        <div class="col-6 text-right p-0">
+          <small style="line-height:40px; font-size: 18px;">{{titleMonth}}月</small>
+        </div>
+
+      </div>
+      <div class="card w-100 rounded-0 p-2  bg-light" style="margin-bottom: 30px;">
+
+        <!-- 遮罩 -->
+        <div class="h-100 d-flex justify-content-center align-items-center" *ngIf="ui.isLoading">
+          <i class="fas fa-spin fa-spinner fa-3x text-blue"></i>
+          {{ 'loading data' | translate }}
+        </div>
+
+        <!-- 查無資料 -->
+        <ng-container *ngIf="!ui.isLoading && !ui.isError">
+          <div class="list-group-item flex-column align-items-start" style="text-align: center;"
+            *ngIf="chartDatas.usages.length === 0">
+            <h3><i class="fa fa-exclamation-circle mr-2"></i>{{ 'Can not find data' | translate }}</h3>
+          </div>
+        </ng-container>
+
+        <!-- api 錯誤訊息 -->
+        <ng-container *ngIf="!ui.isLoading && ui.isError">
+          <div class="card-body list-group p-0" *ngIf=" chartDatas.usages.length === 0">
+            <p style="display: flex;">
+              <i class="fa fa-exclamation-circle col-sm-1" style="font-size:35px"></i>
+              {{ errorMessage }}
+            </p>
+          </div>
+        </ng-container>
+
+        <!-- Dashboard -->
+        <ng-container >
+          <div class="card-body p-0" *ngIf="!ui.isLoading && chartDatas.usages.length > 0">
+            <div class="col-12" *ngIf="chartDatas.usages.length > 0">
+              <canvas baseChart
+                      style="height: 250px;"
+                      [datasets]="dashboardDatasets"
+                      [labels]="dashboardDate"
+                      [options]="options">
+              </canvas>
+            </div>
+          </div>
+        </ng-container>
+      </div>
+
+      <!-- download excel -->
+      <div class="card-header p-0 border-primary d-flex justify-content-between" style="height:40px;">
+        <h4 class="font-weight-bold">{{ nameTitle }}
+          {{ 'daily breakdown of the cumulative amount of each service in the current month'| translate | uppercase }}</h4>
+        <button *ngIf="!ui.isLoading && chartDatas.usages.length > 0"
+                class="btn btn-warning"
+                style="height: 35px"
+                (click)="excelDownLoad()"
+                [disabled]="excelStatus">
+          <i [ngClass]="{'far fa-save': !excelStatus, 'fas fa-spin fa-spinner': excelStatus}"></i>
+          {{ "download" | translate }}Excel
+        </button>
+      </div>
+
+      <div class="card w-100 rounded-0 p-2  bg-light">
+
+        <!-- 遮罩 -->
+        <div class="h-100 d-flex justify-content-center align-items-center" *ngIf="ui.isLoading">
+          <i class="fas fa-spin fa-spinner fa-3x text-blue"></i>
+          {{ 'loading data' | translate }}
+        </div>
+
+        <!-- 查無資料 -->
+        <ng-container *ngIf="!ui.isLoading && !ui.isError">
+          <div class="list-group-item flex-column align-items-start" style="text-align: center;"
+            *ngIf="chartDatas.usages.length === 0 ||   tableDatas.length === 0">
+            <h3 *ngIf="chartDatas.usages.length === 0"><i class="fa fa-exclamation-circle mr-2"></i>{{ 'Can not find data' | translate }}</h3>
+          </div>
+        </ng-container>
+
+        <!-- api 錯誤訊息 -->
+        <ng-container *ngIf="!ui.isLoading && ui.isError">
+          <div class="card-body list-group p-0" *ngIf=" chartDatas.usages.length === 0 ">
+            <p style="display: flex;">
+              <i class="fa fa-exclamation-circle col-sm-1" style="font-size:35px"></i>
+              {{ errorMessage }}
+            </p>
+          </div>
+        </ng-container>
+
+        <!-- Dashboard -->
+        <ng-container >
+          <div class=" p-0" *ngIf="!ui.isLoading && chartDatas.usages.length > 0 && tableDatas.length !== 0" style="overflow-y: auto; max-height: 400px">
+            <table mat-table [dataSource]="tableDatas" class="mat-elevation-z8">
+              <ng-container matColumnDef="name" sticky>
+                <th mat-header-cell class="text-white text-center" style="min-width: 270px;" *matHeaderCellDef>
+                  {{ 'service name' | translate }}
+                </th>
+                <td mat-cell class="truncate-cell " style="background-color: #c9f6ff;" *matCellDef="let element"
+                popover="{{ element.name }}" triggers="mouseenter:mouseleave">
+                  {{ element.name }} </td>
+                <td mat-footer-cell class="" *matFooterCellDef> {{ 'total' | translate }} </td>
+              </ng-container>
+
+              <ng-container matColumnDef="total" sticky>
+                <th mat-header-cell class="text-white   text-center" style="min-width: 90px;" *matHeaderCellDef>
+                  {{ 'subtotal' | translate }}
+                </th>
+                <td mat-cell class="truncate-cell p-3 text-right" style="background-color: #efefef;"
+                  *matCellDef="let element"> {{ element.total }} </td>
+                <td mat-footer-cell *matFooterCellDef class=" text-right p-3"> {{ getTotalCost('total') }} </td>
+              </ng-container>
+
+              <ng-container matColumnDef="{{column}}" *ngFor="let column of dates">
+                <th mat-header-cell class="text-white text-center" style="min-width: 90px;" *matHeaderCellDef>
+                  {{ column }} </th>
+                <td mat-cell class=" text-right " *matCellDef="let element"> {{ element[column] }} </td>
+                <td mat-footer-cell class=" text-right" *matFooterCellDef> {{ getTotalCost(column) }} </td>
+              </ng-container>
+
+              <tr mat-header-row class="bg-primary " *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+              <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+              <tr mat-footer-row style="background-color: #efefef;" *matFooterRowDef="displayedColumns sticky: true">
+              </tr>
+            </table>
+          </div>
+        </ng-container>
+      </div>
+    </div>
+
+    <div class="col-3 p-3">
+
+      <!-- payer id -->
+      <div class="mt-2">
+        <div class="d-flex justify-content-start">
+          <h4 class="font-weight-bold">{{ 'Payer ID' }}</h4>
+          <i class="fas fa-asterisk pl-2 fa-xs text-danger"></i>
+        </div>
+        <angular2-multiselect [data]="selectList.view.payerId"
+                              [(ngModel)]="selectList.select.payerId"
+                              [settings]="payerIdSettings"
+                              (ngModelChange)="payerChange()">
+        </angular2-multiselect>
+      </div>
+
+      <!-- 連接帳戶 -->
+      <div class="mt-2">
+        <div class="d-flex justify-content-start">
+          <h4 class="font-weight-bold">{{ 'linked account' | translate | uppercase }}</h4>
+          <i class="fas fa-asterisk pl-2 fa-xs text-danger"></i>
+        </div>
+        <angular2-multiselect [data]="selectList.view.accountId"
+                              [(ngModel)]="selectList.select.accountId"
+                              [settings]="settings"
+                              (onClose)="onClose(); getNotBilledData();">
+        </angular2-multiselect>
+      </div>
+
+      <!--服務-->
+      <div class="mt-2">
+        <div class="d-flex justify-content-start">
+          <h4 class="font-weight-bold mt-2">{{ 'service' | translate | uppercase }}</h4>
+          <span class="ml-2 pt-3"><i class="fas fa-spin fa-spinner" *ngIf="ui.isFirstCall"></i></span>
+        </div>
+        <angular2-multiselect [data]="dropdownDatas"
+                              [(ngModel)]="selectedItems"
+                              [settings]="settings">
+        </angular2-multiselect>
+      </div>
+
+      <!--費用類型-->
+      <!-- <div class="mt-2" *ngIf="!isSiAdmin && !isSiUser"> -->
+      <div *ngIf="userIdentityType === 'AGENT' || userIdentityType === 'SYSTEM'" class="mt-2">
+        <div class="d-flex justify-content-start">
+          <h4 class="font-weight-bold mt-2">{{ 'chargeType' | translate | uppercase }}</h4>
+          <span class="ml-2 pt-3"><i class="fas fa-spin fa-spinner" *ngIf="ui.isFirstCall"></i></span>
+        </div>
+        <angular2-multiselect [data]="chargeTypeViews"
+                              [(ngModel)]="chargeTypeDatas"
+                              [settings]="settings">
+        </angular2-multiselect>
+      </div>
+
+      <!--標籤-->
+      <div class="mt-2" *ngIf="selectList.select.accountId.length === 1">
+        <div class="d-flex justify-content-start">
+          <h4 class="font-weight-bold mt-2" >{{ 'tag' | translate | uppercase }}</h4>
+          <span class="ml-2 pt-3"><i class="fas fa-spin fa-spinner " *ngIf="ui.isFirstCall"></i></span>
+        </div>
+        <angular2-multiselect [data]="tagViews"
+                              [(ngModel)]="tagDatas"
+                              [settings]="tagSettings" >
+        </angular2-multiselect>
+      </div>
+
+      <!-- 重置 送出 -->
+      <div class="mt-2 d-flex justify-content-end">
+        <button (click)="reset()"
+                [disabled]="ui.isLoading"
+                class="btn btn-secondary"
+                style="height: 35px">
+          {{ "reset" | translate }}
+        </button>
+        <button (click)="handleSend()"
+                [disabled]="ui.isLoading"
+                class="ml-3 btn btn-primary"
+                style="height: 35px">
+          {{ "display" | translate }}
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+</div>

@@ -1,0 +1,40 @@
+<!-- 未來到期合約清單 -->
+<div class="shadow-sm mb-4 bg-white rounded cardHeight" style="height: 400px;">
+  <div class="p-3">
+    <div class="card-header p-0 border-primary" style="height:40px;">
+      <h4 class="font-weight-bold" style="line-height: 35px;" >{{ 'contract change' | translate | uppercase }}</h4>
+    </div>
+    <div class="card-body p-0">
+
+      <!-- 遮罩 -->
+      <div class="h-100 d-flex justify-content-center align-items-center pt-2" *ngIf="loading">
+        <i class="fas fa-spin fa-spinner fa-3x text-blue"></i>
+        {{ 'loading data' | translate }}
+      </div>
+
+      <!-- 查無資料 -->
+      <div *ngIf="!loading && orders.length === 0" class="list-group-item flex-column align-items-start" style="text-align: center;">
+        <h3><i class="fa fa-exclamation-circle mr-2"></i>{{ 'Can not find data' | translate }}</h3>
+      </div>
+
+      <!-- 未來到期合約清單 -->
+      <div class=" p-0 bodyHeight" *ngIf="!loading && orders.length > 0">
+        <div class="list-group-item flex-column align-items-start pl-0 pr-0  " *ngFor="let order of orders">
+          <div class="d-flex w-100 justify-content-between row align-items-center p-0 m-0">
+            <!-- <div style="font-size: 16px;" class="col-4">
+
+            </div> -->
+            <p class="m-0 p-0 col-4" >{{ order.customer.name }}</p>
+            <p class="p-0 m-0 col-4" style="margin:0px;letter-spacing: 1px;">312{{ "no." | translate }} : {{ order.orderErpNumber }}</p>
+            <p class="col-4 p-2 m-0 text-right" style=" letter-spacing: 1px; font-size: 16px;">{{ 'contract expiry date' | translate }}：{{ order.endDate}}</p>
+          </div>
+        </div>
+      </div>
+
+      <pagination class="justify-content-center mt-3" [boundaryLinks]="true" [totalItems]="orderPage.dataCount"
+        [itemsPerPage]="orderPage.pageSize" [ngModel]="orderPage.pageIndex" (pageChanged)="orderPageChanged($event)"
+        [maxSize]="10" previousText="&lsaquo;" nextText="&rsaquo;" firstText="&laquo;" lastText="&raquo;">
+      </pagination>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,45 @@
+<mat-form-field class="w-100"
+                appearance="outline">
+  <mat-label>
+    <span *ngIf="!isLoading">{{ 'please select' | translate | titlecase }}</span>
+    <i class="fas fa-spin fa-spinner"
+       *ngIf="isLoading"></i>
+  </mat-label>
+  <mat-chip-list #chipList
+                 aria-label="keyword selection">
+    <mat-chip *ngFor="let item of selectedIdList"
+              [selectable]="selectable"
+              [removable]="removable"
+              (removed)="removeChip(item)"
+              [ngClass]="{'companyChip text-white': mode === 'add',
+                          'companyChip-isDealer': isDealer,
+                          'companyChip-nonDealer': !isDealer}">
+      <ng-container>
+        {{ allMapList?.get(item)?.name }}
+      </ng-container>
+      <mat-icon matChipRemove
+                *ngIf="removable">cancel</mat-icon>
+    </mat-chip>
+    <!-------------- chips input with autocomplete --------------->
+    <input [(ngModel)]="keyword"
+           id="keyword"
+           placeholder="{{ 'search' | translate | titlecase }}"
+           #keywordInput
+           #recipientsTrigger="matAutocompleteTrigger"
+           [matAutocomplete]="autoComplete"
+           [matChipInputFor]="chipList"
+           [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
+           (ngModelChange)="setChips()"
+           (blur)="autocompleteInputBlur($event)">
+  </mat-chip-list>
+
+  <mat-autocomplete #autoComplete="matAutocomplete"
+                    (optionSelected)="selectItem($event, keywordInput);"
+                    (closed)="onClose(keywordInput)">
+    <mat-option *ngFor="let filteredItem of filteredList"
+                [value]="filteredItem.id"
+                (click)="$event.stopPropagation(); recipientsTrigger.openPanel()">
+      {{ filteredItem.name }}
+    </mat-option>
+  </mat-autocomplete>
+</mat-form-field>

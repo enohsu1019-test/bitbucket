@@ -1,0 +1,159 @@
+<form [formGroup]="fileRecordForm">
+    <div class="card mb-5">
+        <div class="card-body">
+            <div class="form-group row">
+
+                <div class="col-12 col-sm-4"
+                     *ngIf="isAdmin">
+                    <!-- 品牌 下拉選單 -->
+                    <label class="col-form-label">{{ 'brand' | translate }}</label>
+                    <select class="custom-select pt-2"
+                            [ngModelOptions]="{standalone: true}"
+                            [(ngModel)]="brandId">
+                        <option [ngValue]="''">{{ '所有品牌' }}</option>
+                        <option *ngFor="let brand of brandDropdownDatas"
+                                [ngValue]="brand.brandId">{{ brand.name }}</option>
+                    </select>
+                </div>
+
+                <!-- 產出檔案名稱 -->
+                <div class="col-12 col-sm-4">
+                    <label class="col-form-label">{{ 'output file name' | translate }}</label>
+                    <input type="text"
+                           class="form-control"
+                           placeholder="{{ 'please input cloud Id' | translate | titlecase }}"
+                           formControlName="outputFileName">
+                </div>
+
+
+                <!-- 帳單年月時間起迄（日期範圍) -->
+                <div class="col-12 col-sm-4">
+                    <label class="col-form-label">{{ 'billing year, month and time from date to date' | translate
+                        }}</label>
+                    <input bsDaterangepicker
+                           type="text"
+                           class="form-control"
+                           placeholder="{{ 'please select sta end day' | translate | titlecase }}"
+                           [(bsValue)]="pickerRangeDates">
+                </div>
+
+
+                <!-- 操作人 -->
+                <div class="col-12 col-sm-4">
+                    <label class="col-form-label">{{ 'operator' | translate }}</label>
+                    <input type="text"
+                           class="form-control"
+                           placeholder="{{ 'please input operator name' | translate | titlecase }}"
+                           formControlName="operator">
+                </div>
+
+            </div> <!-- form-group -->
+
+            <div>
+                <!-- 重設按鈕 -->
+                <button type="button"
+                        class="btn btn-secondary btn-sm mr-2"
+                        (click)="filterReset()">
+                    {{ 'reset' | translate | titlecase }}
+                </button>
+                <!-- 搜尋按鈕 -->
+                <button type="button"
+                        class="btn btn-primary btn-sm mr-2"
+                        [disabled]="ui.isLoading || !fileRecordForm.valid"
+                        (click)="search()">
+                    <i *ngIf="ui.isLoading"
+                       class="fas fa-spin fa-spinner mr-1"></i>
+                    {{ 'search' | translate | titlecase }}
+                </button>
+            </div>
+
+        </div> <!-- card-body -->
+    </div> <!-- card -->
+</form>
+
+
+<div class="bg-white">
+    <div class="mb-3">
+        <ng-container>
+            <in-table [data]="inTableDatas"
+                      [listViewClass]="'d-none d-md-block'"
+                      [cardViewClass]="'d-block d-md-none'"
+                      [listHeaderClass]="'sticky-header-color'"
+                      (pageChanged)="pageChange($event)"
+                      [isLoading]="ui.isLoading"
+                      [pageConfig]="pageConfig"
+                      [shownodata]="inTableDatas.length === 0"
+                      [config]="inTableConfig"
+                      [inTableTranslate]="{
+                    'no data found': 'No Data Found' | translate,
+                    'items per page': 'items per page' | translate
+                  }">
+
+                <!----------- # ----------->
+                <in-table-column label="#"
+                                 class="font-weight-bold">
+                    <ng-template #tpl
+                                 let-index="rowIndex"
+                                 let-xxx>
+                        {{ ( pageConfig.currentPage -1 ) * pageConfig.itemsPerPage + index + 1 }}
+                    </ng-template>
+                </in-table-column>
+
+
+                <!-- 產出檔案名稱 -->
+                <in-table-column class="text-truncate ml-1 mr-1"
+                                 prop="sales"
+                                 label="{{ 'brand' | translate }}">
+                    <ng-template #tpl
+                                 let-fileRecord="item"
+                                 let-i>
+                        {{ fileRecord.fileName | translate }}
+                    </ng-template>
+                </in-table-column>
+
+                <!-- 帳單年月時間起迄（日期範圍) -->
+                <div class="col-12 col-sm-4">
+                    <label class="col-form-label">{{ 'billing year, month and time from date to date' | translate
+                        }}</label>
+                    <input bsDaterangepicker
+                           type="text"
+                           class="form-control"
+                           placeholder="{{ 'please select sta end day' | translate | titlecase }}"
+                           [(bsValue)]="pickerRangeDates">
+                </div>
+
+                <!-- 操作人 -->
+                <in-table-column class="text-truncate ml-1 mr-1"
+                                 prop="postingStatus"
+                                 label="{{ 'operator' | translate }}">
+                    <ng-template #tpl
+                                 let-fileRecord="item"
+                                 let-i>
+                        {{ fileRecord.createUser.name | translate }}
+                    </ng-template>
+                </in-table-column>
+
+
+                <!-- 動作 -->
+                <in-table-column class="text-truncate ml-1 mr-1"
+                                 label="{{ 'action' | translate }}">
+                    <ng-template #tpl
+                                 let-fileRecord="item"
+                                 let-i>
+                        <button type="button"
+                                (click)="downLoadPostingExcel(fileRecord.fileName)"
+                                class="btn btn-warning ml-2 text-white">
+                            <i class="fa-solid fa-download text-white"></i>
+                            {{ 'download' | translate}}
+                            <i class="fas fa-spin fa-spinner ml-1"
+                               *ngIf="ui.isExcel"></i>
+                        </button>
+                        <!-- 編輯 -->
+                        <!-- <i class="fa-solid fa-pen-to-square fa btn-fontawesome"
+                           (click)="billingSetting(template1, posting, 'single')"></i> -->
+                    </ng-template>
+                </in-table-column>
+            </in-table>
+        </ng-container>
+    </div>
+</div>

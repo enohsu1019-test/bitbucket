@@ -1,0 +1,44 @@
+<div id="wrapper"
+     [ngClass]="{'toggled': sidebarToggled}">
+
+    <div id="sidebar-wrapper">
+      <app-sidebar *ngIf="currentUserValue && currentUserValue.accessToken"
+                   [normalOn]="sidebarToggleNormalOn"
+                   [(toggled)]="sidebarToggled">
+      </app-sidebar>
+    </div>
+
+    <!-- Page Content -->
+    <div id="page-content-wrapper">
+    <div id="page-header" class="sticky-top">
+        <div class="d-flex align-items-center align-items-stretch bg-primary">
+        <button class="btn btn-primary btn-lg"
+                (click)="sidebarToggled = true"
+                *ngIf="!sidebarToggled && currentUserValue && currentUserValue.accessToken">
+        <span class="fa-stack" style="width: unset; height: unset;">
+            <i class="fas fa-bars fa-lg fa-stack-lg"></i>
+            <ng-container *ngIf="notificationOn">
+            <i class="fas fa-circle fa-stack-1x" style="top: -10px; margin-left: 15px"></i>
+            <i class="fas fa-exclamation-circle text-danger fa-stack-1x" style="top: -10px; margin-left: 15px"></i>
+            </ng-container>
+        </span>
+        </button>
+        <app-header class="flex-grow-1"
+                    [sidebarToggled]="sidebarToggled"></app-header>
+        </div>
+        <app-breadcrumb></app-breadcrumb>
+    </div>
+    <div id="page-detail" class="p-2">
+        <router-outlet></router-outlet>
+    </div>
+    <button class="btn-scroll-top"
+            *ngIf="ui.isShowScrollToTop && ui.isScrolling"
+            (click)="scrollToTop()"
+            [@myAnimation]><i class="fas fa-arrow-up fa-sm "></i></button>
+    </div> <!-- /#page-content-wrapper -->
+
+</div> <!-- /#wrapper -->
+
+<!-- <div class="h-100 d-flex justify-content-center align-items-center" *ngIf="ui.isLoading">
+  <i class="fas fa-spin fa-spinner fa-3x text-white"></i>
+</div> -->

@@ -1,0 +1,11 @@
+<div class="form-group row">
+  <!-- Sub ID -->
+  <div class="col-4">
+    <label class="col-form-label required">{{'Sub ID'| translate }}</label>
+    <input type="text"
+           class="form-control"
+           [attr.disabled]="status !== 'DRAFT'? true: null"
+           (change)="checkBlankCharacters()"
+           [(ngModel)]="solutionHeaderData.cloudId">
+  </div>
+</div>

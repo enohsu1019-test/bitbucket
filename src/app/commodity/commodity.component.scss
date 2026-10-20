@@ -1,0 +1,16 @@
+.commodity-img {
+  max-height: 100px;
+  max-width: 100px;
+}
+
+.companyChip {
+  &.companyChip-isDealer {
+    background-color: #18a0fb !important;
+  }
+  &.companyChip-nonDealer {
+    background-color: #fb1893 !important;
+  }
+  &.mat-standard-chip:hover::after {
+    opacity: 0 !important;
+  }
+}

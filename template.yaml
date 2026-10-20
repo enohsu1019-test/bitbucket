@@ -1,0 +1,27 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ${NAME}
+  namespace: ${NAMESPACE}
+spec:
+  replicas: ${REPLICATE}
+  selector:
+    matchLabels:
+      epic: ${NAME}
+  template:
+    metadata:
+      labels:
+        epic: ${NAME}
+    spec:
+      containers:
+      - name: ${NAME}
+        image: ${IMAGE}
+        imagePullPolicy: Always
+        ports:
+          - name: http
+            containerPort: ${PORT}
+        envFrom:
+          - configMapRef:
+              name: web
+

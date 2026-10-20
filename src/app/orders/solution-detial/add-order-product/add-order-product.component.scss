@@ -1,0 +1,18 @@
+.reserve {
+  background-color: #6c757d4a;
+  border-radius: 20px;
+}
+
+::ng-deep .modal-width-none {
+  max-width: 95%;
+}
+
+.filter-attribute-dropdown {
+  position: relative;
+  float: left;
+}
+
+.filter-attribute-dropdown-menu {
+  position: absolute;
+  z-index: 1001;
+}

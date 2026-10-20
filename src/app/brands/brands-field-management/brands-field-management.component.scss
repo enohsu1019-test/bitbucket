@@ -1,0 +1,22 @@
+.advance-setting {
+  .nav-tabs {
+    background-color: white;
+    border-bottom: none;
+  }
+  .nav-item .nav-link.active {
+    background-color: #adadad;
+    color: white;
+    border: 1px solid #adadad;
+  }
+  .nav-item .nav-link {
+    border: none;
+    &:hover {
+      border: 1px solid #adadad;
+    }
+  }
+  .tab-content {
+    border: 1px solid #adadad;
+    border-radius: 5px;
+    border-top-left-radius: 0px;
+  }
+}

@@ -1,0 +1,88 @@
+<div>
+  <div class="card mb-2">
+    <div class="card-body">
+
+      <div class="form-group row">
+        <!-- 方案 -->
+        <div class="col-4">
+          <label class="col-form-label">{{ 'solution' | translate }}</label>
+          <!-- <p style="font-size: 24px;" *ngIf="solutionName"> {{solutionName}}</p> -->
+          <input type="text" class="form-control" [(ngModel)]="solutionDatas.name">
+        </div>
+
+        <!-- 狀態 -->
+        <div class="col-4">
+          <label>{{ 'status' | translate }}</label>
+          <div class="custom-control custom-switch ">
+            <input type="checkbox" class="custom-control-input" id="{{ 'status'}}"
+              (change)="filterStatus ? filterStatus = 0 : filterStatus = 1;" [checked]="filterStatus">
+            <label class="custom-control-label" for="{{ 'status'}}">{{ (filterStatus === 1 ? 'effective': 'invalid') |
+              translate | titlecase }}</label>
+          </div>
+        </div>
+      </div> <!-- form-group -->
+
+    </div> <!-- card-body -->
+  </div> <!-- card -->
+
+
+
+  <mat-tab-group>
+    <!-- <mat-tab label="{{'common field' | translate}}">
+      <div class="card">
+        <div class="card-body">
+          <app-brands-field-management></app-brands-field-management>
+        </div>
+      </div>
+    </mat-tab>
+    <mat-tab label="price book">
+      <div class="card">
+        <div class="card-body">
+
+          <div class="col-4 p-0">
+            <label class="col-form-label">{{ 'type name' | translate }}</label>
+            <div class="d-flex align-items-center ">
+              <input class="form-control col-8" [(ngModel)]="tabsName" type="text"
+                placeholder="{{ 'please enter type name' | translate | titlecase }}">
+              <button style="height: 40px" (click)="addTab()" class="col-4 p-0 btn bg-success ml-3">
+                <i class="fas fa-plus text-white">{{'add type' | translate}}</i>
+              </button>
+
+            </div>
+
+          </div>
+          <mat-tab-group [selectedIndex]="selected.value">
+            <mat-tab *ngFor="let tab of tabs; let index = index">
+              <ng-template mat-tab-label>
+                {{tab.name}}
+                <i class="fas fa-lg fa-times text-danger ml-2" (click)="removeTab(index)"></i>
+              </ng-template>
+              <app-brand-price-book [intableDatas]="tab.item"></app-brand-price-book>
+            </mat-tab>
+
+
+          </mat-tab-group>
+        </div>
+      </div>
+    </mat-tab> -->
+    <mat-tab label="{{'script management' | translate}}">
+      <div class="card">
+        <app-upload-script [brandId]="brandId" [solutionId]="solutionId"></app-upload-script>
+      </div>
+    </mat-tab>
+  </mat-tab-group>
+
+  <div class="card-footer z-index " style="background-color: rgb(241 239 239);">
+    <div class="text-right">
+      <a class="btn btn-light btn-lg" [routerLink]="mode === 'add' ? '../../' : '../../'" class="btn btn-secondary">
+        <i class="fas fa-undo"></i>
+        {{'back to last page' | translate}}
+      </a>
+      <button class="btn btn-primary m-2" (click)="saveBrandApi()">
+        <i class="fas fa-save"></i>
+        {{ (mode === 'add' ? 'add' : 'save') | translate | titlecase }}
+        {{ 'solution' | translate | titlecase }}
+      </button>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,311 @@
+<!----------------- 列表清單 ------------------>
+<div class="mb-4">
+  <div class="d-flex justify-content-center align-items-center h-100 mb-5"
+       *ngIf="ui.isLoading">
+    <i class="fas fa-spin fa-spinner fa-2x"></i>
+  </div>
+
+  <div class="text-center h6"
+       *ngIf="!commodityList.length && !ui.isLoading">
+    {{ 'empty cart' | translate | titlecase }}
+  </div>
+
+  <!-- <table class="table table-hover border"
+         *ngIf="commodityList.length && !ui.isLoading">
+    <thead>
+      <tr>
+        <th scope="col">#</th>
+        <th scope="col">{{ 'commodity id' | translate | titlecase }}</th>
+        <th scope="col">{{ 'commodity name' | translate | titlecase }}</th>
+        <th scope="col"
+            class="text-center"
+            style="width: 150px;">{{ 'enable date' | translate | titlecase }}</th>
+        <th scope="col"
+            class="text-center"
+            style="width: 120px;">{{ 'quantity' | translate | titlecase }}</th>
+        <th scope="col"
+            class="text-center">{{ 'selling price' | translate | titlecase }}</th>
+        <th scope="col"
+            class="text-center"
+            style="width: 150px;">{{ 'payment way' | translate | titlecase }}</th>
+        <th scope="col"
+            class="text-center"
+            *ngIf="mode==='edit'">{{ 'action' | translate | titlecase }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let commodity of commodityList, let i = index"
+          #commodity>
+        <th scope="row"
+            style="padding-top: 18px;">{{ i + 1 }}</th>
+        <td style="padding-top: 18px;">{{ commodity.productSku }}</td>
+        <td style="padding-top: 18px;">{{ commodity.productName }}</td>
+        <td style="width: 150px;">
+          <input type="text"
+                 class="form-control"
+                 required
+                 autocomplete="off"
+                 bsDatepicker
+                 placeholder="{{ 'please fill input' | translate:{input: 'launched date' | translate} | titlecase }}"
+                 [(ngModel)]="commodity.startDate"
+                 [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD' }"
+                 (ngModelChange)="passCommodityList()"
+                 [disabled]="this.mode === 'prev' || this.mode === 'view'"
+                 [minDate]="minDate"
+                 (blur)="checkDate(commodity);">
+        </td>
+        <td class="text-center"
+            style="width: 120px;">
+          <input type="number"
+                 class="form-control text-right"
+                 required
+                 [(ngModel)]="commodity.purchaseQuantity"
+                 (ngModelChange)="passCommodityList()"
+                 [disabled]="this.mode === 'prev' || this.mode === 'view'"
+                 [min]="commodity.maxQuantity ? 1 : 0"
+                 [max]="commodity.maxQuantity ?? null"
+                 (keyup)="quantityValidate(commodity, $event)"
+                 (blur)="quantityValidate(commodity, $event)">
+          <span class="text-danger text-sm"
+                *ngIf="mode==='edit' && checkQuantity(commodity)">
+            {{ 'already reached max qty' | translate | titlecase }}
+          </span>
+        </td>
+        <td class="text-center"
+            style="padding-top: 18px;">$ {{ commodity.sellingPrice | number }}</td>
+        <td style="width: 150px;">
+          <select class="form-control"
+                  [(ngModel)]="commodity.paymentMethod"
+                  (ngModelChange)="passCommodityList()"
+                  [disabled]="this.mode === 'prev' || this.mode === 'view'">
+            <option *ngFor="let item of paymentMethodList"
+                    [value]="item.value">{{ item.name | translate }}</option>
+          </select>
+        </td>
+        <td class="text-center"
+            style="padding-top: 18px;"
+            *ngIf="mode==='edit'">
+          <i class="fa-solid fa-trash-can btn-fontawesome text-danger"
+             (click)="deleteCommodity(commodity.productId)"></i>
+        </td>
+      </tr>
+    </tbody>
+  </table> -->
+
+  <!---------------------- inTable ---------------------->
+  <div *ngIf="commodityList.length && !ui.isLoading">
+    <in-table class="table table-hover"
+              [data]="commodityList"
+              [listViewClass]="'d-none d-md-block'"
+              [cardViewClass]="'d-block d-md-none'"
+              [listHeaderClass]="'thead-light sticky-header-color'"
+              [isLoading]="ui.isLoading"
+              [enableHorizontalScroll]="true"
+              [shownodata]="true"
+              [config]="inTableConfig"
+              [inTableTranslate]="{
+                'no data found': 'no data found' | translate | titlecase,
+                'items per page': 'items per page' | translate | titlecase}"
+              (colWidthResized)="util.syncInTableColWidths(authTable, 'intable-commodity-shoppingList-table', true)"
+              (afterViewInit)="util.syncInTableColWidths(authTable, 'intable-commodity-shoppingList-table', false)"
+              #authTable
+              *ngIf="isGuest || this.productPermission['product-v1.queryProducts']">
+
+      <!----------- # ----------->
+      <in-table-column label="#"
+                       class="font-weight-bold">
+        <ng-template #tpl
+                     let-index="rowIndex"
+                     let-xxx>
+          {{ ( pageConfig.currentPage -1 ) * pageConfig.itemsPerPage + index + 1 }}
+        </ng-template>
+      </in-table-column>
+
+      <!--------------- 商品編號 --------------->
+      <in-table-column class="text-truncate mx-1"
+                       prop="productSku"
+                       label="{{ 'commodity id' | translate | titlecase }}">
+      </in-table-column>
+
+      <!--------------- 商品名稱 --------------->
+      <in-table-column class="text-truncate mx-1"
+                       prop="productName"
+                       label="{{ 'commodity name' | translate | titlecase }}">
+      </in-table-column>
+
+      <!--------------- 啟用日 --------------->
+      <in-table-column class="text-truncate mx-1"
+                       prop="startDate"
+                       label="{{ 'enable date' | translate | titlecase }}"
+                       [styleColumn]="{'width': '170px'}">
+        <ng-template #tpl
+                     let-commodity="item">
+          <ng-container *ngIf="mode === 'edit'">
+            <input type="text"
+                  class="form-control"
+                  required
+                  autocomplete="off"
+                  bsDatepicker
+                  placeholder="{{ 'please fill input' | translate:{input: 'launched date' | translate} | titlecase }}"
+                  [(ngModel)]="commodity.startDate"
+                  [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD' }"
+                  (ngModelChange)="passCommodityList()"
+                  [minDate]="minDate"
+                  (blur)="checkDate(commodity);">
+          </ng-container>
+          <ng-container *ngIf="!(mode === 'edit')">
+            {{ commodity.startDate }}
+          </ng-container>
+        </ng-template>
+      </in-table-column>
+
+      <!-- 計價類別 -->
+      <in-table-column class="text-truncate mx-1"
+                       prop="category"
+                       label="{{ 'commodity category' | translate | titlecase }}"
+                       [styleColumn]="{'max-width': '100px'}">
+        <ng-template #tpl
+                     let-commodity="item">
+          {{ categoryName(commodity.category) | translate }}
+        </ng-template>
+      </in-table-column>
+
+      <!-- 計費週期 -->
+      <in-table-column class="text-truncate mx-1"
+                       prop="leaseMode"
+                       label="{{ 'payment period' | translate | titlecase }}"
+                       [styleColumn]="{'max-width': '100px'}">
+        <ng-template #tpl
+                     let-commodity="item">
+          {{ leaseMode(commodity.leaseMode) }}
+        </ng-template>
+      </in-table-column>
+
+      <!--------------- 時間 --------------->
+      <in-table-column class="text-truncate mx-1"
+                       prop="timeUnit"
+                       label="{{ 'time' | translate | titlecase }}"
+                       [styleColumn]="{'max-width': '120px'}">
+        <ng-template #tpl
+                     let-commodity="item">
+          <ng-container *ngIf="mode === 'edit' && !code">
+            <input type="number"
+                   class="form-control text-right"
+                   [(ngModel)]="commodity.timeUnit"
+                   (ngModelChange)="passCommodityList()"
+                   [min]="1">
+          </ng-container>
+          <ng-container *ngIf="!(mode === 'edit' && !code)">
+            {{ commodity.timeUnit }}
+          </ng-container>
+        </ng-template>
+      </in-table-column>
+
+      <!--------------- 數量 --------------->
+      <in-table-column class="text-truncate mx-1"
+                       prop="purchaseQuantity"
+                       label="{{ 'quantity' | translate | titlecase }}"
+                       [styleColumn]="{'max-width': '120px'}">
+        <ng-template #tpl
+                     let-commodity="item">
+          <ng-container *ngIf="mode === 'edit' && !code">
+            <input type="number"
+                   class="form-control text-right"
+                   required
+                   [(ngModel)]="commodity.purchaseQuantity"
+                   (ngModelChange)="passCommodityList()"
+                   [min]="commodity.maxQuantity ? 1 : 0"
+                   [max]="commodity.maxQuantity ?? null"
+                   (keyup)="quantityValidate(commodity, $event)"
+                   (blur)="quantityValidate(commodity, $event)">
+            <span class="text-danger text-sm"
+                  *ngIf="checkQuantity(commodity)">
+              {{ 'already reached max qty' | translate | titlecase }}
+            </span>
+          </ng-container>
+          <ng-container *ngIf="!(mode === 'edit' && !code)">
+            {{ commodity.purchaseQuantity }}
+          </ng-container>
+        </ng-template>
+      </in-table-column>
+
+      <!--------------- 計價單位 --------------->
+      <in-table-column class="text-truncate mx-1"
+                       prop="unit"
+                       label="{{ 'billing unit' | translate | titlecase }}"
+                       [styleColumn]="{'max-width': '100px'}">
+      </in-table-column>
+
+      <!--------------- 販售價格 --------------->
+      <in-table-column class="text-truncate mx-1"
+                       prop="sellingPrice"
+                       label="{{ 'selling price' | translate | titlecase }}"
+                       [style]="{'text-align': 'center'}">
+        <ng-template #tpl
+                     let-commodity="item">
+          $ {{ commodity.sellingPrice ?? 0 }}
+        </ng-template>
+      </in-table-column>
+
+      <!--------------- 付款方式 --------------->
+      <!-- <in-table-column class="text-truncate mx-1"
+                       prop="paymentMethod"
+                       label="{{ 'payment way' | translate | titlecase }}"
+                       [styleColumn]="{'max-width': '150px'}">
+        <ng-template #tpl
+                     let-commodity="item">
+          <select class="form-control"
+                  [(ngModel)]="commodity.paymentMethod"
+                  (ngModelChange)="passCommodityList()"
+                  [disabled]="this.mode === 'prev' || this.mode === 'view'">
+            <option *ngFor="let item of paymentMethodList"
+                    [value]="item.value">{{ item.name | translate }}</option>
+          </select>
+        </ng-template>
+      </in-table-column> -->
+
+      <!--------------- 動作 --------------->
+      <in-table-column class="text-truncate mx-1"
+                       prop="productSku"
+                       label="{{ 'action' | translate | titlecase }}"
+                       [style]="{'text-align': 'center'}"
+                       *ngIf="mode==='edit'">
+        <ng-template #tpl
+                     let-commodity="item">
+          <i class="fa-solid fa-trash-can btn-fontawesome text-danger"
+             (click)="deleteCommodity(commodity.productId)"></i>
+        </ng-template>
+      </in-table-column>
+
+    </in-table>
+  </div>
+</div>
+
+<!----------------- 金額總計 ------------------>
+<div *ngIf="commodityList.length && !ui.isLoading">
+  <div *ngIf="code" class="d-flex justify-content-end mb-3">
+    <div>{{ 'transaction code' | translate | titlecase }}: </div>
+    <div class="text-primary text-right"
+         [style]="{'width': '150px'}">{{ code }}</div>
+  </div>
+  <div class="d-flex justify-content-end mb-3">
+    <div>{{ 'order price' | translate | titlecase }}: </div>
+    <div class="text-primary text-right"
+         [style]="{'width': '150px'}">$ {{ orderPrice | number }}</div>
+  </div>
+  <div class="d-flex justify-content-end mb-3">
+    <div>{{ 'business tax' | translate | titlecase }}: </div>
+    <div class="text-primary text-right"
+         [style]="{'width': '150px'}">$ {{ orderTax | number }}</div>
+  </div>
+  <div class="d-flex justify-content-end mb-3">
+    <div>{{ 'total' | translate | titlecase }}: </div>
+    <div class="text-primary text-right"
+         [style]="{'width': '150px'}">$ {{ orderTotal | number }}</div>
+  </div>
+  <!-- <div class="text-danger text-right"
+       *ngIf="mode === 'prev'">
+    <i class="far fas fa-exclamation-circle fa-sm"></i>
+    {{ 'sales will contact you after order' | translate | titlecase }}
+  </div> -->
+</div>

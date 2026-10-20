@@ -1,0 +1,697 @@
+<div class="pb-6">
+  <tabset class="custom-tabs"
+          *ngIf="mode === 'edit'">
+    <tab heading="{{ 'general setting' | translate | titlecase }}"
+         [active]="tabType === TabType.general"
+         (selectTab)="tabType = TabType.general"></tab>
+    <tab heading="{{ 'password setting' | translate | titlecase }}"
+         [active]="tabType === TabType.password"
+         (selectTab)="tabType = TabType.password"
+         *ngIf="ui.isPersonalPage && userType === 'SI'"></tab>
+    <tab heading="{{ 'authorization' | translate | titlecase }}"
+         [active]="tabType === TabType.auth"
+         (selectTab)="tabType = TabType.auth"></tab>
+    <!-- <tab heading="{{ 'transaction code' | translate | titlecase }}"
+         [active]="tabType === TabType.code"
+         (selectTab)="tabType = TabType.code"
+         *ngIf="ui.isPersonalPage"></tab> -->
+  </tabset>
+  <div class="border-top-0"
+       [ngClass]="{'card': mode === 'add'}">
+    <div class="card-header bg-primary text-white"
+         *ngIf="mode === 'add'">
+      <h5 class="mb-0">{{ 'add user' | translate | titlecase }}</h5>
+    </div>
+
+    <!-- =============== 一般設定 =============== -->
+    <div *ngIf="tabType === TabType.general"
+         class="card">
+      <form [formGroup]="userForm"
+            class="card-body">
+        <div class="form-row">
+
+          <!------------ 電子信箱 ------------>
+          <div class="col-12 col-sm-4 mb-3">
+            <label for="email"
+                   class="required">{{ 'email' | translate | titlecase }}</label>
+            <input type="text"
+                   class="form-control"
+                   id="email"
+                   formControlName="email"
+                   (blur)="checkUserExist()">
+          </div>
+
+          <!------------- 角色 -------------->
+          <div class="col-12 col-sm-4 mb-3"
+               *ngIf="mode === 'add'">
+            <label for="roleId"
+                   class="required">{{ 'role' | translate | titlecase }}</label>
+            <angular2-multiselect [data]="roleDDL"
+                                  [(ngModel)]="selectRoles"
+                                  [ngModelOptions]="{standalone: true}"
+                                  [settings]="selectSettings"
+                                  [ngClass]="{'multiselect-disabled':
+                                              ui.isUserLoading || !userF['email'].value || !iamPermission['iam-v1.iam-query']}"
+                                  (onClose)="onClose()">
+            </angular2-multiselect>
+          </div>
+
+          <!------------- 公司 -------------->
+          <div class="col-12 col-sm-4 mb-3"
+               *ngIf="mode === 'edit'">
+            <label for="companyId">{{ 'company' | translate | titlecase }}</label>
+            <div class="btn-group btn-block custom-ngx-dropdown"
+                 dropdown>
+              <input id="button-animated"
+                     dropdownToggle
+                     formControlName="company"
+                     class="form-control dropdown-toggle d-flex justify-content-between align-items-center"
+                     aria-controls="dropdown-animated"
+                     type="text"
+                     (change)="onCompanyChange($event)">
+              <ul id="dropdown-animated"
+                  *dropdownMenu
+                  class="dropdown-menu w-100"
+                  role="menu"
+                  aria-labelledby="button-animated">
+                <li role="menuitem"
+                    class="custom-ngx-dropdown-option pointer"
+                    *ngFor="let opt of companyDDL"
+                    [ngClass]="{'selected': opt.fullCh === selectedCompany}"
+                    (click)="onCompanySelect(opt)">
+                  <div class="py-2"
+                       [ngClass]="{'pl-2': opt.fullCh === selectedCompany, 'pl-4': opt.fullCh !== selectedCompany}">
+                    <i class="fa-solid far fa-check text-primary"
+                       *ngIf="opt.fullCh === selectedCompany"></i>
+                    <span class="pl-2">{{ opt.fullCh }}</span>
+                  </div>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <!------------ 帳戶類型 ------------>
+          <div class="col-12 col-sm-4 mb-3">
+            <label for="userType">{{ 'account type' | translate | titlecase }}
+              <span class="pl-1"
+                    *ngIf="ui.isUserExist">
+                <i class="fas fa-info-circle fa-xs"
+                   popover="{{ 'cannot change account type due to exist email' | translate | titlecase }}"
+                   triggers="mouseenter:mouseleave"></i></span>
+            </label>
+            <select class="form-control"
+                    id="userType"
+                    formControlName="userType">
+              <option *ngFor="let opt of userTypeDDL"
+                      [value]="opt.id">{{ opt.name | translate }}</option>
+            </select>
+          </div>
+          <!-- 如果有新增或編輯權限，但沒有選單權限，提醒開啟 -->
+          <div class="col-12"
+               *ngIf="!userPermission['user-v1.checkEmailExists']"
+               class="text-xs text-danger py-1 px-2">
+            <i class="fa-solid fa-circle-exclamation"></i>
+            {{ 'please enable related permission first' | translate | titlecase }}
+          </div>
+        </div>
+
+        <div class="form-row"
+             *ngIf="mode === 'edit'">
+
+          <!------------ 員工編號 ------------>
+          <div class="col-12 col-sm-4 mb-3">
+            <label for="employeeId">{{ 'staff id' | translate | titlecase }}</label>
+            <input type="text"
+                   class="form-control"
+                   id="employeeId"
+                   formControlName="employeeId"
+                   placeholder="{{ 'please input'| translate | titlecase }}">
+          </div>
+
+          <!------------- 部門 -------------->
+          <div class="col-12 col-sm-4 mb-3">
+            <label for="department"
+                   [ngClass]="{'required': ui.isPersonalPage }">{{ 'department' | translate | titlecase }}</label>
+            <input type="text"
+                   class="form-control"
+                   id="department"
+                   formControlName="department"
+                   placeholder="{{ 'please input'| translate | titlecase }}">
+          </div>
+
+          <!------------- 職稱 -------------->
+          <div class="col-12 col-sm-4 mb-3">
+            <label for="job">{{ 'job title' | translate | titlecase }}</label>
+            <select class="form-control"
+                    id="job"
+                    formControlName="job">
+              <option *ngFor="let opt of jobDDL"
+                      [value]="opt.id">{{ opt.name | translate }}</option>
+            </select>
+          </div>
+
+          <!------------ 中文姓名 ------------>
+          <div class="col-12 col-sm-4 mb-3">
+            <label for="name">{{ 'chinese name' | translate | titlecase }}</label>
+            <input type="text"
+                   class="form-control"
+                   id="name"
+                   formControlName="name"
+                   placeholder="{{ 'please input'| translate | titlecase }}">
+          </div>
+
+          <!------------ 英文姓名 ------------>
+          <div class="col-12 col-sm-4 mb-3">
+            <label for="englishName">{{ 'english name' | translate | titlecase }}</label>
+            <input type="text"
+                   class="form-control"
+                   id="englishName"
+                   formControlName="englishName"
+                   placeholder="{{ 'please input'| translate | titlecase }}">
+          </div>
+
+          <!------------- 暱稱 -------------->
+          <div class="col-12 col-sm-4 mb-3">
+            <label for="nickName">{{ 'nickname' | translate | titlecase }}</label>
+            <input type="text"
+                   class="form-control"
+                   id="nickName"
+                   formControlName="nickName"
+                   placeholder="{{ 'please input'| translate | titlecase }}">
+          </div>
+
+          <!------------ 聯絡人電話 ------------>
+          <div class="col-12 col-sm-4 mb-3">
+            <label for="telephone"
+                   [ngClass]="{'required': ui.isPersonalPage }">
+              {{ 'contact phone' | translate | titlecase }} + {{ 'contact extension' | translate | titlecase }}
+            </label>
+            <div class="d-flex">
+              <input type="text"
+                     class="form-control mr-2"
+                     id="telephone"
+                     formControlName="telephone"
+                     placeholder="{{ 'please input'| translate | titlecase }}">
+              <input type="text"
+                     class="form-control"
+                     style="width: 40%"
+                     id="extension"
+                     formControlName="extension"
+                     placeholder="{{ 'please input'| translate | titlecase }}">
+            </div>
+          </div>
+
+          <!------------ 聯絡人手機 ------------>
+          <div class="col-12 col-sm-4 mb-3">
+            <label for="mobilePhone">{{ 'contact mobile' | translate | titlecase }}</label>
+            <input type="text"
+                   class="form-control"
+                   id="mobilePhone"
+                   formControlName="mobilePhone"
+                   placeholder="{{ 'please input'| translate | titlecase }}">
+          </div>
+
+          <!------------ 狀態 ------------>
+          <div class="col-12 col-sm-4 mb-3">
+            <label for="enabled">{{ 'status' | translate | titlecase }}</label>
+            <div class="custom-control custom-switch custom-switch-success custom-switch-form">
+              <input class="custom-control-input"
+                     type="checkbox"
+                     id="enabled"
+                     formControlName="enabled"
+                     #enabled>
+              <label class="custom-control-label"
+                     for="enabled">
+                {{ (enabled.checked ? 'valid' : 'invalid') | translate | titlecase}}
+              </label>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- =============== 密碼設定 =============== -->
+    <div *ngIf="tabType === TabType.password"
+         class="card">
+      <form [formGroup]="passwordForm"
+            class="card-body">
+        <div class="form-row">
+          <div class="col-12 col-sm-4 mb-3">
+            <label for="newPassword"
+                   class="required">{{ 'change password' | translate | titlecase }}</label>
+            <input type="password"
+                   class="form-control"
+                   id="newPassword"
+                   formControlName="newPassword">
+            <div class="invalid-feedback"
+                 [ngClass]="{'d-inline-block': f['newPassword'].touched && f['newPassword'].invalid}">
+              <div *ngIf="f['newPassword']?.errors?.['required']">{{ 'input is required' | translate: { input : 'change password'| translate } }}</div>
+            </div>
+          </div>
+          <div class="col-12 col-sm-4 mb-3">
+            <label for="confirmPassword"
+                   class="required">{{ 'confirm password' | translate | titlecase }}</label>
+            <input type="password"
+                   class="form-control"
+                   id="confirmPassword"
+                   formControlName="confirmPassword">
+            <div class="invalid-feedback"
+                 [ngClass]="{'d-inline-block':f['confirmPassword'].touched && f['confirmPassword'].invalid}">
+              <div *ngIf="f['confirmPassword']?.errors?.['required']">{{ 'input is required' | translate: { input : 'confirm password'| translate } }}</div>
+              <div *ngIf="f['confirmPassword']?.errors?.['confirmedValidator']">{{ 'password and confirm password must be match' | translate | titlecase }}</div>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- =============== 角色權限 =============== -->
+    <div *ngIf="tabType === TabType.auth">
+      <!---------------------- inTable ---------------------->
+      <div class="card mb-4">
+        <div class="card-body"
+             style="max-height: 400px; overflow-y: auto;">
+          <!-- <in-table class="table table-hover"
+                    [data]="roleList"
+                    [listViewClass]="'d-none d-md-block'"
+                    [cardViewClass]="'d-block d-md-none'"
+                    [listHeaderClass]="'thead-light'"
+                    [isLoading]="ui.isUserLoading"
+                    [enableHorizontalScroll]="true"
+                    [shownodata]="true"
+                    [config]="inTableConfig"
+                    [inTableTranslate]="{
+                      'no data found': 'no data found' | translate | titlecase,
+                      'items per page': 'items per page' | translate | titlecase}"
+                    (colWidthResized)="util.syncInTableColWidths(authTable, 'intable-user-role-table', true)"
+                    (afterViewInit)="util.syncInTableColWidths(authTable, 'intable-user-role-table', false)"
+                    #authTable>
+
+            <in-table-column label="#"
+                             class="font-weight-bold"
+                             [styleColumn]="{'max-width': '100px'}">
+              <ng-template #tpl
+                           let-index="rowIndex"
+                           let-xxx>
+                {{ ( pageConfig.currentPage -1 ) * pageConfig.itemsPerPage + index + 1 }}
+              </ng-template>
+            </in-table-column>
+
+            <in-table-column class="text-truncate mx-1"
+                             prop="brand"
+                             label="{{ 'brand' | translate | titlecase }}"
+                             sortKey="brand">
+              <ng-template #tpl
+                           let-item="item">
+                {{ item.brand.name }}
+              </ng-template>
+            </in-table-column>
+
+            <in-table-column class="text-truncate mx-1"
+                             prop="identityType"
+                             label="{{ 'identity type' | translate | titlecase }}"
+                             sortKey="identityType">
+              <ng-template #tpl
+                           let-item="item">
+                {{ item.identityType.toLocaleLowerCase() | translate | titlecase }}
+              </ng-template>
+            </in-table-column>
+
+            <in-table-column class="text-truncate mx-1"
+                             prop="company"
+                             label="{{ 'company' | translate | titlecase }}"
+                             sortKey="company">
+              <ng-template #tpl
+                           let-item="item">
+                <div [popover]="item.company.fullCh"
+                     placement="top left"
+                     triggers="mouseenter:mouseleave">
+                  {{ item.company.nickCh }}</div>
+              </ng-template>
+            </in-table-column>
+
+            <in-table-column class="text-truncate mx-1"
+                             prop="name"
+                             label="{{ 'role' | translate | titlecase }}"
+                             sortKey="name">
+            </in-table-column>
+
+            <in-table-column class="text-truncate mx-1 text-center"
+                             label="{{ 'action' | translate | titlecase }}"
+                             [styleColumn]="{'max-width': '80px'}">
+              <ng-template #tplLabel>
+                {{ 'action' | translate | titlecase }}
+                <i class="fas fa-info-circle fa-xs"
+                   popover="{{ 'delete user role note' | translate | titlecase }}"
+                   placement="bottom"
+                   triggers="mouseenter:mouseleave"
+                   (mouseenter)="$event.stopPropagation(); $event.preventDefault()"
+                   (mouseleave)="$event.stopPropagation(); $event.preventDefault()"></i>
+              </ng-template>
+              <ng-template #tpl
+                           let-item="item">
+                <i class="fa-solid fa-trash-can btn-fontawesome text-danger"
+                   (click)="deleteRole(item.id)"></i>
+              </ng-template>
+            </in-table-column>
+
+            <in-table-column class="text-truncate mx-1 text-center"
+                             label="{{ 'view role detail' | translate | titlecase }}"
+                             [styleColumn]="{'max-width': '120px'}">
+              <ng-template #tpl
+                           let-item="item">
+                <div *ngIf="item.id === roleId"
+                     style=" height: 31px; ">
+                  <i class="fa-solid fa-check"></i>
+                </div>
+                <button type="button"
+                        class="btn btn-primary btn-sm"
+                        *ngIf="item.id !== roleId"
+                        (click)="roleId = item.id; role = item; changeRoleView(item.id)">
+                  <i class="fa-solid fa-repeat mr-1"></i>
+                  {{ 'change role' | translate | titlecase }}
+                </button>
+              </ng-template>
+            </in-table-column>
+          </in-table> -->
+
+          <table class="table table-hover border">
+            <thead>
+              <tr class="sticky-header sticky-header-color">
+                <th scope="col"
+                    class="px-3">#</th>
+                <th scope="col">{{ 'origin' | translate | titlecase }}</th>
+                <th scope="col">{{ 'identity type' | translate | titlecase }}</th>
+                <th scope="col">{{ 'company' | translate | titlecase }}</th>
+                <th scope="col">{{ 'role' | translate | titlecase }}</th>
+                <th scope="col"
+                    class="text-center"
+                    style="width: 80px;"
+                    *appPermissionIf="'user-v1.deleteIam'"> {{ 'action' | translate | titlecase }}
+                  <i class="fas fa-info-circle fa-xs"
+                     popover="{{ 'delete user role note' | translate | titlecase }}"
+                     placement="bottom"
+                     triggers="mouseenter:mouseleave"
+                     (mouseenter)="$event.stopPropagation(); $event.preventDefault()"
+                     (mouseleave)="$event.stopPropagation(); $event.preventDefault()"></i>
+                </th>
+                <th scope="col"
+                    class="text-center"
+                    style="width: 125px;"
+                    *appPermissionIf="'user-v1.changeRole'">
+                  {{ 'view role detail' | translate | titlecase }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of roleList, let i = index"
+                  [ngClass]="{'table-info': item.id === roleId}">
+                <th scope="row"
+                    class="px-3">{{ ( pageConfig.currentPage -1 ) * pageConfig.itemsPerPage + i + 1 }}</th>
+                <td>{{ item.brand?.name }}</td>
+                <td>{{ item.identityType.toLocaleLowerCase() | translate | titlecase }}</td>
+                <td>
+                  <div [popover]="item.company.fullCh"
+                       placement="top left"
+                       triggers="mouseenter:mouseleave">
+                    {{ item.company.fullCh }}</div>
+                </td>
+                <td>{{ item.name }}</td>
+                <td class="text-center"
+                    style="width: 80px;"
+                    *appPermissionIf="'user-v1.deleteIam'">
+                  <i class="fa-solid fa-trash-can btn-fontawesome text-danger"
+                     [ngClass]="{'disabled': this.currentUser?.roleId === item.id}"
+                     (click)="deleteRole(item.id)"></i>
+                </td>
+                <td class="text-center"
+                    style="width: 125px;">
+                  <div *ngIf="item.id === roleId"
+                       style=" height: 31px; ">
+                    <i class="fa-solid fa-check"></i>
+                  </div>
+                  <button type="button"
+                          class="btn btn-primary btn-sm"
+                          *ngIf="item.id !== roleId"
+                          (click)="roleId = item.id; role = item; changeRoleView(item.id)"
+                          [disabled]="ui.isRoleChanging">
+                    <i class="fa-solid fa-repeat mr-1"></i>
+                    {{ 'change role' | translate | titlecase }}
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <hr class="my-5">
+      <h3 class="mb-3"
+          [ngClass]="{'d-flex justify-content-between': !ui.isPersonalPage}">
+        {{ 'roles authorization detail' | translate : {roleName: (role.name)} }}
+        <a type="button"
+           class="btn btn-sm btn-success"
+           target="_blank"
+           [routerLink]="['/', 'main', 'system', 'authorization', roleId]"
+           *ngIf="!ui.isPersonalPage && iamPermission['iam-v1.one']">
+          {{ 'to authorization setting link' | translate | titlecase }}
+        </a>
+      </h3>
+
+      <!---------------------- 權限設定 ---------------------->
+      <div class="card card-body shadow-sm mb-4"
+           *appPermissionIf="['iam-v1.rule-group', 'iam-v1.rule-get']">
+        <h4 class="pb-2 mb-3 border-bottom border-primary h4-border-bottom">
+          {{ 'permission' | translate | titlecase }}</h4>
+        <tabset class="custom-tabs">
+          <tab *ngFor="let item of ruleGroupTabs, let i = index"
+               heading="{{ ('ruleGroup_' + item) | translate | titlecase }}"
+               [active]="ruleGroupName === item"
+               (selectTab)="ruleGroupName = item; ruleGroupIndex = i">
+          </tab>
+        </tabset>
+        <div class="card border-top-0">
+          <div *ngIf="ui.isRoleRuleLoading"
+               class="d-flex justify-content-center align-items-center py-3">
+            <i class="fas fa-spin fa-spinner fa-xl my-3"></i>
+          </div>
+          <div *ngIf="!ui.isRoleRuleLoading"
+               class="pb-0">
+            <div class="p-3 border-bottom">
+              {{ 'permission' | translate | titlecase }}
+            </div>
+            <div class="p-3"
+                 *ngIf="ruleGroupListShow[ruleGroupIndex]?.group?.length">
+              <mat-chip-list>
+                <mat-chip class="mat-custom-color-blue"
+                          *ngFor="let group of ruleGroupListShow[ruleGroupIndex].group">
+                  <!-- (removed)="remove(chip.id, ruleSelectedList)" -->
+                  {{ group.description }}
+                </mat-chip>
+              </mat-chip-list>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!---------------------- 資料設定 ---------------------->
+      <div class="card card-body shadow-sm"
+           *appPermissionIf="['iam-v1.cloudIdInfo-query']">
+        <h4 class="pb-2 mb-3 border-bottom border-primary h4-border-bottom">
+          {{ 'data for role' | translate | titlecase }} ( {{ cloudIdName }} )</h4>
+        <div class="card mb-4">
+          <div class="card-header bg-primary text-white h5">
+            {{ 'cloudId setting card head' | translate | titlecase }}
+          </div>
+          <div class="card-body">
+            <in-table class="table table-hover"
+                      [data]="cloudIdsTableList"
+                      [listViewClass]="'d-none d-md-block'"
+                      [cardViewClass]="'d-block d-md-none'"
+                      [listHeaderClass]="'thead-light sticky-header-color'"
+                      [pageConfig]="tableConfigCloudId.pageConfig"
+                      (pageChanged)="pageChange($event)"
+                      [sortBy]="tableConfigCloudId.sortBy"
+                      (sort)="sort($event)"
+                      [isLoading]="ui.isRoleCidLoading"
+                      [enableHorizontalScroll]="true"
+                      [shownodata]="true"
+                      [config]="inTableConfig"
+                      [inTableTranslate]="{
+                        'no data found': 'no data found' | translate | titlecase,
+                        'items per page': 'items per page' | translate | titlecase}"
+                      (colWidthResized)="util.syncInTableColWidths(cloudIdTable, 'intable-rule-cloudId', true)"
+                      (afterViewInit)="util.syncInTableColWidths(cloudIdTable, 'intable-rule-cloudId', false)"
+                      #cloudIdTable>
+
+              <!----------- # ----------->
+              <in-table-column label="#"
+                               class="font-weight-bold">
+                <ng-template #tpl
+                             let-index="rowIndex"
+                             let-xxx>
+                  {{ ( tableConfigCloudId.pageConfig.currentPage -1 ) * tableConfigCloudId.pageConfig.itemsPerPage + index + 1 }}
+                </ng-template>
+              </in-table-column>
+
+              <!--------------- payerId --------------->
+              <in-table-column class="text-truncate mx-1"
+                               prop="payerId"
+                               label="Payer Id ({{ 'alias' | translate | titlecase }})"
+                               sortKey="payerId">
+              </in-table-column>
+
+              <!--------------- company --------------->
+              <in-table-column class="text-truncate mx-1"
+                               prop="company"
+                               label="{{ 'customer company' | translate | titlecase }}"
+                               sortKey="company">
+                <ng-template #tpl
+                             let-item="item">
+                  <span [popover]="item.company?.fullCh ?? ''"
+                        placement="top left"
+                        triggers="mouseenter:mouseleave">
+                    {{ item.company?.fullCh ?? '' }}</span>
+                </ng-template>
+              </in-table-column>
+
+              <!--------------- cloudId ---------------->
+              <in-table-column class="text-truncate mx-1"
+                               prop="cloudIds"
+                               label="{{ cloudIdName }} ({{ 'alias' | translate | titlecase }})"
+                               sortKey="cloudIds">
+                <ng-template #tpl
+                             let-item="item"
+                             let-i>
+                  <ng-container *ngIf="item.cloudIds.length; else all">
+                    <ng-container *ngFor="let cid of item.cloudIds; let i = index">
+                      {{ cid }}<span *ngIf="i < item.cloudIds.length - 1">, </span>
+                    </ng-container>
+                  </ng-container>
+                  <ng-template #all>All Cloud Ids</ng-template>
+                </ng-template>
+              </in-table-column>
+
+              <!--------------- 時間 --------------->
+              <in-table-column class="text-truncate mx-1"
+                               prop="time"
+                               label="{{ 'update date' | translate | titlecase }}"
+                               sortKey="time">
+                <ng-template #tpl
+                             let-item="item">
+                  {{ item.time | date:'yyyy-MM-dd' }}
+                </ng-template>
+              </in-table-column>
+            </in-table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 交易代碼 -->
+    <div *ngIf="tabType === TabType.code"
+         class="card mb-4">
+      <div class="card-body">
+        <div class="form-row">
+          <div class="col-12 mb-2"><b>{{ 'add transaction code' | translate | titlecase }}</b></div>
+          <div class="col-3">
+            <input [(ngModel)]="inputCode"
+                   class="form-control">
+          </div>
+          <div>
+            <button class="btn btn-success mb-3"
+                    (click)="addCode()"
+                    [disabled]="ui.isTransactionLoading">
+              <i class="fas"
+                 [ngClass]="{'fa-spin fa-spinner': ui.isTransactionLoading}">
+                {{ 'add transaction' | translate | titlecase }}
+              </i>
+            </button>
+          </div>
+        </div>
+        <in-table [data]="promoCodeList"
+                  [listViewClass]="'d-none d-md-block'"
+                  [cardViewClass]="'d-block d-md-none'"
+                  [listHeaderClass]="'sticky-header-color'"
+                  [pageConfig]="pageConfig"
+                  (pageChanged)="pageChange($event)"
+                  [isLoading]="ui.isTransactionLoading"
+                  [enableHorizontalScroll]="true"
+                  [shownodata]="promoCodeList.length === 0 ? true : false"
+                  [config]="inTableConfig"
+                  [inTableTranslate]="{
+                    'no data found': 'no data found' | translate | titlecase,
+                    'items per page': 'items per page' | translate | titlecase
+                  }">
+
+          <!----------- # ----------->
+          <in-table-column label="#"
+                            class="font-weight-bold">
+            <ng-template #tpl
+                          let-index="rowIndex"
+                          let-xxx>
+              {{ ( tableConfigCloudId.pageConfig.currentPage -1 ) * tableConfigCloudId.pageConfig.itemsPerPage + index + 1 }}
+            </ng-template>
+          </in-table-column>
+
+          <!--------------- 交易代碼 --------------->
+          <in-table-column class="text-truncate mx-1"
+                           prop="transactionCode"
+                           label="{{ 'transaction code' | translate | titlecase }}">
+          </in-table-column>
+
+          <!--------------- 專案名稱 --------------->
+          <in-table-column class="text-truncate mx-1"
+                           prop="projectName"
+                           label="{{ 'project name' | translate | titlecase }}">
+          </in-table-column>
+
+          <!--------------- 動作 --------------->
+          <in-table-column class="text-truncate mx-1"
+                           prop="operation"
+                           label="{{ 'operation' | translate | titlecase }}"
+                           [style]="{'text-align': 'center'}">
+            <ng-template #tpl
+                        let-code="item">
+                        <!-- [routerLink]="'../../commodity-shop/cart'" -->
+              <a class="btn btn-lg mr-2"
+                        [routerLink]="'../../commodity-shop/cart'"
+                        [state]="{ route: { internal: true }, code: code.transactionCode }">
+                  <i class="fa-solid fa-cart-shopping text-primary"></i>
+              </a>
+            </ng-template>
+          </in-table-column>
+        </in-table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- =================== Footer =================== -->
+<div class="action-button-footer"
+     *ngIf="tabType !== TabType.auth">
+  <button class="btn btn-secondary mr-2"
+          type="button"
+          (click)="cancel()">
+    {{ 'cancel' | translate | titlecase }}</button>
+  <button class="btn btn-primary"
+          type="button"
+          (click)="save()"
+          [disabled]="saveBtnDisable()">
+    <!-- [disabled]="tabType === TabType.general ? (ui.isUserLoading || userForm.invalid) : (ui.isPwLoading || passwordForm.invalid)" -->
+    {{ 'save' | translate | titlecase }}
+    <i class="fas fa-spin fa-spinner mr-1"
+       *ngIf="tabType === TabType.general ? ui.isUserLoading : ui.isPwLoading"></i>
+  </button>
+</div>
+
+<!-- =================== 角色權限 detail 視窗 =================== -->
+<!-- <ng-template #roleModal>
+  <app-users-role-detail [roleId]="roleId"
+                         (updatedResult)="updatedResult($event)"
+                         (closeModal)="closeModal()">
+  </app-users-role-detail>
+</ng-template> -->
+
+
+<router-outlet></router-outlet>

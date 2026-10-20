@@ -1,0 +1,68 @@
+.pb-6 {
+  padding-bottom: 6rem !important;
+}
+
+.custom-image {
+  width: 100%;
+  height: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px dashed #b7b7b7;
+  position: relative;
+  &.upload {
+    &.product > i {
+      color: #b7b7b7;
+    }
+    &.banner {
+      background-repeat: no-repeat;
+      background-color: #b7b7b7;
+      background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%"><line x1="0" y1="0" x2="100%" y2="100%" stroke="white" stroke-width="2"/><line x1="0" y1="100%" x2="100%" y2="0" stroke="white" stroke-width="2"/></svg>');
+      > i {
+        visibility: hidden;
+      }
+    }
+  }
+  &.preview {
+    img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: cover;
+      flex: 1;
+    }
+  }
+}
+
+.btn-cancel {
+  position: absolute;
+  right: 5px;
+  top: 5px;
+  color: rgba(0, 0, 0, 0.3);
+  &.btn-modal {
+    right: 10px;
+    top: 10px;
+    z-index: 1;
+  }
+}
+
+.companyChip {
+  &.companyChip-isDealer {
+    background-color: #18a0fb !important;
+  }
+  &.companyChip-nonDealer {
+    background-color: #fb1893 !important;
+  }
+  &.mat-standard-chip:hover::after {
+    opacity: 0 !important;
+  }
+}
+// @media (min-width: 768px) {
+//   .col-md-cus-5 {
+//     flex: 0 0 20% !important;
+//     max-width: 20% !important;
+//   }
+// }
+
+// select.form-control:disabled {
+//   color: rgb(204, 204, 204);
+// }

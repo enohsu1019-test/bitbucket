@@ -1,0 +1,37 @@
+.input-group {
+  border: 1px solid #ced4da;
+  border-radius: 5px;
+}
+.input-group-text {
+  background-color: transparent;
+  border: 0;
+  color: #999;
+}
+
+
+
+.card-header {
+  background-color: transparent;
+}
+.card-listbar {
+  background-color: #F9F9F9;
+  padding: 5px 10px;
+  margin-bottom: 5px;
+}
+
+table {
+  width: 100%;
+}
+
+.mat-typography {
+  font: 400 14px/100px Roboto, "Helvetica Neue", sans-serif;
+  letter-spacing: normal;
+}
+
+.truncate-cell {
+  max-width: 150px; /* feel free to include any other value */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+

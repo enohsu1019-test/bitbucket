@@ -1,0 +1,129 @@
+<div>
+  <div class="bg-white p-3">
+    <h4>{{payerId}}</h4>
+    <div style="height: 1px;"
+         class="bg-primary mb-3"></div>
+    <div class="mb-3">
+      <ng-container>
+        <in-table [data]="intableDatas"
+                  [listViewClass]="'d-none d-md-block'"
+                  [cardViewClass]="'d-block d-md-none'"
+                  [isLoading]="ui.isLoading"
+                  [inTableTranslate]="{
+                    'no data found': 'No Data Found' | translate,
+                    'items per page': 'items per page' | translate
+                  }">
+
+          <!-- # -->
+          <in-table-column label="#">
+            <ng-template #tpl
+                         let-index="rowIndex">
+              {{ ( pageConfig.currentPage -1 ) * pageConfig.itemsPerPage + index + 1 }}
+            </ng-template>
+          </in-table-column>
+          <!-- Access Key Id  -->
+          <in-table-column class="text-truncate ml-1 mr-1"
+                           prop="key"
+                           label="{{ 'accessKeyId' | translate }}">
+            <ng-template #tpl
+                         let-payerIdData="item"
+                         let-i>
+              <input class="form-control"
+                     type="password"
+                     (change)="handleDataChange()"
+                     [(ngModel)]="payerIdData.key">
+            </ng-template>
+          </in-table-column>
+          <!-- Secret Access Key -->
+          <in-table-column class="text-truncate ml-1 mr-1"
+                           prop="value"
+                           label="{{ 'Secret Access Key' | translate }}">
+            <ng-template #tpl
+                         let-payerIdData="item"
+                         let-i>
+              <input class="form-control"
+                     type="password"
+                     (change)="handleDataChange()"
+                     [(ngModel)]="payerIdData.value">
+            </ng-template>
+          </in-table-column>
+          <!-- IAM UserName -->
+          <in-table-column class="text-truncate ml-1 mr-1"
+                           prop="value"
+                           label="{{ 'IAM UserName' | translate }}">
+            <ng-template #tpl
+                         let-payerIdData="item"
+                         let-i>
+              <input class="form-control"
+                     type="password"
+                     (change)="handleDataChange()"
+                     [(ngModel)]="payerIdData.accountId">
+            </ng-template>
+          </in-table-column>
+          <!-- Table Name -->
+          <in-table-column class="text-truncate ml-1 mr-1"
+                           prop="value"
+                           label="{{ 'Table Name' | translate }}">
+            <ng-template #tpl
+                         let-payerIdData="item"
+                         let-i>
+              <input class="form-control"
+                     type="password"
+                     (change)="handleDataChange()"
+                     [(ngModel)]="payerIdData.dataSource">
+            </ng-template>
+          </in-table-column>
+
+          <!-- aws欄位 -->
+          <!-- Schema Name -->
+          <in-table-column *ngIf="brandName === 'AWS'"
+                           class="text-truncate ml-1 mr-1"
+                           prop="schemaName"
+                           label="{{ 'Schema Name' | translate }}">
+            <ng-template #tpl
+                         let-payerIdData="item"
+                         let-i>
+              <input class="form-control"
+                     type="password"
+                     [(ngModel)]="payerIdData.schemaName"
+                     (change)="handleDataChange()">
+            </ng-template>
+          </in-table-column>
+          <!-- check box -->
+          <in-table-column *ngIf="brandName === 'AWS'"
+                           class="text-truncate ml-1 mr-1"
+                           prop="openCostExportAPI"
+                           label="{{ 'is enabled cost explorer api' | translate }}">
+            <ng-template #tpl
+                         let-payerIdData="item"
+                         let-i>
+              <input type="checkbox"
+                     [(ngModel)]="payerIdData.openCostExportAPI"
+                     (change)="handleDataChange()">
+            </ng-template>
+          </in-table-column>
+          <!-- aws欄位 END -->
+
+        </in-table>
+      </ng-container>
+    </div>
+
+    <div class="card-footer z-index "
+         style="background-color: rgb(241 239 239);">
+      <div class="text-right">
+        <a class="btn btn-light btn-lg"
+           [routerLink]="'../../'"
+           class="btn btn-secondary">
+          <i class="fas fa-undo"></i>
+          {{'back to last page' | translate}}
+        </a>
+        <button class="btn btn-primary m-2"
+                *ngIf="isDataChange"
+                (click)="addPayerIdSet()">
+          <i class="fas fa-save"></i>
+          {{ 'save' | translate | titlecase }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

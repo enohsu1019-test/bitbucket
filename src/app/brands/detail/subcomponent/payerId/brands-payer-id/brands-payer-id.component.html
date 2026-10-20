@@ -1,0 +1,79 @@
+<div class="card" style="border-top: none">
+  <div class="card-body">
+    <div style="max-height: 500px; overflow-y: auto;">
+      <in-table [data]="intableDatas" [listViewClass]="'d-none d-md-block'" [cardViewClass]="'d-block d-md-none'"
+        [listHeaderClass]="'bg-primary text-white'" [config]="intableConfig" [inTableTranslate]="{
+                        'no data found': 'No Data Found' | translate,
+                        'items per page': 'items per page' | translate
+                      }" #inTable>
+        <in-table-column classValue="text-wrap" label="#">
+          <ng-template #tpl let-index="rowIndex" let-xxx let-brand="item">
+            {{ index + 1}}
+            <div style="height:25px;" *ngIf="!brand.value"></div>
+          </ng-template>
+
+        </in-table-column>
+        <!-- Payer ID -->
+        <in-table-column class="text-truncate ml-1 mr-1 " prop="payerId" label="{{ 'Payer ID' | translate }}">
+          <ng-template #tpl let-payerId="item" let-i>
+            <input class="form-control" type="text" [(ngModel)]="payerId.payerId" (change)="handleRequired()" [disabled]="!editStatus">
+            <div style="height:25px;" *ngIf="!payerId.customerId || !payerId.payerId || !payerId.nickName">
+              <p class="help-block text-danger" *ngIf="!payerId.payerId">{{ 'this field is required' | translate }}</p>
+            </div>
+          </ng-template>
+        </in-table-column>
+
+        <!-- 所屬公司 -->
+        <in-table-column class="text-truncate ml-1 mr-1 " prop="customerId"
+          label="{{ 'belong to company' | translate }}">
+          <ng-template #tpl let-payerId="item" let-i>
+            <select class="custom-select pt-2" [(ngModel)]="payerId.customerId" (change)="handleRequired()" [disabled]="!editStatus">
+              <option [ngValue]="''" disabled>請選擇</option>
+              <option *ngFor="let customer of companyDropdown" [ngValue]="customer.customerId">{{
+                customer.name | translate}}</option>
+            </select>
+            <div style="height:25px;" *ngIf="!payerId.customerId || !payerId.payerId || !payerId.nickName">
+              <p class="help-block text-danger" *ngIf="!payerId.customerId">{{ 'this field is required' | translate }}
+              </p>
+            </div>
+          </ng-template>
+        </in-table-column>
+
+
+        <!-- 別名 -->
+        <in-table-column class="text-truncate ml-1 mr-1 " prop="nickName" label="{{ 'alias' | translate }}">
+          <ng-template #tpl let-payerId="item" let-i>
+            <input class="form-control" type="text" [(ngModel)]="payerId.nickName" (change)="handleRequired()" [disabled]="!editStatus">
+
+            <div style="height:25px;" *ngIf="!payerId.customerId || !payerId.payerId || !payerId.nickName">
+              <p class="help-block text-danger" *ngIf="!payerId.nickName">{{ 'this field is required' | translate }}</p>
+            </div>
+          </ng-template>
+        </in-table-column>
+
+
+        <!-- 動作-->
+        <in-table-column class="text-truncate ml-1 mr-1 " label="{{ 'operation' | translate }}">
+          <ng-template #tpl let-payerId="item" let-i>
+
+            <div class="d-flex align-items-center m-0" style="height: 50px;" >
+              <div class="btn btn-sm text-primary" [routerLink]="'payer/' + payerId.payerId">
+                <i class="fas fa-edit fa-lg"></i>
+              </div>
+              <i class="fas fa-lg fa-times text-danger" [popover]="'刪除'" triggers="mouseenter:mouseleave"
+                placement="top" style="cursor: pointer;" (click)="deletePayerId(i)"></i>
+            </div>
+            <div style="height:25px;" *ngIf="!payerId.customerId || !payerId.payerId || !payerId.nickName">
+            </div>
+          </ng-template>
+        </in-table-column>
+
+      </in-table>
+    </div>
+
+    <button class="btn btn-success col-12 " (click)="addPayerId()" [disabled]="!editStatus">
+      <i class="fas fa-plus"></i> {{ 'add payer ID' | translate | titlecase}}
+    </button>
+
+  </div>
+</div>

@@ -1,0 +1,41 @@
+.bg {
+    padding: 0;
+    margin: 0;
+    height: 100%;
+    background-image: linear-gradient(135deg, #ffffff 0%, #e2e7ff 40%, #93a2b9 90%, #ffffff 100%);
+}
+.login {
+    position: absolute;
+    text-align: center;
+    width: 100%;
+    top: 40%;
+    background-color: #333;
+    -webkit-background-clip: text;
+    -moz-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    text-shadow: rgba(255,255,255,0.6) 0px 4px 4px;
+}
+.login h2 {
+    font-size: 40px;
+    font-weight: 700;
+}
+.login span {
+    display: inline-block; 
+}
+.login .wave-icon {
+    animation: wave 1.5s ease-in-out infinite;
+    animation-delay: calc(.1s*var(--wave-item));
+    color: #717171;
+}
+@keyframes wave {
+    0% {
+        transform: translateY(0);
+    }
+    20% {
+        transform: translateY(-15px);
+    }
+    50%, 100%{
+        transform: translateY(8px);
+    }
+}

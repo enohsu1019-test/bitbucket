@@ -1,0 +1,97 @@
+<div class="card">
+  <div class="card-body">
+    <div class="row">
+      <div class="col-3">
+        <input class="form-control p-2"
+               [(ngModel)]="inputClassification">
+        <!-- 名稱重複 -->
+        <div style="height:25px;" *ngIf="checkName(-1)">
+          <p class="help-block text-danger">{{ 'category name exist' | translate }}</p>
+        </div>
+      </div>
+      <div>
+        <button class="btn btn-success p-2 mb-3"
+                (click)="editClassification('add')"
+                [disabled]="loading || inputClassification === '' || checkName(-1)">
+          <i class="fas fa-plus"></i> {{ 'add' | translate | titlecase }}
+        </button>
+      </div>
+      <div class="col-12">
+        <in-table [data]="classificationList"
+                  [listViewClass]="'d-none d-md-block'"
+                  [cardViewClass]="'d-block d-md-none'"
+                  [listHeaderClass]="'sticky-header-color'"
+                  [pageConfig]="pageConfig"
+                  (pageChanged)="pageChange($event)"
+                  [isLoading]="loading"
+                  [shownodata]="classificationList.length === 0 ? true : false"
+                  [config]="inTableConfig"
+                  [inTableTranslate]="{
+                    'no data found': 'no data found' | translate | titlecase,
+                    'items per page': 'items per page' | translate | titlecase
+                  }">
+
+          <!-- 編號 -->
+          <in-table-column [style]="{'flex': '1'}"
+                           label="#">
+            <ng-template #tpl
+                         let-index="rowIndex"
+                         let-xxx>
+              {{ xxx + 1 }}
+            </ng-template>
+          </in-table-column>
+
+          <!-- 商品分類 -->
+          <in-table-column [style]="{'flex': '2'}"
+                           class="text-truncate ml-1 mr-1"
+                           prop="classification"
+                           label="{{ 'goods category' | translate | titlecase }}">
+            <ng-template #tpl
+                         let-classification="item"
+                         let-i>
+              <ng-container>
+                <input class="form-control"
+                       type="text"
+                       [(ngModel)]="classification.name">
+                <!-- 名稱重複 -->
+                <div style="height:25px;" *ngIf="checkName(i)">
+                  <p class="help-block text-danger">{{ 'category name exist' | translate }}</p>
+                </div>
+              </ng-container>
+            </ng-template>
+          </in-table-column>
+
+          <!-- 動作 -->
+          <in-table-column class="text-truncate mx-1"
+                           label="{{ 'action' | translate | titlecase }}">
+            <ng-template #tpl
+                         let-classification="item"
+                         let-i>
+              <i class="fas fa-save text-primary btn-fontawesome m-3"
+                 [ngClass]="{'item-check': checkName(i)}"
+                 (click)="checkName(i) ? null : editClassification('edit', i)">
+              </i>
+              <i class="fa-solid fa-trash-can btn-fontawesome text-danger"
+                 (click)="confirm(confirmTmp, i)">
+              </i>
+            </ng-template>
+          </in-table-column>
+        </in-table>
+
+      </div>
+    </div> <!-- row end -->
+  </div> <!-- card-body -->
+</div> <!-- card -->
+
+<!-- 確認執行跳窗 -->
+<ng-template #confirmTmp>
+  <div class="mb-2" style="text-align: center">
+    <h5 class="m-3">{{ 'delete really' | translate }}</h5>
+    <button type="button"
+            class="btn btn-lg btn-primary mr-2 mb-2"
+            (click)="editClassification('delete')">{{ 'yes' | translate }}</button>
+    <button type="button"
+            class="btn btn-lg btn-dark mr-2 mb-2"
+            (click)="hidemodal()">{{ 'no' | translate }}</button>
+  </div>
+</ng-template>

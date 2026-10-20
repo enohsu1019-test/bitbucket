@@ -1,0 +1,894 @@
+<div class="pb-5">
+  <div class="card-body">
+    <form [formGroup]="filterForm">
+      <div class="card mb-3">
+        <div class="card-header bg-primary text-white pt-3 pb-3" style="height: 56px">{{ 'company information' | translate | titlecase }}</div>
+        <div class="card-body">
+          <div class="form-group row">
+
+            <!-- 中文全名 -->
+            <div class="col-12 col-sm-6 col-md-4 col-lg-4">
+              <label class="col-form-label">{{ 'fullCh' | translate }}</label>
+              <i class="fas fa-spin fa-spinner"
+                 *ngIf="loading"></i>
+              <div *ngIf="this.customer.customerId" class="form-control border-bottom-color tooLong">{{ this.customer.customerName.fullCh }}</div>
+              <div *ngIf="this.add && !this.customer.customerId" class="btn-sm btn-group dropdown-width input-width">
+                <input class="form-control"
+                       autocomplete="off"
+                       [(ngModel)]="inputSearch.fullCh"
+                       [ngModelOptions]="{standalone: true}"
+                       [typeahead]="searchFullCh"
+                       typeaheadOptionField="customerName.fullCh"
+                       [typeaheadItemTemplate]="typeaheadItemTemplate"
+                       [typeaheadWaitMs]="1500"
+                       (typeaheadLoading)="typeaheadLoading($event)"
+                       [typeaheadAsync]="true"
+                       [typeaheadMinLength]="2"
+                       [typeaheadSelectFirstItem]="false"
+                       (typeaheadOnSelect)="selectCustomer($event)">
+              </div>
+            </div>
+
+            <!-- 中文簡稱 -->
+            <div class="col-12 col-sm-6 col-md-4 col-lg-4">
+              <label class="col-form-label">{{ 'nickCh' | translate }}</label>
+              <i class="fas fa-spin fa-spinner"
+                 *ngIf="loading"></i>
+              <div *ngIf="this.customer.customerId" class="form-control border-bottom-color">{{ this.customer.customerName.nickCh }}</div>
+              <div *ngIf="this.add && !this.customer.customerId" class="btn-sm btn-group dropdown-width input-width">
+                <input class="form-control"
+                       autocomplete="off"
+                       [(ngModel)]="inputSearch.nickCh"
+                       [ngModelOptions]="{standalone: true}"
+                       [typeahead]="searchNickCh"
+                       typeaheadOptionField="customerName.nickCh"
+                       [typeaheadItemTemplate]="typeaheadItemTemplate"
+                       [typeaheadWaitMs]="1500"
+                       (typeaheadLoading)="typeaheadLoading($event)"
+                       [typeaheadAsync]="true"
+                       [typeaheadMinLength]="2"
+                       [typeaheadSelectFirstItem]="false"
+                       (typeaheadOnSelect)="selectCustomer($event)">
+              </div>
+            </div>
+
+            <!-- 英文全名 -->
+            <div class="col-12 col-sm-6 col-md-4 col-lg-4">
+              <label class="col-form-label">{{ 'fullEn' | translate }}</label>
+              <i class="fas fa-spin fa-spinner"
+                 *ngIf="loading"></i>
+              <div *ngIf="this.customer.customerId" class="form-control border-bottom-color tooLong">{{ this.customer.customerName.fullEn }}</div>
+              <div *ngIf="this.add && !this.customer.customerId" class="btn-sm btn-group dropdown-width input-width">
+                <input class="form-control"
+                       autocomplete="off"
+                       [(ngModel)]="inputSearch.fullEn"
+                       [ngModelOptions]="{standalone: true}"
+                       [typeahead]="searchFullEn"
+                       typeaheadOptionField="customerName.fullEn"
+                       [typeaheadItemTemplate]="typeaheadItemTemplate"
+                       [typeaheadWaitMs]="1500"
+                       (typeaheadLoading)="typeaheadLoading($event)"
+                       [typeaheadAsync]="true"
+                       [typeaheadMinLength]="2"
+                       [typeaheadSelectFirstItem]="false"
+                       (typeaheadOnSelect)="selectCustomer($event)">
+              </div>
+            </div>
+
+            <!-- 英文簡稱 -->
+            <div class="col-12 col-sm-6 col-md-4 col-lg-4">
+              <label class="col-form-label">{{ 'nickEn' | translate }}</label>
+              <i class="fas fa-spin fa-spinner"
+                 *ngIf="loading"></i>
+              <div *ngIf="this.customer.customerId" class="form-control border-bottom-color">{{ this.customer.customerName.nickEn }}</div>
+              <div *ngIf="this.add && !this.customer.customerId" class="btn-sm btn-group dropdown-width input-width">
+                <input class="form-control"
+                       autocomplete="off"
+                       [(ngModel)]="inputSearch.nickEn"
+                       [ngModelOptions]="{standalone: true}"
+                       [typeahead]="searchNickEn"
+                       typeaheadOptionField="customerName.nickEn"
+                       [typeaheadItemTemplate]="typeaheadItemTemplate"
+                       [typeaheadWaitMs]="1500"
+                       (typeaheadLoading)="typeaheadLoading($event)"
+                       [typeaheadAsync]="true"
+                       [typeaheadMinLength]="2"
+                       [typeaheadSelectFirstItem]="false"
+                       (typeaheadOnSelect)="selectCustomer($event)">
+              </div>
+            </div>
+
+            <!-- 統一編號 -->
+            <div class="col-12 col-sm-6 col-md-4 col-lg-4">
+              <label class="col-form-label">{{ 'serialNo' | translate }}</label>
+              <i class="fas fa-spin fa-spinner"
+                 *ngIf="loading"></i>
+              <div *ngIf="this.customer.customerId" class="form-control border-bottom-color">{{ this.customer.serialNumber }}</div>
+              <div *ngIf="this.add && !this.customer.customerId" class="btn-sm btn-group dropdown-width input-width">
+                <input class="form-control"
+                       autocomplete="off"
+                       [(ngModel)]="inputSearch.serial"
+                       [ngModelOptions]="{standalone: true}"
+                       [typeahead]="searchSerialNumber"
+                       typeaheadOptionField="customerName.serialNumber"
+                       [typeaheadItemTemplate]="typeaheadItemTemplate"
+                       [typeaheadWaitMs]="1500"
+                       (typeaheadLoading)="typeaheadLoading($event)"
+                       [typeaheadAsync]="true"
+                       [typeaheadMinLength]="2"
+                       [typeaheadSelectFirstItem]="false"
+                       (typeaheadOnSelect)="selectCustomer($event)">
+              </div>
+            </div>
+
+            <!-- 產業別 -->
+            <div class="col-12 col-sm-6 col-md-4 col-lg-4">
+              <label class="col-form-label">{{ 'industry' | translate }}</label>
+              <div class="form-control border-bottom-color">{{ this.industryToString(this.customer.industryType) }}</div>
+            </div>
+
+            <!-- 身份別 -->
+            <div class="col-12 col-sm-6 col-md-4 col-lg-4">
+              <label class="col-form-label">{{ 'identity' | translate | titlecase }}</label>
+              <div class="form-control border-bottom-color">{{ this.identityList }}</div>
+            </div>
+
+            <!-- 資料不完整 -->
+            <div *ngIf="customerIncomplete" class="col-12 col-sm-6 col-md-8 col-lg-4">
+              <label class="col-form-label">&nbsp;</label>
+              <div class="text-danger">{{ 'data incomplete' | translate }}</div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- 地址電話 | 聯絡人 | 原廠合約編號 ｜ Cloud ID | 出帳資訊 -->
+      <div class="card p-3">
+        <div>
+          <h3 class="m-1">{{ 'customer information' | translate }}</h3>
+        </div>
+        <hr class="bg-primary">
+        <div class="mb-2">
+          <tabset class="custom-tabs">
+            <!-- 地址電話 -->
+            <tab heading="{{ 'address phone' | translate }}"
+                 (selectTab)="onSelect($event)">
+              <div class="card">
+                <ng-container>
+                  <in-table [data]="customer.location"
+                            [listViewClass]="'d-none d-md-block'"
+                            [cardViewClass]="'d-block d-md-none'"
+                            [listHeaderClass]="'sticky-header-color'"
+                            [isLoading]="loading"
+                            [shownodata]="customer.location.length === 0 ? true : false"
+                            [config]="inTableConfig.default"
+                            [inTableTranslate]="{
+                              'no data found': 'no data found' | translate | titlecase,
+                              'items per page': 'items per page' | translate | titlecase
+                            }">
+
+                    <!-- 編號 -->
+                    <in-table-column [styleColumn]="{'max-width': '3%'}"
+                                     label="#">
+                      <ng-template #tpl
+                                   let-index="rowIndex"
+                                   let-i>
+                        {{ i + 1 }}
+                      </ng-template>
+                    </in-table-column>
+
+                    <!-- 公司名稱 -->
+                    <in-table-column [styleColumn]="{'max-width': '15%'}"
+                                     class="text-truncate ml-1 mr-1"
+                                     prop="name"
+                                     label="{{ 'company' | translate }}">
+                    </in-table-column>
+
+                    <!-- 電話 -->
+                    <in-table-column [styleColumn]="{'max-width': '16%'}"
+                                     class="text-truncate ml-1 mr-1"
+                                     prop="telNo"
+                                     label="{{ 'phone' | translate }}">
+                    </in-table-column>
+
+                    <!-- 傳真 -->
+                    <in-table-column [styleColumn]="{'max-width': '16%'}"
+                                     class="text-truncate ml-1 mr-1"
+                                     prop="faxNo"
+                                     label="{{ 'fax' | translate }}">
+                    </in-table-column>
+
+                    <!-- 地址 -->
+                    <in-table-column [styleColumn]="{'max-width': '36%'}"
+                                     class="text-truncate ml-1 mr-1 tooLong"
+                                     prop="address"
+                                     label="{{ 'address' | translate }}">
+                      <ng-template #tpl
+                                   let-address="item"
+                                   let-i>
+                        <ng-container>
+                          <span [popover]="address.address"
+                                triggers="mouseenter:mouseleave"
+                                placement="top">
+                            {{ address.address }}
+                          </span>
+                        </ng-container>
+                      </ng-template>
+                    </in-table-column>
+
+                    <!-- 最後編輯者 -->
+                    <in-table-column [styleColumn]="{'max-width': '14%'}"
+                                     class="text-truncate ml-1 mr-1"
+                                     prop="modifiedUserName"
+                                     label="{{ 'modified user' | translate }}">
+                    </in-table-column>
+
+                  </in-table>
+                </ng-container>
+
+              </div>
+            </tab>
+
+            <!-- 聯絡人 -->
+            <tab heading="{{ 'contact' | translate }}"
+                 (selectTab)="onSelect($event)">
+              <div class="card">
+                <ng-container>
+                  <!-- 新增 -->
+                  <div *ngIf="!this.add"
+                       class="col-12">
+                    <button *appPermissionIf="['customer-v1.addContact']"
+                            type="submit"
+                            class="btn btn-sm btn-success mr-2 mb-2 mt-2"
+                            [disabled]="contactLoading"
+                            (click)="openContactModal(showCRMContact)">
+                      <i class="fas"
+                         [ngClass]="{'fa-plus': !contactLoading,'fa-spin fa-spinner': contactLoading}"></i>
+                        {{ 'add contact' | translate }}
+                    </button>
+                  </div>
+                  <in-table [data]="contactList"
+                            [listViewClass]="'d-none d-md-block'"
+                            [cardViewClass]="'d-block d-md-none'"
+                            [listHeaderClass]="'sticky-header-color'"
+                            [pageConfig]="pageConfig.contact"
+                            (pageChanged)="pageChange($event, 'contact')"
+                            [isLoading]="contactLoading"
+                            [shownodata]="contactList.length === 0 ? true : false"
+                            [config]="inTableConfig.default"
+                            [inTableTranslate]="{
+                              'no data found': 'no data found' | translate | titlecase,
+                              'items per page': 'items per page' | translate | titlecase
+                            }">
+
+                    <!-- 編號 -->
+                    <in-table-column [style]="{'flex': '1'}"
+                                     label="#">
+                      <ng-template #tpl
+                                   let-index="rowIndex"
+                                   let-xxx>
+                        {{ ( pageConfig.contact.currentPage -1 ) * pageConfig.contact.itemsPerPage + index + 1 }}
+                      </ng-template>
+                    </in-table-column>
+
+                    <!-- 職務類別 -->
+                    <in-table-column [style]="{'flex': '2'}"
+                                     class="text-truncate ml-1 mr-1"
+                                     prop="type"
+                                     label="{{ 'job type' | translate }}">
+                      <ng-template #tpl
+                                   let-contact="item"
+                                   let-i>
+                        {{ jobToString(contact.type) }}
+                      </ng-template>
+                    </in-table-column>
+
+                    <!-- 中文姓名 -->
+                    <in-table-column [style]="{'flex': '2'}"
+                                     class="text-truncate ml-1 mr-1"
+                                     prop="chineseName"
+                                     label="{{ 'chinese name' | translate }}">
+                    </in-table-column>
+
+                    <!-- 英文姓名 -->
+                    <in-table-column [style]="{'flex': '2'}"
+                                     class="text-truncate ml-1 mr-1"
+                                     prop="englishName"
+                                     label="{{ 'english name' | translate }}">
+                    </in-table-column>
+
+                    <!-- 公司電話＋分機 -->
+                    <in-table-column [style]="{'flex': '2'}"
+                                     class="text-truncate ml-1 mr-1"
+                                     prop="phone"
+                                     label="{{ 'company phone number' | translate }}">
+                      <ng-template #tpl
+                                   let-customer="item"
+                                   let-i>
+                        <span *ngIf="customer.phone.number">{{ customer.phone.number }}</span><br>
+                        <span *ngIf="customer.phone.etc">Ext.{{ customer.phone.etc }}</span>
+                      </ng-template>
+                    </in-table-column>
+
+                    <!-- 手機號碼 -->
+                    <in-table-column [style]="{'flex': '2'}"
+                                     class="text-truncate ml-1 mr-1"
+                                     prop="mobile"
+                                     label="{{ 'mobile phone number' | translate }}">
+                      <ng-template #tpl
+                                   let-mobile="item"
+                                   let-i>
+                        <ng-container>
+                          <span [popover]="mobile.mobile"
+                                triggers="mouseenter:mouseleave"
+                                placement="top">
+                            {{ mobile.mobile }}
+                          </span>
+                        </ng-container>
+                      </ng-template>
+                    </in-table-column>
+
+                    <!-- 電子郵件 -->
+                    <in-table-column [style]="{'flex': '2'}"
+                                     class="text-truncate ml-1 mr-1"
+                                     prop="email"
+                                     label="{{ 'email' | translate }}">
+                      <ng-template #tpl
+                                   let-email="item"
+                                   let-i>
+                        <ng-container>
+                          <span [popover]="email.email"
+                                triggers="mouseenter:mouseleave"
+                                placement="top">
+                            {{ email.email }}
+                          </span>
+                        </ng-container>
+                      </ng-template>
+                    </in-table-column>
+
+                    <!-- 動作 -->
+                    <!-- <in-table-column [style]="{'flex': '2'}"
+                                     class="text-truncate mx-1"
+                                     label="{{ 'action' | translate | titlecase }}">
+                      <ng-template #tpl
+                                   let-contact="item"
+                                   let-i>
+                        <i class="fa-solid fa-trash-can btn-sm btn-fontawesome text-danger"
+                           (click)="openCheckModal(delContactWarn, contact.contactId)"></i>
+                      </ng-template>
+                    </in-table-column> -->
+
+                  </in-table>
+                </ng-container>
+
+              </div>
+            </tab>
+
+            <!-- 原廠合約編號 -->
+            <tab heading="{{ 'contractNo' | translate }}"
+                 (selectTab)="onSelect($event)">
+              <div class="card">
+                <ng-container>
+                  <in-table [data]="customer.cloudRelation"
+                            [listViewClass]="'d-none d-md-block'"
+                            [cardViewClass]="'d-block d-md-none'"
+                            [listHeaderClass]="'sticky-header-color'"
+                            [isLoading]="loading"
+                            [shownodata]="customer.cloudRelation.length === 0 ? true : false"
+                            [config]="inTableConfig.default"
+                            [inTableTranslate]="{
+                              'no data found': 'no data found' | translate | titlecase,
+                              'items per page': 'items per page' | translate | titlecase
+                            }">
+
+                    <!-- 編號 -->
+                    <in-table-column [styleColumn]="{'max-width': '10%'}"
+                                     label="#">
+                      <ng-template #tpl
+                                   let-index="rowIndex"
+                                   let-i>
+                        {{ i + 1 }}
+                      </ng-template>
+                    </in-table-column>
+
+                    <!-- 原廠 -->
+                    <in-table-column [styleColumn]="{'max-width': '22%'}"
+                                     class="text-truncate ml-1 mr-1"
+                                     prop="brandName"
+                                     label="{{ 'vendor' | translate }}">
+                    </in-table-column>
+
+                    <!-- Cloud ID -->
+                    <in-table-column [styleColumn]="{'max-width': '22%'}"
+                                     class="text-truncate ml-1 mr-1"
+                                     prop="cloudId"
+                                     label="{{ 'cloudId' | translate }}">
+                      <ng-template #tpl
+                                   let-cloudId="item"
+                                   let-i>
+                        <ng-container>
+                          <span [popover]="cloudId.cloudId"
+                                triggers="mouseenter:mouseleave"
+                                placement="top">
+                            {{ cloudId.cloudId }}
+                          </span>
+                        </ng-container>
+                      </ng-template>
+                    </in-table-column>
+
+                    <!-- 原廠合約編號 -->
+                    <in-table-column [styleColumn]="{'max-width': '23%'}"
+                                     class="text-truncate ml-1 mr-1"
+                                     prop="contractIds"
+                                     label="{{ 'contractNo' | translate }}">
+                      <ng-template #tpl
+                                   let-contractIds="item"
+                                   let-i>
+                        <ng-container>
+                          <span [popover]="contractIds.contractIds"
+                                triggers="mouseenter:mouseleave"
+                                placement="top">
+                            {{ contractIds.contractIds }}
+                          </span>
+                        </ng-container>
+                      </ng-template>
+                    </in-table-column>
+
+                    <!-- 訂單編號 -->
+                    <in-table-column [styleColumn]="{'max-width': '23%'}"
+                                     class="text-truncate ml-1 mr-1"
+                                     prop="orderId"
+                                     label="{{ 'order number' | translate }}">
+                      <ng-template #tpl
+                                   let-orderId="item"
+                                   let-i>
+                        <ng-container>
+                          <span [popover]="orderId.orderId"
+                                triggers="mouseenter:mouseleave"
+                                placement="top"
+                                [routerLink]="'../../orders/' + orderId.orderId.substring(0 ,orderId.orderId.length - 2)"
+                                style="cursor: pointer">
+                            {{ orderId.orderId }}
+                          </span>
+                        </ng-container>
+                      </ng-template>
+                    </in-table-column>
+
+                  </in-table>
+                </ng-container>
+              </div>
+            </tab>
+
+            <!-- Cloud ID -->
+            <tab heading="{{ cloudIdName }}"
+                 (selectTab)="onSelect($event)">
+              <div class="card">
+                <ng-container>
+                  <in-table [data]="customer.cloudRelation"
+                            [listViewClass]="'d-none d-md-block'"
+                            [cardViewClass]="'d-block d-md-none'"
+                            [listHeaderClass]="'sticky-header-color'"
+                            [isLoading]="loading"
+                            [shownodata]="customer.cloudRelation.length === 0 ? true : false"
+                            [config]="inTableConfig.default"
+                            [inTableTranslate]="{
+                              'no data found': 'no data found' | translate | titlecase,
+                              'items per page': 'items per page' | translate | titlecase
+                            }">
+
+                    <!-- 編號 -->
+                    <in-table-column [styleColumn]="{'max-width': '10%'}"
+                                     label="#">
+                      <ng-template #tpl
+                                   let-index="rowIndex"
+                                   let-i>
+                        {{ i + 1 }}
+                      </ng-template>
+                    </in-table-column>
+
+                    <!-- 原廠 -->
+                    <in-table-column [styleColumn]="{'max-width': '22%'}"
+                                     class="text-truncate ml-1 mr-1"
+                                     prop="brandName"
+                                     label="{{ 'vendor' | translate }}">
+                    </in-table-column>
+
+                    <!-- Payer ID -->
+                    <in-table-column [styleColumn]="{'max-width': '22%'}"
+                                     class="text-truncate ml-1 mr-1"
+                                     prop="payerId"
+                                     label="{{ 'payerId' | translate }}">
+                      <ng-template #tpl
+                                   let-payerId="item"
+                                   let-i>
+                        <ng-container>
+                          <span [popover]="payerId.payerId"
+                                triggers="mouseenter:mouseleave"
+                                placement="top">
+                            {{ payerId.payerId }}
+                          </span>
+                        </ng-container>
+                      </ng-template>
+                    </in-table-column>
+
+                    <!-- Cloud ID -->
+                    <in-table-column [styleColumn]="{'max-width': '23%'}"
+                                     class="text-truncate ml-1 mr-1"
+                                     prop="cloudId"
+                                     label="{{ cloudIdName }}">
+                      <ng-template #tpl
+                                   let-cloudId="item"
+                                   let-i>
+                        <ng-container>
+                          <span [popover]="cloudId.cloudId"
+                                triggers="mouseenter:mouseleave"
+                                placement="top">
+                            {{ cloudId.cloudId }}
+                          </span>
+                        </ng-container>
+                      </ng-template>
+                    </in-table-column>
+
+                    <!-- 訂單編號 -->
+                    <in-table-column [styleColumn]="{'max-width': '23%'}"
+                                     class="text-truncate ml-1 mr-1"
+                                     prop="orderId"
+                                     label="{{ 'order number' | translate }}">
+                      <ng-template #tpl
+                                   let-orderId="item"
+                                   let-i>
+                        <ng-container>
+                          <span [popover]="orderId.orderId"
+                                triggers="mouseenter:mouseleave"
+                                placement="top"
+                                [routerLink]="'../../orders/' + orderId.orderId.substring(0 ,orderId.orderId.length - 2)"
+                                style="cursor: pointer">
+                            {{ orderId.orderId }}
+                          </span>
+                        </ng-container>
+                      </ng-template>
+                    </in-table-column>
+
+                  </in-table>
+                </ng-container>
+              </div>
+            </tab>
+
+            <!-- 出帳資訊 -->
+            <tab heading="{{ 'billing information' | translate | titlecase }}" *ngIf="!add"
+                 (selectTab)="onSelect($event)">
+              <div *appPermissionIf="['customer-v1.postDescription']" class="card">
+                <div class="m-3 mt-2 mb-2">
+                  <label class="col-form-label">{{ 'upload info' | translate }}</label>
+                  <div>
+                    <input #info type="file" value="" (change)="selectPicture('info', $event)"
+                           [accept]="dataFileAccepts">
+                    <button type="button"
+                            class="btn btn-sm btn-success mr-2 mb-2"
+                            (click)="upPicture('info')"
+                            [disabled]="loading || upFile.info.length === 0">
+                      <i class="fas"
+                         [ngClass]="{'fa-plus': !loading,'fa-spin fa-spinner': loading}"></i>
+                      {{ 'upload img' | translate }}
+                    </button>
+                  </div>
+                  <div *ngIf="upFile.info">{{ upFile.info.name }}<i class="fa-solid fa-trash-can text-danger pl-1" (click)="cancleFile('info')"></i></div>
+                  <hr>
+                  <button *ngIf="showUpFile.info.length !== 0"
+                          type="button"
+                          class="btn btn-sm btn-light mr-2 mb-2"
+                          (click)="previewUpload('info')">
+                    <i class="fas fa-fw fa-eye fa-lg text-primary"></i>
+                    <span *ngIf="!toggleUploadFile.info">{{ 'show upload' | translate }}</span>
+                    <span *ngIf="toggleUploadFile.info">{{ 'hide upload' | translate }}</span>
+                      {{ showUpFile.info[0].filename }}
+                  </button>
+                  <i *ngIf="showUpFile.info.length !== 0" class="fa-solid fa-trash-can text-danger pl-1" (click)="delFile('info')"></i>
+                  <span *ngIf="toggleUploadFile.info"><img [src]="infoImgDataUrl$|async" class="w-100"></span>
+                </div>
+              </div>
+
+              <div *appPermissionIf="['customer-v1.postLogo']" class="card">
+                <div class="m-3 mt-2 mb-2">
+                  <label class="col-form-label">{{ 'upload logo' | translate }}</label>
+                  <div>
+                    <input #logo type="file" value="" (change)="selectPicture('logo', $event)"
+                           [accept]="dataFileAccepts">
+                    <button type="button"
+                            class="btn btn-sm btn-success mr-2 mb-2"
+                            (click)="upPicture('logo')"
+                            [disabled]="loading || upFile.logo.length === 0">
+                      <i class="fas"
+                         [ngClass]="{'fa-plus': !loading,'fa-spin fa-spinner': loading}"></i>
+                        {{ 'upload img' | translate }}
+                    </button>
+                  </div>
+                  <div *ngIf="upFile.logo">{{ upFile.logo.name }}<i class="fa-solid fa-trash-can text-danger pl-1" (click)="cancleFile('logo')"></i></div>
+                  <hr>
+                  <button *ngIf="showUpFile.logo.length !== 0"
+                          type="button"
+                          class="btn btn-sm btn-light mr-2 mb-2"
+                          (click)="previewUpload('logo')">
+                    <i class="fas fa-fw fa-eye fa-lg text-primary"></i>
+                    <span *ngIf="!toggleUploadFile.logo">{{ 'show upload' | translate }}</span>
+                    <span *ngIf="toggleUploadFile.logo">{{ 'hide upload' | translate }}</span>
+                      {{ showUpFile.logo[0].filename }}
+                  </button>
+                  <i *ngIf="showUpFile.logo.length !== 0" class="fa-solid fa-trash-can text-danger pl-1" (click)="delFile('logo')"></i>
+                  <span *ngIf="toggleUploadFile.logo"><img [src]="logoImgDataUrl$|async" class="w-100"></span>
+                </div>
+              </div>
+            </tab>
+
+            <!-- Partner ID -->
+            <tab heading="{{ 'partnerId' | translate }}"
+                 (selectTab)="onSelect($event)">
+              <div class="card">
+                <in-table [data]="partnerList"
+                          [listViewClass]="'d-none d-md-block'"
+                          [cardViewClass]="'d-block d-md-none'"
+                          [listHeaderClass]="'sticky-header-color'"
+                          [isLoading]="partnerLoading"
+                          [shownodata]="partnerList.length === 0 ? true : false"
+                          [inTableTranslate]="{
+                            'no data found': 'no data found' | translate | titlecase,
+                            'items per page': 'items per page' | translate | titlecase
+                          }">
+
+                  <!-- 編號 -->
+                  <in-table-column [style]="{'flex': '1'}"
+                                   label="#">
+                    <ng-template #tpl
+                                 let-index="rowIndex"
+                                 let-i>
+                      {{ i + 1 }}
+                    </ng-template>
+                  </in-table-column>
+
+                  <!-- partner id -->
+                  <in-table-column [style]="{'flex': '2'}"
+                                   class="text-truncate ml-1 mr-1"
+                                   prop="partnerId"
+                                   label="{{ 'partnerId' | translate }}">
+                  </in-table-column>
+
+                  <!-- 公司 -->
+                  <in-table-column [style]="{'flex': '2'}"
+                                   class="text-truncate ml-1 mr-1"
+                                   prop="company"
+                                   label="{{ 'company' | translate }}">
+                    <ng-template #tpl
+                                let-customer="item"
+                                let-i>
+                      <ng-container>
+                        {{ customer.name.fullCh }}
+                      </ng-container>
+                    </ng-template>
+                  </in-table-column>
+
+                </in-table>
+              </div>
+            </tab>
+
+          </tabset>
+        </div>
+      </div>
+
+    </form>
+  </div>
+</div>
+
+<div class="action-button-footer">
+  <!-- 同步 -->
+  <button *ngIf="!this.add"
+          type="button"
+          class="btn btn-sm btn-warning mr-2 mb-2"
+          (click)="syncCustomer(customer)"
+          [disabled]="loading">
+    <i class="fas"
+       [ngClass]="{'fa-spin fa-spinner': loading}"></i>
+    {{ "sync" | translate }}
+  </button>
+  <!-- 取消 -->
+  <button type="button"
+          class="btn btn-sm btn-dark mr-2 mb-2"
+          [routerLink]="'/main/customers'">
+    <i class="fas"
+       [ngClass]="{'fa-spin fa-spinner': loading}"></i>
+    {{ "cancel" | translate }}
+  </button>
+  <!-- 儲存(新增客戶) -->
+  <button *ngIf="this.add && !this.customerIncomplete"
+          type="button"
+          class="btn btn-sm btn-primary mr-2 mb-2"
+          (click)="addCustomer(this.customer)"
+          [disabled]="loading || !this.customer.customerId">
+    <i class="fas"
+       [ngClass]="{'fa-spin fa-spinner': contactLoading}"></i>
+    {{ "save" | translate }}
+  </button>
+  <!-- 儲存(聯絡人) -->
+  <!-- <button *ngIf="!this.add && (this.tabName === '聯絡人' || this.tabName === 'contact')"
+          type="button"
+          class="btn btn-sm btn-primary mr-2 mb-2"
+          (click)="saveCompany(customer.location)"
+          [disabled]="loading">
+    <i class="fas"
+       [ngClass]="{'fa-spin fa-spinner': contactLoading}"></i>
+    {{ "save" | translate }}
+  </button> -->
+  <!-- 跳轉至CRM -->
+  <a *ngIf="this.add && this.customerIncomplete"
+     type="button"
+     class="btn btn-sm btn-primary mr-2 mb-2"
+     href="{{ gotoCRM() }}"
+     target="_blank">
+     {{ 'goto crm' | translate }}
+  </a>
+</div>
+
+<!-- 搜尋結果 -->
+<ng-template #typeaheadItemTemplate let-model="item" let-index="index">
+  <div>
+    <span *ngIf="model.name.nickCh"> {{ model.name.nickCh }}<i style="color: red"> | </i></span>
+    <span *ngIf="model.name.fullCh">{{ model.name.fullCh }}<i style="color: red"> | </i></span>
+    <span *ngIf="model.name.nickEn">{{ model.name.nickEn }}<i style="color: red"> | </i></span>
+    <span *ngIf="model.name.fullEn">{{ model.name.fullEn }}<i style="color: red"> | </i></span>
+    <span *ngIf="model.serialNumber">{{ 'serialNo' | translate }} {{ model.serialNumber }}</span>
+  </div>
+</ng-template>
+
+<!-- 新增聯絡人 -->
+<ng-template id="CRMContact-header" #showCRMContact>
+  <div class="card mb-4">
+    <div class="card-body">
+      <label class="col-form-label">{{ 'contact' | translate }}</label>
+      <div class="form-group row">
+        <!-- 聯絡人 -->
+        <div class="col-12 col-sm-6 col-md-4 col-lg-4">
+          <input type="text"
+                 class="form-control"
+                 [(ngModel)]="inputSearch.contact"
+                 placeholder="{{ 'please enter contact name' | translate | titlecase }}">
+        </div>
+
+        <div>
+          <!-- 搜尋 -->
+          <button type="submit"
+                  class="btn btn-sm btn-primary m-1"
+                  (click)="searchCRMContact()"
+                  [disabled]="addContactLoading">
+            <i *ngIf="addContactLoading" class="fas fa-spin fa-spinner"></i>
+            {{ 'search' | translate | titlecase }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="p-2">
+    <div class="card-header bg-primary text-white">{{ 'contact list' | translate | titlecase }}</div>
+    <in-table [data]="CRMContactList"
+              [listViewClass]="'d-none d-md-block'"
+              [cardViewClass]="'d-block d-md-none'"
+              [listHeaderClass]="'sticky-header-color'"
+              [pageConfig]="pageConfig.addContact"
+              (pageChanged)="pageChange($event, 'addContact')"
+              [isLoading]="addContactLoading"
+              [shownodata]="CRMContactList.length === 0 ? true : false"
+              [config]="inTableConfig.contact"
+              [inTableTranslate]="{
+                'no data found': 'no data found' | translate | titlecase,
+                'items per page': 'items per page' | translate | titlecase
+              }">
+
+      <!-- 編號 -->
+      <in-table-column [style]="{'flex': '1'}"
+                       label="#">
+        <ng-template #tpl
+                     let-index="rowIndex"
+                     let-xxx>
+          {{ ( pageConfig.addContact.currentPage -1 ) * pageConfig.addContact.itemsPerPage + index + 1 }}
+        </ng-template>
+      </in-table-column>
+
+      <!-- 職務類別 -->
+      <in-table-column [style]="{'flex': '2'}"
+                       class="text-truncate ml-1 mr-1"
+                       prop="type"
+                       label="{{ 'job type' | translate }}">
+        <ng-template #tpl
+                     let-contact="item"
+                     let-i>
+          {{ jobToString(contact.company[0].type) }}
+        </ng-template>
+      </in-table-column>
+
+      <!-- 中文姓名 -->
+      <in-table-column [style]="{'flex': '2'}"
+                       class="text-truncate ml-1 mr-1"
+                       prop="chineseName"
+                       label="{{ 'chinese name' | translate }}">
+      </in-table-column>
+
+      <!-- 英文姓名 -->
+      <in-table-column [style]="{'flex': '2'}"
+                       class="text-truncate ml-1 mr-1"
+                       prop="englishName"
+                       label="{{ 'english name' | translate }}">
+      </in-table-column>
+
+      <!-- 公司電話＋分機 -->
+      <in-table-column [style]="{'flex': '2'}"
+                       class="text-truncate ml-1 mr-1"
+                       prop="phone"
+                       label="{{ 'company phone number' | translate }}">
+        <ng-template #tpl
+                     let-contact="item"
+                     let-i>
+          <ng-container *ngFor="let communication of contact.communications">
+            <div *ngIf="communication.type === 'TELEPHONE'">{{ communication.value.number }} <p>Ext.{{ communication.value.ext }}</p></div>
+          </ng-container>
+        </ng-template>
+      </in-table-column>
+
+      <!-- 手機號碼 -->
+      <in-table-column [style]="{'flex': '2'}"
+                       class="text-truncate ml-1 mr-1"
+                       label="{{ 'mobile phone number' | translate }}">
+        <ng-template #tpl
+                     let-contact="item"
+                     let-i>
+          <ng-container *ngFor="let communication of contact.communications">
+            <div *ngIf="communication.type === 'CELL_PHONE'">{{ communication.value.number }}</div>
+          </ng-container>
+        </ng-template>
+      </in-table-column>
+
+      <!-- 電子郵件 -->
+      <in-table-column [style]="{'flex': '2'}"
+                       class="text-truncate ml-1 mr-1"
+                       label="{{ 'email' | translate }}">
+        <ng-template #tpl
+                     let-contact="item"
+                     let-i>
+          <ng-container *ngFor="let communication of contact.communications">
+            <div *ngIf="communication.type === 'EMAIL'">{{ communication.value.mail }}</div>
+          </ng-container>
+        </ng-template>
+      </in-table-column>
+
+      <!-- 動作 -->
+      <in-table-column [style]="{'flex': '2'}"
+                       class="text-truncate ml-1 mr-1"
+                       label="{{ 'action' | translate }}">
+        <ng-template #tpl
+                     let-contact="item"
+                     let-i>
+          <button type="submit"
+                  class="btn btn-sm btn-success mr-2 mb-2 mt-2"
+                  [disabled]="contactLoading"
+                  (click)="addContact(contact)">
+              {{ 'insert' | translate }}
+          </button>
+        </ng-template>
+      </in-table-column>
+
+    </in-table>
+  </div>
+</ng-template>
+
+<!-- 刪除聯絡人 -->
+<ng-template #delContactWarn>
+  <div class="mt-3 mb-3" style="text-align: center;">
+    <h4><i class="fas fa-exclamation-triangle text-warning"></i> {{ 'delete really' | translate }}</h4>
+  </div>
+  <div class="mb-2" style="text-align: center;">
+    <button type="button"
+            class="btn btn-lg btn-primary mr-2 mb-2"
+            (click)="delContact()">{{ 'yes' | translate }}</button>
+    <button type="button"
+            class="btn btn-lg btn-dark mr-2 mb-2"
+            (click)="hidemodal()">{{ 'no' | translate }}</button>
+  </div>
+</ng-template>

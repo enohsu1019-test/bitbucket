@@ -1,0 +1,76 @@
+<app-analysis-chart [payerCloudList]="cloudList" [uniqPayerId]="uniqPayerId" [type]="'tag'"></app-analysis-chart>
+
+<div class="card md-4">
+  <div class="card-body">
+
+    <div class="form-group row">
+      <div class="col-12"><h4>{{ 'analysis tag' | translate }}</h4></div>
+      <div class="col-3">
+        <angular2-multiselect [data]="chartFilterList" [(ngModel)]="chartFilter" [ngModelOptions]="{standalone: true}"
+                              [settings]="filterConfig" (onClose)="openFilter()"
+                              (onOpen)="closeFilter()">
+        </angular2-multiselect>
+      </div>
+      <div>
+        <button class="btn btn-success mb-3"
+                (click)="addId()"
+                [disabled]="getValidator() || loading">
+          <i class="fas fa-plus"></i> {{ 'add' | translate | titlecase }}
+        </button>
+      </div>
+      <div class="col-12">
+        <in-table [data]="cloudList"
+                  [listViewClass]="'d-none d-md-block'"
+                  [cardViewClass]="'d-block d-md-none'"
+                  [listHeaderClass]="'sticky-header-color'"
+                  [isLoading]="cloudLoading"
+                  [shownodata]="cloudList.length === 0 ? true : false"
+                  [config]="inTableConfig"
+                  [inTableTranslate]="{
+                    'no data found': 'no data found' | translate | titlecase,
+                    'items per page': 'items per page' | translate | titlecase
+                  }">
+
+          <!-- 編號 -->
+          <in-table-column label="#">
+            <ng-template #tpl
+                         let-index="rowIndex"
+                         let-xxx>
+              {{ ( pageConfig.currentPage -1 ) * pageConfig.itemsPerPage + index + 1 }}
+            </ng-template>
+          </in-table-column>
+
+          <!-- Cloud ID -->
+          <in-table-column class="text-truncate ml-1 mr-1"
+                           prop="cloudId"
+                           label="{{ (currentUserValue?.role?.brand?.name === 'AWS' ? 'account id' : 'cloud id') | translate }}">
+          </in-table-column>
+
+          <!-- 動作 -->
+          <in-table-column class="text-truncate ml-1 mr-1"
+                           label="{{ 'action' | translate }}">
+            <ng-template #tpl
+                         let-contact="item"
+                         let-i>
+              <!-- 編輯 -->
+              <a class="btn btn-lg mr-2"
+                      [routerLink]="'./' + contact.cloudId"
+                      [state]="{ route: { internal: true }, payer: contact.payer}">
+                <i class="fas fa-external-link-alt"
+                   style="cursor: pointer; color: blue;"></i>
+              </a>
+              <!-- 刪除 -->
+              <a class="btn btn-sm"
+                 (click)="delId(i)">
+                <i class="fas fa-times fa-lg text-danger"></i>
+              </a>
+            </ng-template>
+          </in-table-column>
+
+        </in-table>
+    </div>
+
+    </div> <!-- form-group -->
+  </div> <!-- card-body -->
+
+</div>

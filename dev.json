@@ -1,0 +1,39 @@
+{
+  "isProduct": false,
+  "environment": "dev",
+  "namespace": "cmp",
+  "name": "web",
+  "ver": "v1",
+  "port": "80",
+  "replicate": "3",
+  "harborUrl": "harbor.sysage.com.tw",
+  "dockerUsername": "admin",
+  "dockerPasswordFilePath": "./setting/docker-secret-dev",
+  "k8sTemplateFile": "./template.yaml",
+  "k8sContextName": "dev",
+  "devName": "",
+  "image": "",
+  "k8sDeployFile": "./deploy.yaml",
+  "k8sTemplateOptions": [
+    {
+      "key": "NAME",
+      "valueBy": "devName"
+    },
+    {
+      "key": "NAMESPACE",
+      "valueBy": "namespace"
+    },
+    {
+      "key": "REPLICATE",
+      "valueBy": "replicate"
+    },
+    {
+      "key": "PORT",
+      "valueBy": "port"
+    },
+    {
+      "key": "IMAGE",
+      "valueBy": "image"
+    }
+  ]
+}

@@ -1,0 +1,144 @@
+<div *ngIf="isGuest || productPermission['product-v1.addShoppingCartDetail']">
+  <div class="pb-6">
+    <div class="my-4 bg-white shadow-sm">
+      <!-- ================ Step 1 : 購買清單 ================ -->
+      <div class="p-3"
+           [hidden]="step !== 1">
+        <!-- *ngIf="step === 1" -->
+        <div class="h4 pb-2 mb-3 border-bottom border-primary h4-border-bottom">
+          {{ 'shopping cart list' | translate | titlecase }}
+          <button *ngIf="commodityList.length !== 0"
+                  type="button"
+                  class="btn btn-sm btn-warning text-white float-right"
+                  (click)="downloadList();"
+                  [disabled]="ui.isDownload">
+            <i class="fas" [ngClass]="{'fa-spin fa-spinner': ui.isDownload, 'fa-download': !ui.isDownload}"></i>
+            {{ 'download list' | translate | titlecase }}
+          </button>
+        </div>
+
+        <app-shopping-list [mode]="'edit'"
+                           (commodityListUpdate)="commodityListUpdate($event);"
+                           (productCompanyId)="productCompanyId = $event"
+                           [code]="nav"
+                           (invalidData)="ui.isCartInvalid = $event"></app-shopping-list>
+      </div>
+
+      <!-- ================ Step 2 : 購買資訊 ================ -->
+      <div *ngIf="!isGuest"
+           class="p-3"
+           [hidden]="step !== 2">
+        <!-- *ngIf="step === 2" -->
+        <h4 class="pb-2 mb-3 border-bottom border-primary h4-border-bottom">
+          {{ 'fill shopping detail' | translate | titlecase }}</h4>
+
+        <app-shopping-detail [mode]="'edit'"
+                             [productCompanyId]="productCompanyId"
+                             (formGroupChange)="getFormValue($event)">
+          <!-- [(step)]="step"
+        [(formChecking)]="ui.isFormChecking" -->
+        </app-shopping-detail>
+      </div>
+
+      <!-- ================ Step 3 : 訂單預覽 ================ -->
+      <div *ngIf="!isGuest && step === 3">
+        <!-- [hidden]="step !== 3" -->
+        <div class="p-3 mb-4">
+          <h4 class="pb-2 mb-3 border-bottom border-primary h4-border-bottom">
+            {{ 'users shopping detail' | translate | titlecase }}</h4>
+          <app-shopping-detail [mode]="'prev'"
+                               [cartFormValue]="cartFormValue"></app-shopping-detail>
+        </div>
+
+        <div class="bg-light p-3">
+          <h4 class="pb-2 mb-3 border-bottom border-primary h4-border-bottom">
+            {{ 'shopping cart list' | translate | titlecase }}</h4>
+          <app-shopping-list [mode]="'prev'"
+                             (orderPriceUpdate)="orderPrice = $event"
+                             [code]="nav"></app-shopping-list>
+        </div>
+      </div>
+
+      <!-- ================ Step 4 : 購買完成 ================ -->
+      <div class="p-3"
+           *ngIf="step === 4 && ui.isBought">
+        <h4 class="pb-2 mb-3 border-bottom border-primary h4-border-bottom">
+          {{ 'thanks for buying' | translate | titlecase }}</h4>
+
+        <div>
+          <p>{{ 'success buying msg' | translate | titlecase }}</p>
+          <p>
+            <a [routerLink]="['/', 'main', 'commodity-shop', 'order-list']">
+              {{ 'click here' | translate | titlecase }}</a>
+            {{ 'success buying msg with link' | translate | titlecase }}
+            <a [routerLink]="['/', 'main']">
+              {{ 'home' | translate | titlecase }}</a>
+            {{ '.' | translate | titlecase }}
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== Footer ===================== -->
+  <div class="action-button-footer"
+       *ngIf="!ui.isBought">
+    <!----------------- 回商店 ------------------>
+    <button class="btn btn-secondary mx-1"
+            type="button"
+            [hidden]="step !== 1"
+            [routerLink]="['/', 'main', 'commodity-shop']"
+            (click)="step = 1">
+      {{ 'back to shop' | translate | titlecase }}
+    </button>
+    <!----------------- 上一步 ------------------>
+    <button class="btn btn-secondary mx-1"
+            type="button"
+            [hidden]="step === 1"
+            [disabled]="ui.isOrdering"
+            (click)="updateStep('prev')">
+      {{ 'previous step' | translate | titlecase }}
+    </button>
+    <!----------------- 下一步 ------------------>
+    <button class="btn btn-primary mx-1"
+            type="button"
+            [hidden]="step === 3 || isGuest"
+            [disabled]="(step === 1 && !commodityList.length) || (step === 1 && ui.isCartInvalid)"
+            (click)="updateStep('next')">
+      {{ 'next step' | translate | titlecase }}
+      <i class="fas fa-spin fa-spinner mr-1"
+         [hidden]="!ui.isFormChecking"></i>
+    </button>
+    <!------------------ 結帳 ------------------->
+    <button class="btn btn-primary mx-1"
+            type="button"
+            [hidden]="step !== 3"
+            [disabled]="ui.isOrdering"
+            (click)="submitOrder(); openModal(template)">
+      {{ 'check out' | translate | titlecase }}
+    </button>
+    <!--------------- 訪客引導註冊 --------------->
+    <button class="btn btn-primary mx-1"
+            type="button"
+            [hidden]="!isGuest"
+            [routerLink]="['/', 'main', 'register']">
+      {{ 'register' | translate | titlecase }}
+    </button>
+  </div>
+
+
+  <!-- ===================== 處理中，勿關閉視窗 ===================== -->
+  <ng-template #template>
+    <div class="modal-body text-center py-5">
+      <p class="my-5"> {{ 'processing and do not close the window' | translate | titlecase }}</p>
+      <i class="fas fa-spin fa-spinner fa-2xl my-5"></i>
+    </div>
+  </ng-template>
+</div>
+
+
+<!-------------------- 若沒有搜尋 ---------------------->
+<div *ngIf="!(isGuest || this.productPermission['product-v1.addShoppingCartDetail'])"
+     class="text-center p-4 h5">
+  {{ 'please enable related permission first' | translate | titlecase }}
+</div>

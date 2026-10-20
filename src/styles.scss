@@ -1,0 +1,1397 @@
+/* You can add global styles to this file, and also import other style files */
+
+/* Importing Bootstrap SCSS file. */
+@import "~bootstrap/scss/bootstrap";
+
+/* Importing Datepicker SCSS file. */
+@import "node_modules/ngx-bootstrap/datepicker/bs-datepicker";
+
+/* Importing angular2-multiselect-dropdown SCSS file. */
+@import "node_modules/angular2-multiselect-dropdown/themes/default.theme";
+
+
+
+html {
+  height: 100%;
+}
+body {
+  overflow-x: hidden;
+  height: 100%;
+  background-color: #F6F6F6;
+}
+
+/* 所有 placeholder 都強制變淡色 */
+::-webkit-input-placeholder {
+  color: #ccc !important;
+}
+:-moz-placeholder {
+  color: #ccc !important;
+}
+::-moz-placeholder {
+  color: #ccc !important;
+}
+:-ms-input-placeholder {
+  color: #ccc !important;
+}
+
+/* epic-cloud main 容器 */
+#wrapper {
+  padding-left: 0;
+  -webkit-transition: all 0.5s ease;
+  -moz-transition: all 0.5s ease;
+  -o-transition: all 0.5s ease;
+  transition: all 0.5s ease;
+  height: 100%;
+
+  /* 按下漢堡選單按鈕 */
+  &.toggled {
+    padding-left: 250px;
+
+    #sidebar-wrapper {
+      width: 250px;
+    }
+
+    #page-content-wrapper {
+      position: absolute;
+      margin-right: -250px;
+
+      /* smooth animated scroll */
+      scroll-behavior: smooth;
+    }
+  }
+}
+
+/* side bar 容器 */
+#sidebar-wrapper {
+  z-index: 1002;
+  position: fixed;
+  left: 250px;
+  width: 0;
+  height: 100%;
+  margin-left: -250px;
+  overflow-y: auto;
+  background: #000;
+  -webkit-transition: all 0.5s ease;
+  -moz-transition: all 0.5s ease;
+  -o-transition: all 0.5s ease;
+  transition: all 0.5s ease;
+
+  /* Sidebar Styles */
+  .sidebar-nav {
+    position: absolute;
+    top: 0;
+    width: 250px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+
+    li {
+      text-indent: 20px;
+      line-height: 40px;
+      cursor: pointer;
+
+      a,
+      span {
+        display: block;
+        text-decoration: none;
+        color: #999999;
+
+        &:hover {
+          text-decoration: none;
+          color: #fff;
+          background: rgba(255, 255, 255, 0.2);
+        }
+
+        &:active,
+        &:focus {
+          text-decoration: none;
+        }
+
+        &.active,
+        &.activeNode {
+          color: #fff;
+        }
+
+        /* item 最左側代表 icon */
+        i:first-child {
+          text-indent: 0px;
+        }
+
+        /* item 最右側的 collapse 符號 */
+        i.chevron {
+          text-align: right;
+          float: right;
+          line-height: 40px;
+          padding-right: 10px;
+        }
+      }
+    }
+
+    /* side bar 主標題 */
+    & > .sidebar-brand {
+      height: 65px;
+      font-size: 24px;
+      line-height: 60px;
+
+      a,
+      span {
+        color: #999999;
+
+        &:hover {
+          color: #fff;
+          background-color: transparent;
+        }
+      }
+    }
+  }
+
+  /* 明亮主題 */
+  &.sidebar-light {
+    background-color: #fff;
+
+    .sidebar-nav {
+      li {
+        a,
+        span {
+          color: #666666;
+          &:hover {
+            color: #000;
+            background: rgba(0, 0, 0, 0.2);
+          }
+          &.active,
+          &.activeNode {
+            color: #007bff;
+          }
+        }
+      }
+
+      /* side bar 主標題 */
+      & > .sidebar-brand {
+        a,
+        span {
+          color: #666666;
+          &:hover {
+            color: #000;
+            background-color: transparent;
+          }
+        }
+      }
+    }
+  }
+}
+
+/* module 頁面容器 */
+#page-content-wrapper {
+  width: 100%;
+  height: 100%;
+  background-color: #f6f6f6;
+  position: absolute;
+  padding: 0px;
+
+  overflow-y: auto;
+
+  /* smooth animated scroll */
+  scroll-behavior: smooth;
+}
+
+@media (min-width: 768px) {
+  #wrapper {
+    padding-left: 0;
+  }
+  #wrapper.toggled {
+    padding-left: 250px;
+  }
+  #sidebar-wrapper {
+    width: 0;
+  }
+  #wrapper.toggled #sidebar-wrapper {
+    width: 250px;
+  }
+  #page-content-wrapper {
+    // padding: 20px;
+    position: relative;
+
+    /* smooth animated scroll */
+    scroll-behavior: smooth;
+  }
+  #wrapper.toggled #page-content-wrapper {
+    position: relative;
+    margin-right: 0;
+
+    /* smooth animated scroll */
+    scroll-behavior: smooth;
+  }
+}
+
+ul.sub-menu {
+  padding-inline-start: 20px;
+  list-style-type: none; // 拿掉 li 前面的 bullets
+
+  // li.menu-item a::before {
+  //   content: '├ ';
+  // }
+}
+
+/* font related */
+.text-color-lightgray {
+  color: lightgray;
+}
+
+.component {
+  border-radius: 10px;
+  border: 2px solid #eee;
+  padding: 10px;
+}
+
+/* 導覽列的第一個 icon 後面不需要分隔符號 [/] */
+.breadcrumb .breadcrumb-item.icon + .breadcrumb-item:nth-child(2)::before {
+  content: "";
+}
+
+.breadcrumb {
+  background-color: #f8f8f8;
+  border-radius: 0px;
+  border-bottom: 1px solid #d1d1d1;
+}
+
+.pointer {
+  cursor: pointer;
+}
+.pointer-disabled {
+  pointer-events: none;
+  opacity: 0.8;
+}
+
+/* 淡入效果 */
+.fade {
+  animation-name: fade-in;
+  animation-fill-mode: both;
+  animation-duration: 1.5s;
+}
+@keyframes fade-in {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+/* form validation */
+input.invalid.ng-touched,
+input.invalid.ignore-ng-touched,
+input.ng-invalid.ng-touched,
+input.ng-invalid.ignore-ng-touched,
+textarea.ng-invalid.ng-touched,
+textarea.ng-invalid.ignore-ng-touched,
+textarea.ng-invalid.ng-touched,
+textarea.ng-invalid.ignore-ng-touched,
+select.ng-invalid.ng-touched,
+select.ng-invalid.ignore-ng-touched,
+input.error,
+select.error {
+  border: 1px solid red;
+}
+
+.border-red {
+  border: 1px solid red !important;
+}
+
+/* alerts */
+.top-right-alert {
+  position: fixed;
+  top: 80px;
+  right: 20px;
+  z-index: 99999;
+  max-width: 50%;
+}
+
+.node-content-wrapper {
+  width: 100%;
+
+  .action-btn {
+    opacity: 0;
+    cursor: pointer;
+  }
+
+  &:hover {
+    .action-btn {
+      opacity: 1;
+    }
+  }
+}
+
+/* dark theme for json-viewer */
+ngx-json-viewer.dark {
+  background-color: #1d1d1d;
+}
+.ngx-json-viewer {
+  padding-left: 5px;
+  overflow: scroll !important;
+  /* 只讓第一層 .ngx-json-viewer 可以滾動 */
+  .ngx-json-viewer {
+    overflow: hidden !important;
+  }
+}
+.dark .ngx-json-viewer {
+  background-color: #1d1d1d;
+  .segment .segment-main .segment-key {
+    color: #fff !important;
+  }
+  .segment .segment-main .toggler {
+    color: #aaa !important;
+  }
+  .segment-type-string .segment-main .segment-value {
+    color: orange !important;
+  }
+  .segment-type-number .segment-main .segment-value {
+    color: lightgreen !important;
+  }
+}
+
+/* file editor in solution content */
+.file-viewer {
+  overflow-x: scroll;
+
+  .nav {
+    white-space: nowrap;
+    display: block !important;
+    flex-wrap: nowrap;
+    max-width: 100%;
+    -webkit-overflow-scrolling: touch;
+    overflow-x: scroll;
+    overflow-y: hidden;
+    border: none;
+
+    /* 沒有項目時也佔據高度 */
+    height: 40px;
+    background-color: #444;
+  }
+
+  .nav::-webkit-scrollbar {
+    height: 0px; /* remove scrollbar space */
+    background: transparent; /* optional: just make scrollbar invisible */
+  }
+
+  .nav .nav-link,
+  .nav .nav-link:hover {
+    border: none;
+  }
+
+  .nav li {
+    display: inline-block;
+    border: none;
+    border-right: 1px solid #000;
+    background-color: #444;
+    color: #aaa;
+
+    .close-btn {
+      color: #444;
+    }
+
+    a:hover {
+      border: none;
+      border-right: 1px solid #000;
+
+      .close-btn {
+        color: #fff;
+      }
+    }
+
+    .active {
+      // border: none;
+      // border-right: 1px solid #000;
+      background-color: #1d1d1d;
+      color: #fff;
+
+      .close-btn {
+        color: #fff;
+      }
+    }
+  }
+
+  .file-content {
+    height: calc(100vh - 225px);
+    background-color: #1d1d1d;
+  }
+}
+
+/* splitter in solution content */
+.splitter {
+  width: 5px;
+  background-color: lightgray;
+  cursor: col-resize;
+}
+
+/* fontawesome */
+.fa-rotate-45 {
+  -webkit-transform: rotate(45deg);
+  -moz-transform: rotate(45deg);
+  -ms-transform: rotate(45deg);
+  -o-transform: rotate(45deg);
+  transform: rotate(45deg);
+}
+
+/* image viewer */
+.zoomButton {
+  font-size: 1.5em;
+  cursor: pointer;
+  opacity: 0.25;
+  &:hover {
+    opacity: 1;
+  }
+}
+.image-zone {
+  height: calc(100vh - 225px);
+  overflow: scroll;
+}
+
+/* file with modified content */
+span.modified {
+  font-style: italic;
+  font-weight: bold;
+}
+
+/* form select */
+.custom-select.ng-invalid.ng-touched,
+.custom-select.ng-invalid.ignore-ng-touched {
+  border-color: red;
+}
+
+/* for permission editor */
+.card.bg-dark-interlace {
+  background-color: #f8f8f8;
+  .card.bg-dark-interlace {
+    background-color: #fff;
+    .card.bg-dark-interlace {
+      background-color: #f8f8f8;
+      .card.bg-dark-interlace {
+        background-color: #fff;
+      }
+    }
+  }
+}
+.form-group.form-check.last-mb-0:last-child {
+  margin-bottom: 0;
+}
+
+/* 讓空的 dom 元件也可以有長寬 [ref] https://stackoverflow.com/a/29354766/1702774 */
+.full-if-empty {
+  display: block;
+  &:empty:before {
+    content: "\200b";
+  }
+}
+
+/* button group 結合 dropdown 功能時，讓 dropdown 的 css 與其他 form 元件外觀更一致 */
+.btn-group .btn-light.dropdown-toggle {
+  text-align: left;
+  background-color: #fff;
+  border: 1px solid #ced4da;
+  border-radius: 0.25rem;
+}
+
+/* table 的行如果有 hyperlink 行為時，讓滑鼠 hover 時加上變化 */
+tr.link {
+  cursor: pointer;
+  &:hover {
+    background-color: #efefef;
+  }
+}
+
+/* 讓在 card-footer 的 btn-light 背景較亮 */
+.card-footer,
+.card-header {
+  .btn.btn-light {
+    background-color: #fdfdfd;
+    &:hover {
+      background-color: #ddd;
+    }
+  }
+}
+
+/* switch (toogle) 按鈕樣式的 checkbox */
+/* html 範例：
+  <label class="switch">
+    <input type="checkbox">
+    <span class="slider"></span>
+  </label>
+
+  <label class="switch">
+    <input type="checkbox" checked>
+    <span class="slider"></span>
+  </label><br><br>
+
+  <label class="switch">
+    <input type="checkbox">
+    <span class="slider round"></span>
+  </label>
+
+  <label class="switch">
+    <input type="checkbox" checked>
+    <span class="slider round"></span>
+  </label>
+  */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 30px;
+  height: 17px;
+  line-height: normal;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  -webkit-transition: 0.4s;
+  transition: 0.4s;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 13px;
+  width: 13px;
+  left: 2px;
+  bottom: 2px;
+  background-color: white;
+  -webkit-transition: 0.4s;
+  transition: 0.4s;
+}
+
+input:checked + .slider {
+  background-color: #2196f3;
+}
+
+input:focus + .slider {
+  box-shadow: 0 0 1px #2196f3;
+}
+
+input:disabled:checked + .slider {
+  opacity: 0.25;
+}
+input:disabled:focus + .slider {
+  opacity: 0.25;
+}
+
+input:checked + .slider:before {
+  -webkit-transform: translateX(13px);
+  -ms-transform: translateX(13px);
+  transform: translateX(13px);
+}
+
+/* Rounded sliders */
+.slider.round {
+  border-radius: 17px;
+  &:before {
+    border-radius: 50%;
+  }
+}
+
+/* handsontable hot-table readonly cell */
+.htDimmed {
+  background-color: #eee !important;
+}
+
+.fa-empty {
+  width: 20px;
+}
+
+/*************************************
+    自行建立 icon font for brand logo
+  **************************************/
+
+@font-face {
+  font-family: "icomoon";
+  src: url("assets/fonts/icomoon.eot?re3vf9");
+  src: url("assets/fonts/icomoon.eot?re3vf9#iefix") format("embedded-opentype"),
+    url("assets/fonts/icomoon.ttf?re3vf9") format("truetype"),
+    url("assets/fonts/icomoon.woff?re3vf9") format("woff"),
+    url("assets/fonts/icomoon.svg?re3vf9#icomoon") format("svg");
+  font-weight: normal;
+  font-style: normal;
+}
+
+[class^="icon-"],
+[class*=" icon-"] {
+  /* use !important to prevent issues with browser extensions that change fonts */
+  font-family: "icomoon" !important;
+  font-style: normal;
+  font-weight: normal;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+
+  /* Better Font Rendering =========== */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  /* indiana + */
+  display: inline-block;
+}
+
+.icon-oracle-logo-o:before {
+  content: "\e900";
+}
+.icon-oracle-logo:before {
+  content: "\e901";
+}
+.icon-akamai-logo:before {
+  content: "\e902";
+}
+.icon-checkpoint-logo:before {
+  content: "\e903";
+}
+.icon-citrix-logo:before {
+  content: "\e904";
+}
+.icon-commvault-logo:before {
+  content: "\e905";
+}
+.icon-mcafee-logo:before {
+  content: "\e906";
+}
+.icon-microfocus-logo:before {
+  content: "\e907";
+}
+.icon-vmware-logo:before {
+  content: "\e908";
+}
+
+/* 訂單結束日期的下拉選單按鈕 (唯讀) */
+.btn-group .btn-light.dropdown-toggle[disabled] {
+  opacity: 1;
+  background-color: #e9ecef;
+}
+
+/* form label 必填的紅色星號 */
+label.required::after,
+:not(label).required h6::after,
+:not(label).required strong::after,
+span.required::after {
+  content: " *";
+  color: red;
+}
+
+/* admin only */
+.admin-only {
+  color: red;
+}
+
+/* sweetalert2 */
+.swal2-shown {
+  background: #e9ecef;
+}
+
+/* angular2-multiselect-dropdown套件 */
+.c-token {
+  background-color: rgba(255, 255, 255, 0) !important;
+  padding: 0px !important;
+}
+
+.c-btn {
+  border: 1px solid #ced4da;
+  // background-color: white;
+  padding-left: 2px;
+  padding-bottom: 0px !important;
+  padding-top: 0px !important;
+  font-size: 1rem !important;
+}
+
+.c-label {
+  color: black;
+}
+
+.c-remove {
+  display: none;
+}
+
+.countplaceholder {
+  right: 40px !important;
+}
+.pure-checkbox ::before {
+  border: 1px solid;
+}
+/* 限制 typeahead 下拉選單的寬度不要超過螢幕 */
+typeahead-container {
+  width: max-content;
+  // max-width: 100%;  // 這個雖然可限制不超過螢幕，但會讓寬度受限
+}
+typeahead-container button {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 轉動到最上方按鈕 */
+.btn-scroll-top {
+  background-color: rgba(200, 200, 200, 0.5);
+  border: none;
+  color: white;
+  padding: 16px 20px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px;
+  border-radius: 50%;
+  position: fixed;
+  right: 10px;
+  bottom: 60px;
+  outline: none !important;
+
+  &:hover {
+    background-color: rgba(107, 166, 255, 0.5);
+  }
+
+  z-index: 1002;
+}
+
+/* 圓角 */
+.rounded {
+  border-radius: 10px 10px 10px 10px; //rounds corners for other browsers
+}
+
+/* 不讓 focus 的元素外框有模糊效果的強調邊緣 */
+.non-outline,
+.non-outline:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* 時間戳計 (monospace -> 等寬度) */
+.time-stamp {
+  font-family: "Courier New", Courier, monospace;
+}
+
+/* 商機 icon 閃爍 */
+@keyframes diamond_color_change {
+  from {
+    color: gold;
+    // transform: scale(1);
+    text-shadow: 0 0 20px #fff, 0 0 30px #fff, 0 0 40px orange;
+  }
+  to {
+    color: orange;
+    // transform: scale(1.2);
+    text-shadow: 0 0 30px #fff, 0 0 40px yellow, 0 0 50px yellow;
+  }
+  //   0% { color: gold; }
+  //  25% { color: yellow; }
+  //  50% { color: orange; }
+  //  75% { color: yellow; }
+  // 100% { color: gold; }
+}
+
+.activeNode .diamond-animation,
+.breadcrumb-item.icon .diamond-animation {
+  animation: diamond_color_change 1s infinite alternate;
+}
+
+/* 讓 date picker 的日曆顯示周 "W" */
+// .theme-green .bs-datepicker-body table td.week span::before {
+//   content: "W";
+// }
+.bs-datepicker-body table th:first-child::after {
+  content: "W";
+  color: #5cb85c;
+}
+
+/* 讓 popover 在上或下方時，三角形箭頭的位置靠近左側 */
+.popover-left-10 ~ .bs-popover-top .arrow,
+.popover-left-10 ~ .bs-popover-bottom .arrow {
+  left: 10% !important; // 原本是 50%
+}
+
+.thead-primary {
+  th {
+    color: white;
+    background-color: #007bff;
+    border-color: #007bff;
+  }
+}
+.thead-warning {
+  th {
+    color: black;
+    background-color: #ffc107;
+    border-color: #ffc107;
+  }
+}
+
+/** 讓 checkbox 尺寸大一點 */
+.container-checkbox-lg {
+  display: inline;
+  position: relative;
+  padding-left: 35px;
+  cursor: pointer;
+  font-size: 22px;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* Hide the browser's default checkbox */
+.container-checkbox-lg input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
+}
+
+/* Create a custom checkbox */
+.checkmark {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 25px;
+  width: 25px;
+  background-color: white;
+  border: 1px solid #ced4da;
+  border-radius: 0.25rem;
+}
+
+/* On mouse-over, add a grey background color */
+/* .container-checkbox-lg:hover input ~ .checkmark {
+    // background-color: #ccc;
+  } */
+
+/* When the checkbox is checked, add a blue background */
+.container-checkbox-lg input:checked ~ .checkmark {
+  background-color: #2196f3;
+}
+
+/* Create the checkmark/indicator (hidden when not checked) */
+.checkmark:after {
+  content: "";
+  position: absolute;
+  display: none;
+}
+
+/* Show the checkmark when checked */
+.container-checkbox-lg input:checked ~ .checkmark:after {
+  display: block;
+}
+
+/* Style the checkmark/indicator */
+.container-checkbox-lg .checkmark:after {
+  left: 9px;
+  top: 5px;
+  width: 5px;
+  height: 10px;
+  border: solid white;
+  border-width: 0 3px 3px 0;
+  -webkit-transform: rotate(45deg);
+  -ms-transform: rotate(45deg);
+  transform: rotate(45deg);
+}
+
+/* 強制移除 :after 元素 */
+.noafter:after {
+  content: none;
+}
+
+.text-small,
+.text-small h6 {
+  font-size: 11pt;
+}
+
+.text-xs,
+.text-xs h6 {
+  font-size: 10pt;
+}
+
+mv-slider {
+  .slider {
+    position: relative;
+    background-color: #fff;
+  }
+  .slider.slider-horizontal {
+    width: 100%;
+  }
+
+  .tooltip {
+    opacity: 1;
+  }
+}
+
+.blinking {
+  animation: blinker 1s linear infinite;
+}
+
+@keyframes blinker {
+  50% {
+    opacity: 0;
+  }
+}
+
+a.no-link {
+  text-decoration: none;
+  &:link,
+  &:visited,
+  &:hover,
+  &:active {
+    text-decoration: none;
+  }
+}
+
+.sticky-bottom {
+  position: sticky;
+  bottom: 0px;
+  z-index: 10000;
+  &.isSticky {
+    box-shadow: 0 -5px 30px -5px #333;
+  }
+}
+.sticky-page-header {
+  position: sticky;
+  top: 0px;
+  z-index: 10;
+  &.isSticky {
+    box-shadow: 0 5px 30px -5px #333;
+  }
+}
+
+.bg-gray {
+  background-color: #adadad;
+}
+.sticky-right {
+  position: sticky;
+  right: 0px;
+}
+
+.badge-outline-danger {
+  color: #dc3545;
+  border: 1px solid #dc3545;
+}
+
+.font-size-100 {
+  font-size: 100% !important;
+}
+
+.customPopover {
+  max-width: 768px;
+}
+
+.dropdown-menu,
+typeahead-container.dropdown.open {
+  z-index: 1040;
+}
+
+/* Quill Editor video size */
+.ql-video {
+  width: 60%;
+  height: 15rem;
+}
+
+.simulate-formControl-boxShadow {
+  &:focus {
+    border-color: #80bdff !important;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25) !important;
+  }
+}
+
+.move {
+  cursor: move;
+}
+
+app-stack-icon {
+  .fa-stack {
+    width: 2em;
+  }
+  i[class^="fa-stack-"],
+  i[class*="fa-stack-"] {
+    left: 0;
+    position: absolute;
+    text-align: center;
+    width: 100%;
+    height: 100%;
+    line-height: inherit;
+  }
+  .fa-stack-1x {
+    padding-right: 1em;
+  }
+  .fa-stack-2x {
+    font-size: 1em;
+  }
+  .fa-stack-3x {
+    padding-left: 1em;
+  }
+}
+
+.cdk-overlay-container {
+  z-index: 10000 !important;
+  // position: absolute !important;
+}
+
+/** Override the style of ngx-bootstrap modal-dialog */
+.right-drawer {
+  &.modal-dialog {
+    position: absolute;
+    top: 0px;
+    height: 100%;
+    margin: 0;
+    min-width: 320px;
+  }
+  &.vw-50 {
+    min-width: 50vw;
+  }
+  .right-drawer-h100 {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 1px);
+    .modal-body{
+      overflow-y: auto;
+    }
+  }
+  .modal-content {
+    height: 100%;
+  }
+
+  // for animation 'slide in from right'
+  right: -320px;
+  animation: slide 0.5s forwards;
+  animation-delay: 0s;
+}
+
+@keyframes slide {
+  100% {
+    right: 0;
+  }
+}
+
+/** 客製 ngx-bootstrap tabs */
+.custom-tabs {
+  .nav-tabs .nav-link {
+    // border-color: #dee2e6 #dee2e6 #fff;
+    &.active {
+      background-color: var(--primary);
+      color: white;
+      border-color: transparent;
+    }
+  }
+}
+
+.btn-fontawesome {
+  cursor: pointer;
+  &:hover {
+    opacity: 0.75;
+  }
+  &.large {
+    font-size: large;
+  }
+  &.larger {
+    font-size: larger;
+  }
+  &.x-large {
+    font-size: x-large;
+  }
+  &.disabled{
+    opacity: 0.65;
+    pointer-events: none;
+  }
+}
+
+/** angular2-multiselect-dropdown 套件 custom class */
+.custom-dropdown {
+  &.multiselect-disabled {
+    pointer-events: none;
+    .selected-list .c-list .c-token,
+    .selected-list .countplaceholder,
+    .selected-list .c-btn {
+      background: #e9ecef !important;
+    }
+    .selected-list .c-btn {
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+  }
+  &.multiselect-invalid {
+    .selected-list .c-list .c-token,
+    .selected-list .countplaceholder,
+    .selected-list .c-btn {
+      border-color: red;
+    }
+  }
+
+  .selected-list {
+    .c-list .c-token .c-label {
+      color: #000;
+      // max-width: 160px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .countplaceholder {
+      right: 30px;
+    }
+    .c-angle-down,
+    .c-angle-up {
+      width: 8px;
+      height: 8px;
+      right: 3px;
+      top: 33%;
+    }
+  }
+  // 改為類似一般 select 樣式
+  .arrow-down, .arrow-up{
+    border-left: 0px solid transparent;
+    border-right: 0px solid transparent;
+  }
+  .list-area{
+    box-shadow: unset;
+    margin-top: -15px;
+  }
+}
+
+.single-select-mode .pure-checkbox {
+  input[type="checkbox"]:focus + label:before, input[type="checkbox"]:hover + label:before{
+      border-color: $base-color;
+      background-color: #f2f2f2;
+  }
+  input[type="checkbox"] + label{
+      color: $label-color;
+  }
+  input[type="checkbox"] + label:before{
+      color: transparent !important;
+      border: 0px solid $base-color;
+  }
+  input[type="checkbox"] + label:after{
+      background-color: transparent !important;
+  }
+  input[type="checkbox"]:disabled + label:before{
+      border-color: #c01f1f;
+  }
+  input[type="checkbox"]:disabled:checked + label:before{
+      background-color: #df2525;
+  }
+  input[type="checkbox"] + label:after{
+      border-color: $base-color;
+  }
+  input[type="radio"]:checked + label:before{
+      background-color: white;
+  }
+  input[type="checkbox"]:checked + label:before{
+      background: none !important;
+  }
+}
+
+.pure-checkbox {
+  input[type="checkbox"]:focus + label:before, input[type="checkbox"]:hover + label:before{
+      border-color: $base-color;
+      background-color: #f2f2f2;
+  }
+  input[type="checkbox"] + label{
+      color: $label-color;
+  }
+  input[type="checkbox"] + label:before{
+      color: $base-color;
+      border: 1px solid $base-color;
+  }
+  input[type="checkbox"] + label:after{
+      background-color: $base-color;
+  }
+  input[type="checkbox"]:disabled + label:before{
+      border-color: #f55757;
+  }
+  input[type="checkbox"]:disabled:checked + label:before{
+      background-color: #ed1515;
+  }
+  input[type="checkbox"] + label:after{
+      border-color: #ffffff;
+  }
+  input[type="radio"]:checked + label:before{
+      background-color: white;
+  }
+  input[type="checkbox"]:checked + label:before{
+      background: $base-color;
+  }
+}
+
+/** angular2-multiselect-dropdown 套件 下拉選單icon上下置中 */
+.dropdown-icon > div > div > div > .c-angle-down,
+.dropdown-icon > div > div > div > .c-angle-up {
+  width: 8px;
+  height: 8px;
+  right: 3px;
+  top: auto;
+}
+
+/** angular2-multiselect-dropdown 套件 下拉選單會隨著畫面滾動而移動 */
+.dropdown-position > .cuppa-dropdown > .dropdown-list {
+  position: absolute;
+  // width: unset !important;
+  bottom: unset !important;
+  left: unset !important;
+  top: unset !important;
+}
+
+/** 因上面的修改 */
+/** angular2-multiselect-dropdown 套件 箭頭固定在左上角 */
+.dropdown-position > .cuppa-dropdown > .dropdown-list > .arrow-down {
+  top: 0 !important;
+  transform: rotate(0deg) !important;
+}
+
+.dropdown-position > .cuppa-dropdown > .dropdown-list > .arrow-2 {
+  top: -1px !important;
+}
+
+/** ngx-bootstrap Dropdown custom class
+  * 改為類似一般 select 樣式  */
+.custom-ngx-dropdown {
+  button.form-control {
+    padding-right: 3px;
+  }
+  .menu_item {
+    font-size: small;
+    font-style: italic;
+  }
+  .custom-ngx-dropdown-option {
+    &:hover {
+      background: #f5f5f5;
+    }
+    &.selected {
+      background: #e9f4ff;
+    }
+  }
+}
+
+/** ngx-bootstrap Dropdown custom class
+  * 改為類似一般 select 樣式  */
+.custom-ngx-dropdown {
+  button.form-control {
+    padding-right: 3px;
+  }
+  .menu_item {
+    font-size: small;
+    font-style: italic;
+  }
+  .custom-ngx-dropdown-option {
+    &:hover {
+      background: #f5f5f5;
+    }
+    &.selected {
+      background: #e9f4ff;
+    }
+  }
+  > ul {
+    max-height: 200px;
+    overflow-y: auto;
+  }
+}
+
+/** ngx-bootstrap Dropdown custom class
+  * 改為類似一般 select 樣式  */
+.custom-ngx-dropdown {
+  button.form-control {
+    padding-right: 3px;
+  }
+  .menu_item {
+    font-size: small;
+    font-style: italic;
+  }
+  .custom-ngx-dropdown-option {
+    &:hover {
+      background: #f5f5f5;
+    }
+    &.selected {
+      background: #e9f4ff;
+    }
+  }
+  > ul {
+    max-height: 200px;
+    overflow-y: auto;
+  }
+}
+
+/** change the "checked" background color of toggle switch */
+// 綠色
+.custom-switch-success {
+  .custom-control-input:focus ~ .custom-control-label::before {
+    border-color: var(--success) !important;
+    box-shadow: 0 0 0 0rem rgba(0, 0, 0, 0) !important;
+  }
+  .custom-control-input:checked ~ .custom-control-label::before {
+    border-color: var(--success) !important;
+    background-color: var(--success) !important;
+  }
+  .custom-control-input:active ~ .custom-control-label::before {
+    background-color: var(--success) !important;
+    border-color: var(--success) !important;
+  }
+  .custom-control-input:focus:not(:checked) ~ .custom-control-label::before {
+    border-color: var(--success) !important;
+  }
+  .custom-control-input:disabled ~ .custom-control-label::before,
+  .custom-control-input[disabled] ~ .custom-control-label::before {
+    background-color: #e9ecef !important;
+    border: #adb5bd !important;
+  }
+}
+
+/** 客製 mat-chips 顏色 */
+// 淺藍
+.mat-custom-color-blue {
+  &.mat-chip.mat-standard-chip {
+    background-color: #18a0fb;
+    color: white;
+  }
+}
+
+.action-button-footer {
+  background: #e8e8e8;
+  margin: 0 -0.5rem;
+  padding: 0.75rem 1.5rem;
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 1001;
+  display: flex;
+  justify-content: flex-end;
+}
+
+/** Wide bootstrap modal */
+.modal-full {
+  max-width: 1200px;
+  .modal-content {
+    overflow-y: auto;
+    height: calc(100vh - 1.75rem * 2);
+  }
+  @media (max-width: 1199px) {
+    max-width: 95%;
+    margin: 1.75rem auto;
+  }
+}
+
+/** H4 標題底線 */
+.h4-border-bottom {
+  border-width: 2px !important;
+}
+.selected-list .c-list .c-token .c-label {
+  color: rgb(0, 0, 0);
+  // max-width: 230px; /* feel free to include any other value */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/** in-table用sticky時header要改顏色 */
+.sticky-header-color {
+  background: #007bff;
+  color: #fff;
+}

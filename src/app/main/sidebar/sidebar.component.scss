@@ -1,0 +1,21 @@
+.divider {
+    height: 1px;
+    margin: 9px 0;
+    overflow: hidden;
+    background-color: #e5e5e5;
+}
+.nav-link {
+    color: #ffffff;
+}
+.nav-link:hover {
+    opacity: 0.7;
+}
+.subChild {
+  padding-left: 4rem;
+}
+.menuIcon {
+  text-align: right;
+  float: right;
+  // line-height: 40px;
+  padding-right: 15px;
+}

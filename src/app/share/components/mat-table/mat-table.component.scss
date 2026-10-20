@@ -1,0 +1,52 @@
+.table-container {
+  width: 100%;
+  // height: calc(100vh - 32px);
+  overflow-x: auto;
+  overflow-y: hidden !important;
+}
+
+// table {
+//   width: 100%;
+// }
+
+.mat-table {
+  overflow: auto;
+  max-height: 68vh;
+  min-width: 100%;
+}
+
+// .mat-cell {
+//   // padding: 20px;
+// }
+
+.mat-header-row {
+  background: #c4e3ff;
+  width: fit-content !important;
+}
+
+.mat-header-cell {
+  // text-align: center;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.mat-row {
+  width: fit-content !important;
+}
+
+::ng-deep {
+  .mat-checkbox-layout {
+    margin: 0;
+  }
+
+  .mat-checkbox,
+  .mat-checkbox-layout,
+  .mat-checkbox-label {
+    width: 100% !important;
+  }
+}
+
+.edit {
+  color: #fff;
+  background-color: #00c851;
+}

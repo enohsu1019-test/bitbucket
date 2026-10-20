@@ -1,0 +1,93 @@
+<div>
+  <div class="row mb-3">
+    <!-------------------------- 商品分類選擇 --------------------------->
+    <div class="col-10 col-sm-6 col-md-4">
+      <angular2-multiselect [data]="categoryList.view"
+                            [(ngModel)]="categoryList.select"
+                            [ngModelOptions]="{standalone: true}"
+                            [settings]="settings"
+                            (onClose)="closeFilter()"
+                            (onOpen)="openFilter()">
+      </angular2-multiselect>
+    </div>
+    <div><i class="fas fa-spin fa-spinner" *ngIf="ui.isCategoryLoading"></i></div>
+    <!--------------------------- 關鍵字搜尋 ---------------------------->
+    <div class="col-10 col-sm-6 col-md-4">
+      <input type="text"
+             class="form-control"
+             [(ngModel)]="keyword"
+             placeholder="{{ 'search' | translate | titlecase }}"
+             (change)="getCommodityList('init', $event)">
+    </div>
+  </div>
+  <!--------------------------- carousel ---------------------------->
+  <div class="mb-6" *ngIf="isGuest || productPermission['product-v1.queryBanners']">
+    <div class="d-flex justify-content-center align-items-center h-100 mb-5"
+         *ngIf="ui.isBannerLoading">
+      <i class="fas fa-spin fa-spinner fa-2x"></i>
+    </div>
+    <div class="commodity-banner"
+         *ngIf="!ui.isBannerLoading && bannerList.length">
+      <carousel [isAnimated]="true">
+        <slide *ngFor="let item of bannerList">
+          <img [src]="item.bannerImage"
+               alt="first slide">
+          <div class="carousel-caption-custom">
+            <h3 class="mb-3 mb-md-4">{{ item.productName }}</h3>
+            <p class="mb-4 mb-md-5">{{ item.description }}</p>
+            <button type="button"
+                    class="btn btn-warning text-white mt-auto align-self-baseline"
+                    [routerLink]="(isGuest || productPermission['product-v1.queryStoreProduct']) ? item.productId : null"
+                    *ngIf="isGuest || productPermission['product-v1.queryStoreProduct']">
+              {{ 'detail of program' | translate | titlecase }}</button>
+          </div>
+        </slide>
+      </carousel>
+    </div>
+  </div>
+
+  <!---------------------------- 產品列表 ---------------------------->
+  <div *ngIf="isGuest || productPermission['product-v1.queryStoreProducts']">
+    <div class="d-flex justify-content-center align-items-center h-100 mb-5"
+         *ngIf="ui.isProductLoading">
+      <i class="fas fa-spin fa-spinner fa-2x"></i>
+    </div>
+    <div class="row mb-5"
+         *ngIf="!ui.isProductLoading">
+      <div class="col-12 col-md-3 mb-4 mb-md-5"
+           [ngClass]="{'pointer commodity-wrap': (isGuest || productPermission['product-v1.queryStoreProduct'])}"
+           *ngFor="let commodity of commodityList">
+        <div class="product-color">
+          <div class="commodity-img"
+               [routerLink]="(isGuest || productPermission['product-v1.queryStoreProduct']) ? commodity.productId : null">
+            <i class="fas fa-image fa-4x"
+              *ngIf="!commodity?.defaultImage"></i>
+            <img *ngIf="commodity.defaultImage"
+                [src]="commodity.defaultImage">
+          </div>
+          <div class="pl-2 pr-2" style="height: 3rem">{{ commodity.productName }}</div>
+          <button type="button"
+                  class="btn btn-warning text-white ml-auto mt-3 mr-3 mb-2"
+                  style="display: block"
+                  (click)="goToCart(commodity);">
+            {{ 'buy the program' | translate | titlecase }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!---------------------------- 更多商品 ---------------------------->
+  <div class="d-flex justify-content-center"
+       *ngIf="!ui.isProductLoading && ui.hasMoreData">
+    <div class="d-flex flex-column align-items-center">
+      <i class="fas fa-chevron-circle-down fa-3x mb-2 btn-fontawesome"
+         (click)="loadMore()"></i>
+      <span>{{ 'load more commodities' | translate | titlecase }}</span>
+    </div>
+  </div>
+
+  <!--------------------------- 購物車按鈕 --------------------------->
+  <app-commodity-cart-btn *ngIf="isGuest || productPermission['product-v1.addShoppingCartDetail']"></app-commodity-cart-btn>
+
+</div>

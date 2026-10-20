@@ -1,0 +1,474 @@
+<button type="button"
+        class="btn btn-success flex-shrink-0 ml-2"
+        (click)="showTemp(importTemp)">
+  <i class="fas fa-plus"></i>
+  <span class="d-none d-sm-inline">{{ 'add product subscription' | translate }}</span>
+</button>
+
+<ng-template #importTemp>
+  <div class="card">
+    <div class="card-header bg-primary text-white">
+      <h5 class="mb-0">{{ 'add product' | translate | titlecase }}</h5>
+    </div>
+  </div>
+  <div class="card-body mb-2">
+    <div class="mb-2">{{ 'dealer' | translate }}：{{ dealer.name !== '' ? dealer.name : orderHeader.customer.name.split('/')[0] }}</div>
+    <div class="mb-2">{{ 'end_user' | translate }}：{{ endUserName !== '' ? endUserName : (orderHeader.endUser && orderHeader.endUser.name) ? orderHeader.endUser.name.split('/')[0] : '' }}</div>
+
+    <tabset class="custom-tabs">
+      <!-- 報價單搜尋 -->
+      <!-- <tab heading="{{ 'quotation' | translate }}"
+           (selectTab)="onSelect($event)">
+        <div class="card">
+          <div class="card-body">
+            <div class="row mb-3">
+              -- 報價單編號 --
+              <div class="col-12 col-sm-6 col-md-4 col-lg-4">
+                <label class="col-form-label">{{ 'quotation no' | translate | titlecase }}</label>
+                <input type="text"
+                       class="form-control"
+                       [(ngModel)]="inputOrder">
+              </div>
+            </div>
+
+            <div>
+              -- 重設 --
+              <button type="submit"
+                      class="btn btn-sm btn-secondary mr-2 mb-2"
+                      (click)="reset()"
+                      [disabled]="isLoading">
+                {{ 'reset' | translate | titlecase }}
+              </button>
+              -- 搜尋 --
+              <button type="submit"
+                      class="btn btn-sm btn-primary mr-2 mb-2"
+                      (click)="search()"
+                      [disabled]="isLoading">
+                <i *ngIf="isLoading" class="fas fa-spin fa-spinner"></i>
+                {{ 'search' | translate | titlecase }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </tab> -->
+
+      <!-- 商品屬性搜尋 -->
+      <tab heading="{{ 'commodity attributes' | translate }}"
+           (selectTab)="onSelect($event)">
+        <div class="card">
+          <div class="card-body">
+            <div class="mb-3">
+              <!-- filter選項 -->
+              <div class="col-12 p-0">
+                <ng-container *ngFor="let filter of filterAttribute; let i = index;">
+                  <div class="filter-attribute-dropdown">
+                    <button class="btn btn-primary mr-3 text-decoration-none"
+                            [disabled]="isLoading"
+                            (click)="editFilter(i)">
+                      <span>{{ showFilterName(filter) }}</span>
+                      <i class="fas fa-times ml-2"
+                        (click)="delFilter(i)"></i>
+                    </button>
+                    <ng-container *ngIf="filter.show">
+                      <div class="card filter-attribute-dropdown-menu">
+                        <div class="card-body">
+                          <!-- 欄位名稱 -->
+                          <div class="mb-2">
+                            <label>filter</label>
+                            <select class="form-control"
+                                    style="width: -webkit-fill-available"
+                                    (change)="changeFilter($event, i, 'filter')"
+                                    [(ngModel)]="filter.internalVariableName">
+                              <option selected
+                                      disabled
+                                      value="">{{ 'please select' | translate | titlecase }}</option>
+                              <option *ngFor="let opt of filterList; let optIdx = index"
+                                      [value]="opt.internalVariableName"
+                                      [hidden]="hiddenOption(i, opt.internalVariableName)">{{ opt.name | translate }}</option>
+                            </select>
+                          </div>
+
+                          <!-- 單/多選選項 -->
+                          <!-- <div *ngIf="filter.options.length > 0" class="mb-2">
+                            <label>Operator</label> -->
+                            <!-- <select class="form-control"
+                                    style="width: -webkit-fill-available"
+                                    (change)="changeFilter($event, i, 'operator')"
+                                    [(ngModel)]="filter.oprator">
+                              <option selected
+                                      disabled
+                                      value="">{{ 'please select' | translate | titlecase }}</option>
+                              <option *ngFor="let opt of filter.options"
+                                      [value]="opt.internalVariableName">{{ opt.name | translate }}</option>
+                            </select> -->
+                            <!-- <input type="text"
+                                   disabled>
+                          </div> -->
+
+                          <!-- 選擇條件 -->
+                          <!-- <div *ngIf="filter.options.length === 0" class="mb-2"> -->
+                          <div class="mb-2">
+                            <label>Operator</label>
+                            <input *ngIf="filter.type === '' ||
+                                          filter.type === 'SINGLE_CHOICE' ||
+                                          filter.type === 'MULTIPLE_CHOICE' ||
+                                          filter.type === 'BOOLEAN' ||
+                                          filter.type === 'MAIL' ||
+                                          filter.type === 'PASSWORD'"
+                                   type="text"
+                                   class="form-control"
+                                   disabled>
+                            <ng-container *ngFor="let filterList of FilterOptions | keyvalue">
+                              <ng-container *ngIf="filterList.key === filter.type">
+                                <select class="form-control"
+                                        style="width: -webkit-fill-available"
+                                        (change)="changeFilter($event, i, 'operator')"
+                                        [(ngModel)]="filter.oprator">
+                                  <option selected
+                                          disabled
+                                          value="">{{ 'please select' | translate | titlecase }}</option>
+                                  <option *ngFor="let opt of filterList.value"
+                                          [value]="opt">{{ opt | translate }}</option>
+                                </select>
+                              </ng-container>
+                            </ng-container>
+                          </div>
+
+                          <!-- 條件值 -->
+                          <div class="mb-4">
+                            <label>Value</label>
+                            <!-- <ng-container *ngIf="filter.options.length > 0"> -->
+                              <!-- 空 -->
+                              <input *ngIf="filter.name === ''"
+                                   type="text"
+                                   class="form-control"
+                                   disabled>
+
+                              <!-- 單選 -->
+                              <select *ngIf="filter.type === 'SINGLE_CHOICE'"
+                                      class="form-control"
+                                      style="width: -webkit-fill-available"
+                                      [(ngModel)]="filter.value">
+                                <option selected
+                                        disabled
+                                        value="">{{ 'please select' | translate | titlecase }}</option>
+                                <option *ngFor="let opt of filter.options"
+                                        [value]="opt.internalVariableName">{{ opt.name | translate }}</option>
+                              </select>
+
+                              <!-- 多選 -->
+                              <angular2-multiselect *ngIf="filter.type === 'MULTIPLE_CHOICE'"
+                                                    [data]="selectList.view"
+                                                    [(ngModel)]="selectList.select"
+                                                    [settings]="settings"
+                                                    (onOpen)="onOpen(filter.options)"
+                                                    (onClose)="onClose(filter)">
+                              </angular2-multiselect>
+                            <!-- </ng-container>
+                            <ng-container *ngIf="filter.options.length === 0"> -->
+                              <!-- 字串、信箱 -->
+                              <input *ngIf="filter.type === 'STRING' ||
+                                            filter.type === 'MAIL'"
+                                     type="text"
+                                     class="form-control"
+                                     [(ngModel)]="filter.value"
+                                     [disabled]="filter.oprator === 'isKnown' ||
+                                                 filter.oprator === 'isUnknown'">
+
+                              <!-- 數字：非(包含跟不包含) -->
+                              <input *ngIf="filter.type === 'NUMBER' &&
+                                            filter.oprator !== 'isEqualToAnyOf' &&
+                                            filter.oprator !== 'isNotEqualToAnyOf'"
+                                      type="number"
+                                      class="form-control"
+                                      [(ngModel)]="filter.value"
+                                      [disabled]="filter.oprator === 'isKnown' ||
+                                                  filter.oprator === 'isUnknown'">
+
+                              <!-- 數字：(包含跟不包含) -->
+                              <input *ngIf="filter.type === 'NUMBER' &&
+                                            (filter.oprator === 'isEqualToAnyOf' ||
+                                            filter.oprator === 'isNotEqualToAnyOf')"
+                                      type="text"
+                                      class="form-control"
+                                      [(ngModel)]="filter.value">
+
+                              <!-- 字串、數字：非(包含跟不包含) -->
+                              <!-- <input *ngIf="(filter.type === 'STRING' ||
+                                            filter.type === 'NUMBER') &&
+                                            filter.oprator !== 'isEqualToAnyOf' &&
+                                            filter.oprator !== 'isNotEqualToAnyOf'"
+                                     type="{{filter.type}}"
+                                     class="form-control"
+                                     [(ngModel)]="filter.value"
+                                     [disabled]="filter.oprator === 'isKnown' ||
+                                                 filter.oprator === 'isUnknown'"> -->
+
+                              <!-- 字串、數字：包含跟不包含 -->
+                              <!-- <input *ngIf="(filter.type === 'STRING' ||
+                                            filter.type === 'NUMBER') &&
+                                            (filter.oprator === 'isEqualToAnyOf' ||
+                                            filter.oprator === 'isNotEqualToAnyOf')"
+                                     type="{{filter.type}}"
+                                     class="form-control"
+                                     [(ngModel)]="filter.value"> -->
+
+                              <!-- 布林 -->
+                              <input *ngIf="filter.type === 'BOOLEAN'"
+                                            type="checkbox"
+                                            style="display: block"
+                                            [(ngModel)]="filter.value">
+
+                              <!-- 密碼 -->
+                              <input *ngIf="filter.type === 'PASSWORD'"
+                                            type="password"
+                                            class="form-control"
+                                            [(ngModel)]="filter.value">
+
+                              <!-- 日期 -->
+                              <input *ngIf="filter.type === 'DATE'"
+                                     type="text"
+                                     class="form-control"
+                                     bsDatepicker
+                                     [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD' }"
+                                     [(ngModel)]="filter.value"
+                                     [disabled]="filter.oprator === 'isKnown' ||
+                                                 filter.oprator === 'isUnknown'">
+
+                              <!-- 提示 -->
+                              <span *ngIf="filter.oprator === 'isEqualToAnyOf' ||
+                                           filter.oprator === 'isNotEqualToAnyOf'">
+                                {{ 'include or not include tips' | translate }}
+                              </span>
+                            <!-- </ng-container> -->
+
+                          </div>
+
+                          <div>
+                            <!-- 取消 -->
+                            <button type="submit"
+                                    class="btn btn-sm btn-secondary mr-2 mb-2"
+                                    (click)="filterClose('cencal', i)">
+                              {{ 'cancel' | translate | titlecase }}
+                            </button>
+                            <!-- 新增 -->
+                            <button type="submit"
+                                    class="btn btn-sm btn-primary mr-2 mb-2"
+                                    (click)="filterClose('add', i)"
+                                    [disabled]="filter.name === '' ||
+                                                (filter.oprator === '' && filter.value === '') ||
+                                                (filter.oprator !== 'isKnown' && filter.value === '') ||
+                                                (filter.oprator !== 'isUnknown' && filter.value === '')">
+                              {{ 'add' | translate | titlecase }}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </ng-container>
+                  </div>
+                </ng-container>
+
+                <!-- 增加filter選項 -->
+                <button type="button"
+                        class="btn btn-primary text-decoration-none"
+                        [disabled]="isLoading"
+                        (click)="addFilter()">
+                  <i class="fas fa-filter mr-1"></i>{{ 'add filters' | translate | titlecase }}
+                </button>
+
+              </div>
+            </div>
+
+            <div>
+              <!-- 重設 -->
+              <button type="submit"
+                      class="btn btn-sm btn-secondary mr-2 mb-2"
+                      (click)="reset()"
+                      [disabled]="isLoading">
+                {{ 'reset' | translate | titlecase }}
+              </button>
+              <!-- 搜尋 -->
+              <button type="submit"
+                      class="btn btn-sm btn-primary mr-2 mb-2"
+                      (click)="search()"
+                      [disabled]="isLoading">
+                <i *ngIf="isLoading" class="fas fa-spin fa-spinner"></i>
+                {{ 'search' | translate | titlecase }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </tab>
+    </tabset>
+    <div class="card">
+      <!-- 產品清單 -->
+      <h2 class="border-primary ml-3 mt-3 mr-3" style="border-bottom: inherit">{{ 'product list' | translate | titlecase }}</h2>
+      <div class="m-3">
+        <in-table [data]="productList"
+                  [listViewClass]="'d-none d-md-block'"
+                  [cardViewClass]="'d-block d-md-none'"
+                  [listHeaderClass]="'sticky-header-color'"
+                  [shownodata]="productList.length === 0 ? true : false"
+                  [isLoading]="isLoading"
+                  [pageConfig]="pageConfig"
+                  (pageChanged)="pageChange($event)"
+                  [config]="config"
+                  [inTableTranslate]="{
+                          'no data found': 'No Data Found' | translate,
+                          'items per page': 'items per page' | translate
+                        }">
+
+          <!-- 勾選 -->
+          <in-table-column [styleColumn]="{'width': '5%'}"
+                           class="text-truncate ml-1 mr-1"
+                           label="checkbox">
+            <ng-template let-ui="ui"
+                         let-i
+                         #tplLabel>
+              <i class="fa-regular"
+                 [ngClass]="{'fa-square': !allOrNot, 'fa-square-check': allOrNot}"
+                 (click)="sellAll()"></i>
+            </ng-template>
+
+            <ng-template #tpl
+                         let-product="item"
+                         let-i>
+              <input type="checkbox"
+                     [(ngModel)]="tick[i]">
+            </ng-template>
+          </in-table-column>
+
+          <!-- # -->
+          <in-table-column [styleColumn]="{'width': '5%'}"
+                           classValue="text-wrap"
+                           label="#">
+            <ng-template #tpl
+                         let-index="rowIndex"
+                         let-xxx
+                         let-brand="item">
+              {{ index + 1}}
+            </ng-template>
+          </in-table-column>
+
+          <!-- 料號 -->
+          <in-table-column [styleColumn]="{'width': '16%'}"
+                           class="text-truncate ml-1 mr-1"
+                           prop="originalSku"
+                           label="{{ 'part no' | translate }}">
+            <ng-template #tpl
+                         let-product="item">
+              <div [popover]="product.originalSku"
+                   placement="top left"
+                   triggers="mouseenter:mouseleave">
+                {{ product.originalSku }}</div>
+            </ng-template>
+          </in-table-column>
+
+          <!-- 產品名稱 -->
+          <in-table-column [styleColumn]="{'width': '32%'}"
+                           class="text-truncate ml-1 mr-1"
+                           prop="productName"
+                           label="{{ 'product name' | translate }}">
+            <ng-template #tpl
+                         let-product="item">
+              <div [popover]="product.productName"
+                   placement="top left"
+                   triggers="mouseenter:mouseleave">
+                {{ product.productName }}</div>
+            </ng-template>
+          </in-table-column>
+
+          <!-- 數量 -->
+          <in-table-column [styleColumn]="{'width': '10%'}"
+                           class="text-truncate ml-1 mr-1"
+                           prop="quantity"
+                           label="{{ 'quantity' | translate }}">
+            <ng-template #tpl
+                         let-product="item"
+                         let-i>
+              <input type="number" [(ngModel)]="product.quantity" class="form-control">
+            </ng-template>
+          </in-table-column>
+
+          <!-- 計價週期 -->
+          <!-- <in-table-column [styleColumn]="{'width': '10%'}"
+                           class="text-truncate ml-1 mr-1"
+                           prop="leaseMode"
+                           label="{{ 'pricing cycle' | translate }}">
+            <ng-template #tpl
+                          let-product="item"
+                          let-i>
+              {{ product.leaseMode.name | translate }}
+            </ng-template>
+          </in-table-column> -->
+
+          <!-- 時間 -->
+          <!-- <in-table-column [styleColumn]="{'width': '10%'}"
+                           class="text-truncate ml-1 mr-1"
+                           prop="quantity"
+                           label="{{ 'time' | translate }}">
+            <ng-template #tpl
+                          let-product="item"
+                          let-i>
+              {{ product.leaseMode.month }}
+            </ng-template>
+          </in-table-column> -->
+
+          <!-- 啟用日 -->
+          <in-table-column [styleColumn]="{'width': '16%'}"
+                           class="text-truncate ml-1 mr-1"
+                           prop="startDate"
+                           label="{{ 'enable date' | translate }}">
+            <ng-template #tpl
+                         let-product="item"
+                         let-i>
+              <input class="form-control"
+                     #dp="bsDatepicker"
+                     bsDatepicker
+                     [(ngModel)]="product.startDate"
+                     [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD'}"
+                     [minDate]="minDate"
+                     [maxDate]="maxDate"
+                     autocomplete="off">
+            </ng-template>
+          </in-table-column>
+
+          <!-- 到期日 -->
+          <in-table-column [styleColumn]="{'width': '16%'}"
+                           class="text-truncate ml-1 mr-1"
+                           prop="endDate"
+                           label="{{ 'due date' | translate }}">
+            <!-- <ng-template #tpl
+                         let-product="item"
+                         let-i>
+              <input class="form-control"
+                   #dp="bsDatepicker"
+                   bsDatepicker
+                   [(ngModel)]="product.endDate"
+                   [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD'}"
+                   [minDate]="minDate"
+                   [maxDate]="maxDate"
+                   autocomplete="off">
+            </ng-template> -->
+          </in-table-column>
+
+        </in-table>
+      </div>
+      <!-- 產品清單 end -->
+    </div>
+  </div>
+
+  <!-- footer -->
+  <div class="card-footer text-right"
+        style="background-color: #e8e8e8;">
+    <button class="btn btn-secondary btn-sm mr-2"
+            type="button"
+            (click)="closeModal('cancel')">
+      {{ 'cancel' | translate | titlecase }}</button>
+    <button class="btn btn-primary btn-sm"
+            type="button"
+            (click)="closeModal('add')">
+      {{ 'select' | translate | titlecase }}
+    </button>
+  </div>
+</ng-template>

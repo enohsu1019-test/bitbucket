@@ -1,0 +1,450 @@
+<div class="pb-6">
+
+  <ng-template #template>
+    <div class="modal-body text-center">
+      <p>是否要刪除錯帳項目?</p>
+      <button type="button"
+              class="btn btn-default"
+              (click)="confirm()">Yes</button>
+      <button type="button"
+              class="btn btn-primary"
+              (click)="decline()">No</button>
+    </div>
+  </ng-template>
+
+  <!---------------------- 帳單列表 ---------------------->
+  <div class="my-4 p-3 bg-white shadow-sm">
+    <h4 class="pb-2 mb-3 border-bottom border-primary h4-border-bottom">
+      {{ 'bill List' | translate | titlecase }}</h4>
+
+    <!-------------- 選擇日期 -------------->
+    <div class="form-row mb-5">
+      <label for="id"
+             class="col-12">{{ 'select a year and month' | translate | titlecase }}</label>
+      <div class="col-10 col-md-5">
+        <input type="text"
+               class="form-control"
+               placeholder="{{ 'select a year and month' | translate }}"
+               autocomplete="off"
+               bsDatepicker
+               [minDate]="minInvoiceDate"
+               [(ngModel)]="invoiceMonth"
+               [maxDate]="maxInvoiceDate"
+               [bsConfig]="{ dateInputFormat: 'YYYY-MM', minMode: 'month' }">
+      </div>
+      <button class="btn btn-primary btn-sm"
+              type="button"
+              (click)="search()"
+              [disabled]="ui.isSearching">
+        {{ 'search' | translate | titlecase }}
+        <i class="fas fa-spin fa-spinner mr-1"
+           *ngIf="ui.isSearching"></i>
+      </button>
+    </div>
+
+    <!-------------- inTable -------------->
+    <in-table class="table table-hover"
+              [data]="invoiceList"
+              [listViewClass]="'d-none d-md-block'"
+              [cardViewClass]="'d-block d-md-none'"
+              [listHeaderClass]="'thead-light sticky-header-color'"
+              [pageConfig]="pageConfig"
+              (pageChanged)="pageChange($event)"
+              [sortBy]="sortBy"
+              [isLoading]="ui.isSearching"
+              [enableHorizontalScroll]="true"
+              [shownodata]="invoiceList.length === 0 ? true : false"
+              [config]="inTableConfig"
+              [inTableTranslate]="{
+                'no data found': 'no data found' | translate | titlecase,
+                'items per page': 'items per page' | translate | titlecase}"
+              (colWidthResized)="util.syncInTableColWidths(billListTable, 'intable-billMonthList-table', true)"
+              (afterViewInit)="util.syncInTableColWidths(billListTable, 'intable-billMonthList-table', false)"
+              #billListTable>
+      <!-- [pageConfig]="pageConfig"
+      (pageChanged)="pageChange($event)"
+      [sortBy]="sortBy"
+      (sort)="sort($event)" -->
+
+      <!----------- # ----------->
+      <in-table-column label="#"
+                       [styleColumn]="{'max-width': '40px'}"
+                       class="font-weight-bold">
+        <ng-template #tpl
+                     let-index="rowIndex"
+                     let-xxx>
+          {{ ( pageConfig.currentPage -1 ) * pageConfig.itemsPerPage + index + 1 }}
+        </ng-template>
+      </in-table-column>
+
+      <!--------------- 計費時間 --------------->
+      <in-table-column class="text-truncate mx-1"
+                       [styleColumn]="{'max-width': '100px'}"
+                       prop="yearMonth"
+                       label="{{ 'billable time' | translate | titlecase }}">
+        <ng-template #tpl
+                      let-date="item">
+          {{ showYearMonth(date) }}
+        </ng-template>
+      </in-table-column>
+
+      <!--------------- 出帳時間 --------------->
+      <in-table-column class="text-truncate mx-1"
+                       [styleColumn]="{'max-width': '110px'}"
+                       prop="lockDate"
+                       label="{{ 'billing time' | translate | titlecase }}">
+      </in-table-column>
+
+      <!------------- 發票號碼 -------------->
+      <in-table-column class="text-truncate mx-1"
+                       [styleColumn]="{'max-width': '150px'}"
+                       prop="number"
+                       label="{{ 'invoice number' | translate | titlecase }}"
+                       *appPermissionIf="'invoice-v1.saveInvoiceNumber'">
+        <ng-template #tpl
+                     let-invoice="item">
+          <!-- <input type="text"
+                 class="form-control"
+                 id="id"
+                 formControlName="id"
+                 placeholder="{{ 'please fill input' | translate:{input: 'invoice number' | translate} | titlecase }}"> -->
+
+          <div class="input-group p-1">
+            <span *ngIf="(invoice.number && invoice.number[0] && !isAdmin()) || invoice.locked">{{ invoice.number?.[0]
+              ?? '' }}</span>
+
+            <!-- 注意！input reference #xxx 不能搭配 *ngIf 使用，會持續得到 undefined 內容，所以改用 [hidden] 隱藏 -->
+            <input class="form-control ignore-ng-touched"
+                   type="text"
+                   style="max-width: 200px"
+                   placeholder="{{ 'invoice number' | translate | titlecase }}"
+                   pattern="^[a-zA-Z]{2}[-]?[0-9]{8}$"
+                   [ngModel]="invoice.number"
+                   (ngModelChange)="invoiceNumberInputs[invoice.id] = $event"
+                   [hidden]="(invoice.number && invoice.number[0] && !isAdmin()) || invoice.locked"
+                   #invoiceNo="ngModel">
+            <div class="input-group-append"
+                 *ngIf="invoiceNo.valid &&
+                        invoiceNumberInputs[invoice.id] &&
+                        (!invoice.number || !invoice.number.length || (invoice.number && invoice.number.length && !invoice.number.includes(invoiceNumberInputs[invoice.id])))">
+              <button class="btn btn-sm btn-primary"
+                      [disabled]="invoiceNumberUpdating[invoice.id]"
+                      (click)="updateInvoiceNumber(invoice, invoiceNumberInputs[invoice.id])">
+                <i class="fas"
+                   [ngClass]="{'fa-spin fa-spinner': invoiceNumberUpdating[invoice.id],
+                               'fa-save': !invoiceNumberUpdating[invoice.id]}"></i>
+                <span class="d-none d-sm-inline ml-1">{{ (invoice.number && invoice.number[0] ? 'update' : 'save') |
+                  translate | titlecase }}</span>
+              </button>
+            </div>
+          </div>
+          <span class="form-text text-danger"
+                *ngIf="invoiceNo?.errors?.['pattern']">{{ 'The format of input value is invalid' | translate }}
+            ex: ZH12345678</span>
+        </ng-template>
+      </in-table-column>
+
+      <!--------------- 鎖定 --------------->
+      <in-table-column class="text-truncate mx-1 text-center"
+                       [styleColumn]="{'max-width': '100px'}"
+                       prop="locked"
+                       label="{{ 'billed' | translate | titlecase }}"
+                       *appPermissionIf="'invoice-v1.lockedInvoice'">
+        <ng-template #tpl
+                     let-invoice="item">
+          <button type="button"
+                  class="btn"
+                  title="{{ 'lock' | translate | titlecase }}"
+                  [disabled]="ui.isInvoiceLocking[invoice.id]"
+                  (click)="lockedInvoice(invoice)">
+            <i class="fas fa-lock-open"
+               *ngIf="!ui.isInvoiceLocking[invoice.id] && !invoice.locked"></i>
+            <i class="fas fa-lg fa-spin fa-spinner"
+               *ngIf="ui.isInvoiceLocking[invoice.id]"></i>
+            <i class="fas fa-lock"
+               *ngIf="!ui.isInvoiceLocking[invoice.id] && invoice.locked"></i>
+          </button>
+        </ng-template>
+      </in-table-column>
+
+      <!--------------- 動作 --------------->
+      <in-table-column class="mx-1"
+                       [styleColumn]="{'min-width': '800px'}"
+                       prop="id"
+                       label="{{ 'action' | translate | titlecase }}">
+        <ng-template #tpl
+                     let-invoice="item"
+                     let-i>
+          <button class="btn btn-sm btn-primary mr-2"
+                  (click)="getInvoiceDetail(invoice, false)"
+                  [disabled]="ui.isInvoiceLoaded">
+            <i class="fas"
+               [ngClass]="{'fa-spin fa-spinner': ui.isInvoiceLoaded || ui.isInvoiceDownloading, 'fa-eye': !ui.isInvoiceLoaded}"></i>
+            {{ 'preview bill file' | translate | titlecase }}</button>
+          <button class="btn btn-sm btn-warning text-white mr-2"
+                  [disabled]="ui.isInvoiceLoaded"
+                  (click)="getInvoiceDetail(invoice, true)">
+            <i class="fas"
+               [ngClass]="{'fa-spin fa-spinner': ui.isInvoiceLoaded || ui.isInvoiceDownloading,
+                          'fa-download': !(ui.isInvoiceLoaded || ui.isInvoiceDownloading)}"></i>
+            {{ 'download bill file' | translate | titlecase }}</button>
+          <!-- <a class="btn btn-warning ml-2"
+               href="{{ invoiceUrl[InvoiceType.pdf] }}">
+              <i class="fas fa-file-pdf"></i> {{ 'download bill file' | translate }}</a> -->
+          <button class="btn btn-sm btn-warning text-white  mr-2"
+                  [disabled]="ui.isExcelDownloading"
+                  (click)="exportInvoiceExcel(invoice)">
+            <i class="fas"
+               [ngClass]="{'fa-spin fa-spinner': ui.isExcelDownloading,
+                           'fa-download': !ui.isExcelDownloading}"></i>
+            {{ 'download original usage' | translate | titlecase }}</button>
+          <button *appPermissionIf="'invoice-v1.customExportExcel'"
+                  class="btn btn-sm btn-warning text-white  mr-2"
+                  [disabled]="ui.isExcelDownloading"
+                  (click)="exportCustomExcel(invoice)">
+            <i class="fas"
+               [ngClass]="{'fa-spin fa-spinner': ui.isExcelDownloading,
+                           'fa-download': !ui.isExcelDownloading}"></i>
+            {{ 'download customer original usage' | translate | titlecase }}</button>
+          <span *appPermissionIf="'invoice-v1.runInvoice'">
+            <button class="btn btn-sm btn-warning text-white mr-2"
+                    [disabled]="ui.isExcelDownloading"
+                    *ngIf="!invoice.locked"
+                    (click)="updateInvoice(invoice, false, i)">
+              <i class="fas"
+                 [ngClass]="{'fa-spin fa-spinner': ui.isInvoiceLoaded || ui.isInvoiceDownloading,
+                           'fa-solid fa-pen-fancy': !ui.isInvoiceLoaded || ui.isInvoiceDownloading}"></i>
+              {{ 'update' | translate}}{{ 'bill' | translate}}</button>
+          </span>
+          <span *appPermissionIf="'invoice-v1.runInvoice' && 'invoice-v1.getExtraCostList'">
+            <button class="btn btn-sm btn-info mr-2"
+                    *ngIf="invoice.info && !invoice.locked"
+                    (click)="extraBilling(invoice)">
+              {{ 'extra billing' | translate | titlecase }}
+            </button>
+          </span>
+
+
+        </ng-template>
+      </in-table-column>
+
+      <!-- 額外出帳 -->
+      <in-table-row-footer>
+        <ng-template #tpl
+                     let-item="item"
+                     let-i>
+          <div *ngIf="item.extraBillingStatus"
+               class="p-2"
+               style="background-color: #efefef;">
+            <in-table [data]="item.extraBilling"
+                      [listViewClass]="'d-none d-md-block'"
+                      [cardViewClass]="'d-block d-md-none'"
+                      [listHeaderClass]="'sticky-header-color'"
+                      [shownodata]="item.extraBilling.length === 0"
+                      [config]="subInTableConfig"
+                      [inTableTranslate]="{
+                        'no data found': 'No Data Found' | translate,
+                        'items per page': 'items per page' | translate
+                      }">
+
+              <!-- 編號 -->
+              <in-table-column [styleColumn]="{'max-width': '60px'}"
+                               label="">
+                <ng-template #tpl
+                             let-index="rowIndex"
+                             let-billing="item"
+                             let-xxx>
+                  {{ xxx + 1 }}
+                  <!-- {{ i }} -->
+                  <div style="height:25px;"
+                       *ngIf="billing.requiredStatus">
+                  </div>
+                </ng-template>
+              </in-table-column>
+
+              <!-- 帳目類型 -->
+              <in-table-column [styleColumn]="{'min-width': '150px'}"
+                               class="text-truncate ml-1 mr-1"
+                               prop="type"
+                               label="{{ '帳目類型' }}">
+                <ng-template #tpl
+                             let-billing="item"
+                             let-i>
+                  <select class="custom-select pt-2"
+                          [(ngModel)]="billing.type">
+                    <option *ngFor="let type of billingType"
+                            [ngValue]="type.value">
+                      {{ type.name | translate}}
+                    </option>
+                  </select>
+                  <div style="height:25px;"
+                       *ngIf="billing.requiredStatus">
+                  </div>
+                </ng-template>
+              </in-table-column>
+
+              <!-- 帳單呈現款項名稱 -->
+              <in-table-column [styleColumn]="{'min-width': '140px'}"
+                               class="text-truncate ml-1 mr-1"
+                               prop="name"
+                               label="{{ '帳單呈現款項名稱' }}">
+                <ng-template #tpl
+                             let-billing="item"
+                             let-i>
+                  <input [(ngModel)]="billing.name"
+                         (change)="extraBillingRequired(billing);"
+                         class="form-control">
+                  <div style="height:25px;"
+                       *ngIf="billing.requiredStatus">
+                    <p class="help-block text-danger"
+                       *ngIf="!billing.name">{{ 'this field is required' | translate }}
+                    </p>
+                  </div>
+                </ng-template>
+              </in-table-column>
+
+              <!-- 出帳幣別 -->
+              <in-table-column [styleColumn]="{'max-width': '120px'}"
+                               class="text-truncate ml-1 mr-1"
+                               prop="currencyType"
+                               label="{{ 'currency type' | translate }}">
+                <ng-template #tpl
+                             let-billing="item"
+                             let-xxx>
+                             {{billing.currencyType}}
+                  <div style="height:25px;"
+                       *ngIf="billing.requiredStatus">
+                  </div>
+                </ng-template>
+
+              </in-table-column>
+
+              <!-- 未稅金額 -->
+              <in-table-column [styleColumn]="{'max-width': '120px'}"
+                               class="text-truncate ml-1 mr-1"
+                               prop="amount"
+                               label="{{ '未稅金額' }}">
+                <ng-template #tpl
+                             let-billing="item"
+                             let-xxx>
+                  <input [(ngModel)]="billing.amount"
+                         type="number"
+                         class="form-control"
+                         (change)="changeMoney('amount', billing)">
+                  <div style="height:25px;"
+                       *ngIf="billing.requiredStatus">
+                    <p class="help-block text-danger"
+                       *ngIf="!billing.amount">{{ 'this field is required' | translate }}
+                    </p>
+                  </div>
+                </ng-template>
+              </in-table-column>
+
+              <!-- 含稅金額 -->
+              <in-table-column [styleColumn]="{'max-width': '120px'}"
+                               class="text-truncate ml-1 mr-1"
+                               prop="amountIncludingTax"
+                               label="{{ '含稅金額' }}">
+                <ng-template #tpl
+                             let-billing="item"
+                             let-xxx>
+                  <input [(ngModel)]="billing.amountIncludingTax"
+                         class="form-control"
+                         type="number"
+                         (change)="changeMoney('tax',billing)">
+                  <div style="height:25px;"
+                       *ngIf="billing.requiredStatus">
+                  </div>
+                </ng-template>
+              </in-table-column>
+
+              <!-- 更新著 -->
+              <in-table-column [styleColumn]="{'max-width': '120px'}"
+                               class="text-truncate ml-1 mr-1"
+                               prop="modifyUserName"
+                               label="{{ 'updater' | translate }}">
+                <ng-template #tpl
+                             let-billing="item"
+                             let-xxx>
+                             {{billing.modifyUserName}}
+                  <div style="height:25px;"
+                       *ngIf="billing.requiredStatus">
+                  </div>
+                </ng-template>
+              </in-table-column>
+
+              <!-- 更新時間 -->
+              <in-table-column [styleColumn]="{'max-width': '140px'}"
+                               class="text-truncate ml-1 mr-1"
+                               prop="modifyTime"
+                               label="{{ 'modify time' | translate }}">
+                <ng-template #tpl
+                             let-billing="item"
+                             let-xxx>
+                             {{billing.modifyTime}}
+                  <div style="height:25px;"
+                       *ngIf="billing.requiredStatus">
+                  </div>
+                </ng-template>
+              </in-table-column>
+
+              <!-- 動作 -->
+              <in-table-column [styleColumn]="{'min-width': '60px'}"
+                               class="text-truncate ml-1 mr-1"
+                               prop=""
+                               label="{{ 'action' | translate }}">
+                <ng-template #tpl
+                             let-billing="item"
+                             let-xxx>
+                  <button type="button"
+                          [disabled]="billing.status || billing.requiredStatus"
+                          class="btn"
+                          (click)="saveBilling(billing,item)">
+                    <i class="fas fa-save btn-fontawesome text-primary"></i>
+                  </button>
+                  <button type="button"
+                          [disabled]="billing.status"
+                          class="btn"
+                          (click)="openModal(template,billing, xxx, item)">
+                    <i class="fa-solid fa-trash-can btn-fontawesome text-danger"></i>
+                  </button>
+
+                  <i class="fas fa-spin fa-spinner"
+                     *ngIf="billing.status"></i>
+                  <div style="height:25px;"
+                       *ngIf="billing.requiredStatus">
+                  </div>
+                </ng-template>
+              </in-table-column>
+
+            </in-table>
+
+            <!-- 新增 -->
+            <button type="button"
+                    class="btn btn-success btn-md btn-block"
+                    *ngIf="item.extraBilling.length < 2"
+                    (click)="addBilling(i,item)">
+              <i class="fas fa-plus mr-1"></i>{{ "add" | translate }}
+            </button>
+          </div>
+        </ng-template>
+      </in-table-row-footer>
+    </in-table>
+
+    <!-------------- 帳單預覽 -------------->
+
+    <div class="my-4"
+         #anchor>
+      <div class="d-flex justify-content-center"
+           *ngIf="ui.isInvoiceDownloading || ui.isInvoiceLoaded">
+        <i class="fas fa-spin fa-spinner fa-xl my-4"></i>
+      </div>
+      <div [hidden]="!invoiceUrl[InvoiceType.png] || ui.isInvoiceDownloading || ui.isInvoiceLoaded">
+
+        <img style="max-width: 100%;"
+             [src]="getDomSanitizer(invoiceUrl[InvoiceType.png])"
+             (error)="invoiceUrl[InvoiceType.png] ? onImageError() : null">
+      </div>
+    </div>
+  </div>
+</div>

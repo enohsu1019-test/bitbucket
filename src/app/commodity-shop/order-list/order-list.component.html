@@ -1,0 +1,147 @@
+<div>
+  <!---------------------- 新增 & 搜尋 ---------------------->
+  <div class="mb-5 card">
+    <div class="card-header bg-primary text-white d-flex align-items-center"
+         style="height: 56px;">
+      <h5 class="mb-0">{{ 'shopping record' | translate | titlecase }}</h5>
+    </div>
+    <!------------------ 表單 ------------------>
+    <div class="card-body">
+      <form [formGroup]="searchForm">
+        <div class="form-row mb-1">
+          <!-------------- 採購單編號 -------------->
+          <div class="col-12 col-sm-4 mb-3">
+            <label for="orderId">{{ 'purchase order number' | translate | titlecase }}</label>
+            <input type="text"
+                   class="form-control"
+                   id="orderId"
+                   formControlName="orderId"
+                   placeholder="{{ 'please fill input' | translate:{input: 'purchase order number' | translate} | titlecase }}">
+          </div>
+
+          <!--------------- 狀態 ---------------->
+          <div class="col-12 col-sm-4 mb-3">
+            <label for="status">{{ 'status' | translate | titlecase }}</label>
+            <select class="form-control"
+                    id="category"
+                    formControlName="status">
+              <option selected
+                      value="">{{ 'select all options' | translate }}</option>
+              <option *ngFor="let status of statusDDL"
+                      [value]="status.id">
+                {{ status.name | translate | titlecase }}</option>
+            </select>
+          </div>
+
+          <!--------------- 購買日期 ---------------->
+          <div class="col-12 col-sm-4 mb-3">
+            <label for="purchaseDate">{{ 'purchase date' | translate | titlecase }}</label>
+            <input type="text"
+                   class="form-control"
+                   autocomplete="off"
+                   bsDaterangepicker
+                   placeholder="{{ 'please fill input' | translate:{input: 'purchase date' | translate} | titlecase }}"
+                   id="purchaseDate"
+                   formControlName="purchaseDate"
+                   [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', initCurrentTime	: true}">
+          </div>
+
+        </div>
+        <div>
+          <button class="btn btn-secondary btn-sm mr-2"
+                  type="button"
+                  (click)="reset()"
+                  [disabled]="ui.isSearching">
+            {{ 'reset' | translate | titlecase }}</button>
+          <button class="btn btn-primary btn-sm"
+                  type="button"
+                  (click)="getOrderList()"
+                  [disabled]="ui.isSearching">
+            {{ 'search' | translate | titlecase }}
+            <i class="fas fa-spin fa-spinner mr-1"
+               *ngIf="ui.isSearching"></i>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!---------------------- inTable ---------------------->
+  <in-table class="table table-hover"
+            [data]="orderList"
+            [listViewClass]="'d-none d-md-block'"
+            [cardViewClass]="'d-block d-md-none'"
+            [listHeaderClass]="'thead-light sticky-header-color'"
+            [pageConfig]="pageConfig"
+            (pageChanged)="pageChange($event)"
+            [sortBy]="sortBy"
+            (sort)="sort($event)"
+            [isLoading]="ui.isSearching"
+            [enableHorizontalScroll]="true"
+            [shownodata]="true"
+            [config]="inTableConfig"
+            [inTableTranslate]="{
+              'no data found': 'no data found' | translate | titlecase,
+              'items per page': 'items per page' | translate | titlecase}"
+            (colWidthResized)="util.syncInTableColWidths(authTable, 'intable-commodity-order-list-table', true)"
+            (afterViewInit)="util.syncInTableColWidths(authTable, 'intable-commodity-order-list-table', false)"
+            #authTable>
+
+    <!----------- # ----------->
+    <in-table-column label="#"
+                     class="font-weight-bold">
+      <ng-template #tpl
+                   let-index="rowIndex"
+                   let-xxx>
+        {{ ( pageConfig.currentPage -1 ) * pageConfig.itemsPerPage + index + 1 }}
+      </ng-template>
+    </in-table-column>
+
+    <!--------------- 採購單編號 --------------->
+    <in-table-column class="text-truncate mx-1"
+                     prop="orderId"
+                     label="{{ 'purchase order number' | translate | titlecase }}">
+    </in-table-column>
+
+    <!------------- 客戶 -------------->
+    <in-table-column class="text-truncate mx-1"
+                     prop="userDetail"
+                     label="{{ 'customer' | translate | titlecase }}">
+      <ng-template #tpl
+                   let-item="item">
+        {{ item.userDetail.customer.name | translate | titlecase }}
+      </ng-template>
+    </in-table-column>
+
+    <!------------- 負責業務 -------------->
+    <in-table-column class="text-truncate mx-1"
+                     prop="userDetail"
+                     label="{{ 'sales who in charge of' | translate }}">
+      <ng-template #tpl
+                   let-item="item">
+        {{ item.userDetail.salesperson.name | translate | titlecase }}
+      </ng-template>
+    </in-table-column>
+
+    <!-------------- 狀態 --------------->
+    <in-table-column class="text-truncate mx-1"
+                     prop="status"
+                     label="{{ 'status' | translate | titlecase }}">
+      <ng-template #tpl
+                   let-item="item">
+        {{ (item.status === OrderStatus.draft ? 'PROCESSING_' + item.status : item.status) | translate | titlecase }}
+      </ng-template>
+    </in-table-column>
+
+    <!------------- 購買日期 -------------->
+    <in-table-column class="text-truncate mx-1"
+                     prop="purchaseDate"
+                     label="{{ 'purchase date' | translate | titlecase }}">
+      <ng-template #tpl
+                   let-item="item">
+        {{ item.purchaseDate | date:'yyyy-MM-dd' }}
+      </ng-template>
+    </in-table-column>
+
+  </in-table>
+</div>

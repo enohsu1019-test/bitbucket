@@ -1,0 +1,342 @@
+<form [formGroup]="postingForm">
+  <div class="card mb-5">
+    <div class="card-body">
+      <div class="form-group row">
+        <div class="col-12 col-sm-4"
+             *ngIf="isAdmin">
+          <!-- 品牌 下拉選單 -->
+          <label class="col-form-label">{{ 'brand' | translate }}</label>
+          <select class="custom-select pt-2"
+                  [ngModelOptions]="{standalone: true}"
+                  [(ngModel)]="brandId">
+            <option [ngValue]="''">{{ '所有品牌' }}</option>
+            <option *ngFor="let brand of brandDropdownDatas"
+                    [ngValue]="brand.brandId">{{ brand.name }}</option>
+          </select>
+        </div>
+
+        <!-- 出帳時間起迄（日期範圍) -->
+        <div class="col-12 col-sm-4">
+          <label class="col-form-label">{{ 'billing time from' | translate }}</label>
+          <input bsDaterangepicker
+                 type="text"
+                 [bsConfig]="{ rangeInputFormat: 'YYYY-MM', minMode: 'month' }"
+                 class="form-control"
+                 placeholder="{{ 'please select sta end day' | translate | titlecase }}"
+                 [(bsValue)]="pickerPostingDates"
+                 >
+        </div>
+        <!-- 計費時間起迄（日期範圍) -->
+        <div class="col-12 col-sm-4">
+          <label class="col-form-label">{{ 'from billable time to' | translate }}</label>
+          <input bsDaterangepicker
+                 type="text"
+                 [bsConfig]="{ rangeInputFormat: 'YYYY-MM', minMode: 'month' }"
+
+                 [(bsValue)]="pickerbillableDates"
+                 class="form-control"
+                 placeholder="{{ 'please select sta end day' | translate | titlecase }}"
+                 >
+        </div>
+        <!-- cloud Id -->
+        <div class="col-12 col-sm-4">
+          <label class="col-form-label">{{ brandSetting[brandId].cloudIdTile| translate }}</label>
+          <input type="text"
+                 class="form-control"
+                 placeholder="{{ 'please input'  | translate | titlecase }} {{ brandSetting[brandId].cloudIdTile}}"
+                 formControlName="cloudId">
+        </div>
+
+        <div class="col-12 col-sm-4">
+          <!-- 出帳狀態 下拉選單 -->
+          <label class="col-form-label">{{ 'billing status' | translate }}</label>
+          <select class="custom-select pt-2"
+                  formControlName="postingStatus">
+            <option [ngValue]="''">所有狀態</option>
+            <option *ngFor="let billing of billingStatus"
+                    [ngValue]="billing.id">{{ billing.itemName }}</option>
+          </select>
+        </div>
+
+      </div> <!-- form-group -->
+
+      <div>
+        <!-- 重設按鈕 -->
+        <button type="button"
+                class="btn btn-secondary btn-sm mr-2"
+                (click)="filterReset()">
+          {{ 'reset' | translate | titlecase }}
+        </button>
+        <!-- 搜尋按鈕 -->
+        <button type="button"
+                class="btn btn-primary btn-sm mr-2"
+                [disabled]="ui.isLoading || !postingForm.valid"
+                (click)="search()">
+          <i *ngIf="ui.isLoading"
+             class="fas fa-spin fa-spinner mr-1"></i>
+          {{ 'search' | translate | titlecase }}
+        </button>
+      </div>
+
+    </div> <!-- card-body -->
+  </div> <!-- card -->
+</form>
+
+<div class="p-3">
+  <div style="display: flex;
+  justify-content: flex-end;">
+    <!-- 編輯 -->
+    <button type="button"
+            *ngIf="singleCheckStatus"
+            (click)="billingSetting(template1, undefined, 'multiple')"
+            class=" btn btn-primary">
+      {{ 'edit' | translate}}
+    </button>
+    <!--下載 -->
+    <button type="button"
+            *ngIf="singleCheckStatus"
+            (click)="downLoadPostingExcel()"
+            class="btn btn-warning ml-2 text-white">
+      <i class="fa-solid fa-download text-white"></i>
+      {{ 'download' | translate}}
+    </button>
+  </div>
+</div>
+
+
+<div class="bg-white">
+  <div class="mb-3">
+    <ng-container>
+      <in-table [data]="inTableDatas"
+                [listViewClass]="'d-none d-md-block'"
+                [cardViewClass]="'d-block d-md-none'"
+                [listHeaderClass]="'sticky-header-color'"
+                (pageChanged)="setIntableTableData()"
+                [isLoading]="ui.isLoading"
+                [pageConfig]="pageConfig"
+                [shownodata]="inTableDatas.length === 0"
+                [config]="inTableConfig"
+                [inTableTranslate]="{
+                  'no data found': 'No Data Found' | translate,
+                  'items per page': 'items per page' | translate
+                }">
+
+        <!----------- # ----------->
+        <in-table-column label="#"
+                         class="font-weight-bold">
+          <ng-template #tpl
+                       let-index="rowIndex"
+                       let-xxx>
+            {{ ( pageConfig.currentPage -1 ) * pageConfig.itemsPerPage + index + 1 }}
+          </ng-template>
+        </in-table-column>
+
+        <!-- check -->
+        <in-table-column class="text-truncate ml-1 mr-1"
+                         prop="checkStatus">
+          <ng-template let-ui="ui"
+                       #tplLabel>
+            <i class="fa-regular fa-square"
+               *ngIf="!allCheckStatus"
+               (click)="setAllbutton(); stopListRoute($event);"></i>
+            <i class="fa-regular fa-square-check"
+               *ngIf="allCheckStatus"
+               (click)="setAllbutton(); stopListRoute($event);"></i>
+          </ng-template>
+
+          <ng-template #tpl
+                       let-posting="item"
+                       let-i>
+            <span class=""
+                  (click)="setCheckStatus(posting);">
+              <i class="fa-regular fa-square-check"
+                 *ngIf="posting.checkStatus"></i>
+              <i class="fa-regular fa-square"
+                 *ngIf="!posting.checkStatus"></i>
+            </span>
+          </ng-template>
+
+        </in-table-column>
+
+        <!-- 品牌 -->
+        <in-table-column class="text-truncate ml-1 mr-1"
+                         prop="sales"
+                         label="{{ 'brand' | translate }}">
+          <ng-template #tpl
+                       let-posting="item"
+                       let-i>
+            {{ posting.brand | translate }}
+          </ng-template>
+        </in-table-column>
+
+        <!-- coundId -->
+        <in-table-column class="text-truncate ml-1 mr-1"
+                         prop="cloudId"
+                         label="{{ brandSetting[brandId].cloudIdTile | translate }}">
+
+        </in-table-column>
+
+        <!-- 過帳狀態 -->
+        <in-table-column class="text-truncate ml-1 mr-1"
+                         prop="postingStatus"
+                         label="{{ 'posting status' | translate }}">
+          <ng-template #tpl
+                       let-posting="item"
+                       let-i>
+            {{ posting.postingStatus | translate }}
+          </ng-template>
+        </in-table-column>
+
+
+        <!-- 公司 -->
+        <in-table-column class="text-truncate ml-1 mr-1"
+                         prop="customer"
+                         label="{{ 'company' | translate }}">
+          <ng-template #tpl
+                       let-posting="item"
+                       let-i>
+            {{ posting.customer | translate }}
+          </ng-template>
+        </in-table-column>
+        <!-- 出帳日期 -->
+        <in-table-column class="text-truncate ml-1 mr-1"
+                         prop="lockInvoiceDate"
+                         label="{{ 'billing time' | translate }}">
+          <ng-template #tpl
+                       let-posting="item"
+                       let-i>
+            {{ posting.lockInvoiceDate | translate }}
+          </ng-template>
+        </in-table-column>
+
+        <!-- 計費日期 -->
+        <in-table-column class="text-truncate ml-1 mr-1"
+                         prop="billingPeriod"
+                         label="{{ 'billable time' | translate }}">
+          <ng-template #tpl
+                       let-posting="item"
+                       let-i>
+            {{ posting.billingPeriod | translate }}
+          </ng-template>
+        </in-table-column>
+
+
+        <!-- 動作 -->
+        <in-table-column class="text-truncate ml-1 mr-1"
+                         label="{{ 'action' | translate }}">
+          <ng-template #tpl
+                       let-posting="item"
+                       let-i>
+            <!-- 編輯 -->
+            <i class="fa-solid fa-pen-to-square fa btn-fontawesome"
+               (click)="billingSetting(template1, posting, 'single')"></i>
+          </ng-template>
+        </in-table-column>
+      </in-table>
+    </ng-container>
+  </div>
+</div>
+
+
+
+
+
+<!-- 過帳入庫出帳狀態設定 -->
+<ng-template #template1
+             class="modal fade">
+  <div class="col-12 p-0">
+    <div class="p-3 card-header bg-primary text-white"
+         *ngIf="billingMode === 'single'"
+         style="font-size: 24px;">
+      {{checkItem.cloudId + ' ' +checkItem.customer + '-' + checkItem.date}}
+    </div>
+    <div class="p-3 card-header bg-primary text-white"
+         style="font-size: 24px;">
+      {{'所有選擇項目'}}
+    </div>
+    <div class="modal-content">
+      <div class="modal-body">
+        <div class="form-group row">
+          <div class="col-12 col-sm-4">
+
+            <!-- 出帳狀態 下拉選單 -->
+            <label class="col-form-label">{{ 'billing status' | translate }}</label>
+            <select class="custom-select pt-2"
+                    [(ngModel)]="checkItem.postingStatus">
+              <option [disabled]="true"
+                      [ngValue]="''">{{ '請選擇一個項目' }}</option>
+              <option *ngFor="let billing of billingStatus"
+                      [ngValue]="billing.id">{{ billing.itemName }}</option>
+            </select>
+          </div>
+
+          <!-- 最後編輯者 -->
+          <div class="col-12 col-sm-4"
+               *ngIf="billingMode === 'single'">
+            <label class="col-form-label">{{ 'modified user' | translate }}</label>
+            <!-- <input type="text"
+                   [disabled]="true"
+                   [(ngModel)]="checkItem.name"
+                   class="form-control"> -->
+            <div>
+              <label>{{checkItem.name}}</label>
+            </div>
+          </div>
+
+          <!-- 最後更新時間 -->
+          <div class="col-12 col-sm-4"
+               *ngIf="billingMode === 'single'">
+            <label class="col-form-label">{{ 'modified date' | translate }}</label>
+            <!-- <input type="text"
+                   [(ngModel)]="checkItem.modifyTime"
+                   [disabled]="true"
+
+                   class="form-control"> -->
+            <div>
+              <label>{{checkItem.modifyTime | date:'yyyy-MM-dd'}}</label>
+            </div>
+
+          </div>
+
+          <!-- 備註 -->
+          <div class="col-12 col-sm-12">
+            <label class="col-form-label">{{ 'remark' | translate }}</label>
+            <textarea [(ngModel)]="checkItem.message"
+                      class="form-control p-0"> </textarea>
+            <p class="help-block text-danger"
+               *ngIf="checkItem.postingStatus === 'FAIL' && !checkItem.message">{{ 'this field is required' | translate
+              }}
+            </p>
+          </div>
+        </div>
+        <div class="float-right">
+          <button type="button"
+                  *ngIf="billingMode === 'single'"
+                  [disabled]="checkItem.postingStatus === 'FAIL' && !checkItem.message"
+                  (click)="handleSinglePostingItem()"
+                  class=" btn btn-primary">
+            {{ 'submit' | translate}}
+            <i class="fas fa-spin fa-spinner ml-1"
+               *ngIf="ui.saveLoad"></i>
+          </button>
+
+          <button type="button"
+                  *ngIf="billingMode === 'multiple'"
+                  [disabled]="checkItem.postingStatus === 'FAIL' && !checkItem.message"
+                  (click)="handleAllPostingItem()"
+                  class=" btn btn-primary">
+            {{ 'submit' | translate}}
+            <i class="fas fa-spin fa-spinner ml-1"
+               *ngIf="ui.saveLoad"></i>
+          </button>
+
+          <button type="button"
+                  (click)="billingCancel()"
+                  class=" ml-2 btn btn-light">
+            {{ 'cancel' | translate}}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</ng-template>

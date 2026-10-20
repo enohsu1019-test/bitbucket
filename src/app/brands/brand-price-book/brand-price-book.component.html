@@ -1,0 +1,66 @@
+<div class="card" style="border-top: none">
+  <div class="card-body">
+    <div style="max-height: 600px; overflow-y: auto;">
+      <in-table [data]="intableDatas" [listViewClass]="'d-none d-md-block'" [cardViewClass]="'d-block d-md-none'"
+        [listHeaderClass]="'bg-primary text-white'" [config]="intableConfig" [inTableTranslate]="{
+                        'no data found': 'No Data Found' | translate,
+                        'items per page': 'items per page' | translate
+                      }" #inTable>
+        <in-table-column classValue="text-wrap" label="#">
+          <ng-template #tpl let-index="rowIndex" let-xxx let-price="item">
+            {{ index + 1}}
+            <i *ngIf="price.draggable" class="fas fa-align-justify"></i>
+            <div style="height:25px;" *ngIf="!price.name"></div>
+          </ng-template>
+
+        </in-table-column>
+        <!-- 欄位標題 -->
+        <in-table-column class="text-truncate ml-1 mr-1 " prop="name" label="{{ 'field title' | translate }}">
+          <ng-template #tpl let-price="item" let-i>
+            <div class=" ">
+              <input class="form-control" type="text" [(ngModel)]="price.name">
+              <span *ngIf="!price.name" class="form-text text-danger">{{'this field is required'|
+                translate}}</span>
+            </div>
+          </ng-template>
+        </in-table-column>
+
+        <!-- key-->
+        <in-table-column class="text-truncate ml-1 mr-1 " prop="key"
+          label="{{ 'KEY' | translate }}">
+          <ng-template #tpl let-price="item" let-i>
+            <input class="form-control" type="text" [(ngModel)]="price.key" [disabled]="!price.initial">
+            <span *ngIf="!price.key" class="form-text text-danger">{{'this field is required'|
+              translate}}</span>
+          </ng-template>
+        </in-table-column>
+
+        <!-- 必填 -->
+        <in-table-column class="text-truncate text-center ml-1 mr-1 "
+          prop="require" label="{{ 'require' | translate }}">
+          <ng-template #tpl let-price="item" let-i>
+            <input type="checkbox" class="pt-1 ml-1 mr-1" [(ngModel)]="price.require" checked="checked">
+            <div style="height:25px;" *ngIf="!price.name"></div>
+          </ng-template>
+        </in-table-column>
+
+
+        <!-- 動作-->
+        <in-table-column class="text-truncate ml-1 mr-1 " label="{{ 'operation' | translate }}">
+          <ng-template #tpl let-price="item" let-i>
+            <div class="d-flex align-items-center m-0">
+              <i class="fas  fa-times text-danger" [popover]="'刪除'" triggers="mouseenter:mouseleave"
+                placement="top" style="cursor: pointer;" (click)="deletePriceBookItem(i)"></i>
+            </div>
+            <div style="height:25px;" *ngIf="!price.name"></div>
+          </ng-template>
+        </in-table-column>
+      </in-table>
+    </div>
+
+    <button class="btn btn-success col-12 " (click)="addPriceBookItem()">
+      <i class="fas fa-plus"></i> {{ 'add item' | translate | titlecase}}
+    </button>
+
+  </div>
+</div>

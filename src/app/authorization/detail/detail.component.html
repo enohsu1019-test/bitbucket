@@ -1,0 +1,385 @@
+<div class="pb-6"
+     [ngClass]="{'pb-6': mode === 'add'}">
+
+  <!---------------------- 角色設定 ---------------------->
+  <div class="mb-4">
+    <div class="card">
+      <!-- <tabset class="custom-tabs">
+      <tab heading="{{ 'role setting' | translate | titlecase }}"
+           [active]="true"></tab>
+    </tabset> -->
+      <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">{{ 'role setting' | translate | titlecase }}</h5>
+      </div>
+      <form [formGroup]="authForm"
+            class="card-body border-top-0">
+        <div class="form-row pb-1">
+          <div class="col-12 col-sm-3 mb-4 mb-sm-0"
+               #brandId>
+            <label for="brandId"
+                   class="required">{{ 'origin' | translate | titlecase }}</label>
+            <select class="form-control required"
+                    id="brandId"
+                    formControlName="brandId"
+                    (change)="resetCloudInfo(); checkToGetCompanyDDL('brand')">
+              <option selected
+                      disabled
+                      value="">{{ 'please select' | translate | titlecase }}</option>
+              <option *ngFor="let opt of brandDDL"
+                      [value]="opt?.id">{{ opt.name | translate }}</option>
+            </select>
+          </div>
+          <div class="col-12 col-sm-3 mb-4 mb-sm-0">
+            <label for="identityType"
+                   class="required">{{ 'identity type' | translate | titlecase }}</label>
+            <select class="form-control required"
+                    id="identityType"
+                    formControlName="identityType"
+                    (change)="resetCloudInfo(); checkToGetCompanyDDL('identity')">
+              <option selected
+                      disabled
+                      value="">{{ 'please select' | translate | titlecase }}</option>
+              <option *ngFor="let opt of identityTypeDDL"
+                      [value]="opt.value">{{ opt.name | translate }}</option>
+            </select>
+          </div>
+          <div class="col-12 col-sm-3 mb-4 mb-sm-0">
+            <label for="companyId"
+                   class="required">{{ 'company' | translate | titlecase }}</label>
+            <angular2-multiselect [data]="companyDDL"
+                                  [(ngModel)]="selectedCompany"
+                                  [settings]="selectSettings"
+                                  (onSelect)="resetCloudInfo(); selectCompany($event)"
+                                  (onDeSelect)="resetCloudInfo()"
+                                  [ngModelOptions]="{standalone: true}"
+                                  [ngClass]="{'multiselect-disabled': ui.isCompanyDisable}">
+              <c-item *ngIf="currentUser?.role?.identityType === IdentityType.SYSTEM">
+                <ng-template let-item="item">
+                  <span class="text-muted menu_item">{{item.creator}}</span>
+                  <span class="d-block menu_item_name">{{item.fullCh}}</span>
+                </ng-template>
+              </c-item>
+            </angular2-multiselect>
+            <!-- <select class="form-control required"
+                    id="companyId"
+                    formControlName="companyId">
+              <option selected
+                      disabled
+                      value="">{{ 'please select' | translate | titlecase }}</option>
+              <option *ngFor="let opt of companyDDL"
+                      [value]="opt.id">{{ opt.fullCh | translate }}</option>
+            </select> -->
+          </div>
+          <div class="col-12 col-sm-3 mb-4 mb-sm-0">
+            <label for="name"
+                   class="required">{{ 'role' | translate | titlecase }}</label>
+            <input type="text"
+                   class="form-control required"
+                   id="name"
+                   formControlName="name"
+                   (blur)="checkIfRoleExist()"
+                   [ngClass]="{'is-invalid': ui.ifRoleExist}"
+                   placeholder="{{ 'please fill input' | translate:{ input: 'role' | translate } | titlecase }}">
+            <span *ngIf="ui.ifRoleExist"
+                  class="invalid-feedback px-1">{{ 'duplicated roleName' | translate | titlecase }}</span>
+          </div>
+        </div>
+        <div *ngIf="mode === 'add'"
+             class="text-xs text-danger py-1 px-2">
+          <i class="fa-solid fa-circle-exclamation"></i>
+          {{ 'change to clear roleName and cloudId' | translate | titlecase }}
+        </div>
+        <!-- 如果有新增或編輯權限，但沒有選單權限，提醒開啟 -->
+        <div *ngIf="((iamPermission['iam-v1.create'] && mode === 'add') ||
+                     (iamPermission['iam-v1.update'] && mode === 'edit')) &&
+                    (!iamPermission['iam-v1.brands'] ||
+                     !customerPermission['customer-v1.queryCustomers'] ||
+                     !iamPermission['iam-v1.checkName'])"
+             class="text-xs text-danger py-1 px-2">
+          <i class="fa-solid fa-circle-exclamation"></i>
+          {{ 'please enable related permission first' | translate | titlecase }}
+        </div>
+      </form>
+      <div *appPermissionIf="['iam-v1.update','iam-v1.checkName']">
+        <div class="card-footer text-right"
+             style="background-color: #e8e8e8;"
+             *ngIf="mode === 'edit'">
+          <button class="btn btn-secondary btn-sm mr-2"
+                  type="button"
+                  (click)="getRole(roleId)"
+                  [disabled]="ui.isRoleLoading">
+            {{ 'cancel' | translate | titlecase }}</button>
+          <button class="btn btn-primary btn-sm"
+                  type="button"
+                  (click)="checkIfRoleExist(true)"
+                  [disabled]="ui.isRoleLoading || ui.ifRoleExist">
+            {{ 'update' | translate | titlecase }}
+            <i class="fas fa-spin fa-spinner mr-1"
+               *ngIf="ui.isRoleLoading"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr>
+
+  <!---------------------- 權限設定 ---------------------->
+  <div class="my-4 p-3 bg-white shadow-sm"
+       *appPermissionIf="['iam-v1.rule-get', 'iam-v1.rule-group']">
+    <h4 class="pb-2 mb-3 border-bottom border-primary h4-border-bottom">
+      {{ 'permission' | translate | titlecase }}</h4>
+    <tabset class="custom-tabs">
+      <tab *ngFor="let item of ruleGroupTabs, let i = index"
+           heading="{{ ('ruleGroup_' + item) | translate | titlecase }}"
+           [active]="ruleGroupName === item"
+           (selectTab)="ruleGroupName = item; ruleGroupIndex = i">
+      </tab>
+    </tabset>
+    <div class="card border-top-0">
+      <div class="card-body pb-0"
+           [ngClass]="{ 'pb-3' : ruleGroupListShow[ruleGroupIndex]?.group?.length}">
+        <div class="row mx-n3 border-bottom">
+          <div class="col-10 col-lg-11 pb-2">{{ 'permission' | translate | titlecase }}</div>
+          <div class="col-2 col-lg-1 pb-2 text-center"
+               *appPermissionIf="'iam-v1.rule-edit'">{{ 'action' | translate | titlecase }}</div>
+        </div>
+        <div class="row mx-n3"
+             *ngIf="!ui.isRuleLoading && ruleGroupListShow[ruleGroupIndex]?.group?.length">
+          <div class="col-10 col-lg-11 pt-2">
+            <mat-chip-list>
+              <mat-chip class="mat-custom-color-blue"
+                        [ngClass]="{'pointer-disabled': !iamPermission['iam-v1.rule-edit']}"
+                        *ngFor="let group of ruleGroupListShow[ruleGroupIndex].group"
+                        (click)="openRuleModal(modalTemplate, ('ruleGroup_' + ruleGroupName))">
+                <!-- (removed)="remove(chip.id, ruleSelectedList)" -->
+                {{ group.description }}
+              </mat-chip>
+            </mat-chip-list>
+          </div>
+          <div class="col-2 col-lg-1 pt-2 text-center"
+               *appPermissionIf="'iam-v1.rule-edit'">
+            <i class="fa-solid fa-pen-to-square btn-fontawesome"
+               (click)="openRuleModal(modalTemplate, ('ruleGroup_' + ruleGroupName))">
+            </i>
+          </div>
+        </div>
+      </div>
+      <div *appPermissionIf="'iam-v1.rule-edit'">
+        <button class="card-footer bg-success btn btn-success w-100"
+                *ngIf="!ui.isRuleLoading && !ruleGroupListShow[ruleGroupIndex]?.group?.length"
+                (click)="openRuleModal(modalTemplate, ('ruleGroup_' + ruleGroupName))">
+          <i class="fa-solid fa-plus fa-sm mr-1"></i>{{ 'add' | translate | titlecase }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!---------------------- 資料設定 ---------------------->
+  <div class="my-4 p-3 bg-white shadow-sm"
+       *appPermissionIf="['iam-v1.cloudIdInfo-query']">
+    <h4 class="pb-2 mb-3 border-bottom border-primary h4-border-bottom">
+      {{ 'data for role' | translate | titlecase }} ( {{ cloudIdName }} )</h4>
+    <!---------------- Payer ID / Cloud ID ---------------->
+    <div class="mb-4">
+      <!----------------------- form ----------------------->
+      <div class="card mb-4">
+        <!------------------ 表單 ------------------>
+        <div class="card-header bg-primary text-white">
+          <h5 class="mb-0">
+            {{ 'cloudId setting card head' | translate | titlecase }}
+            <button class="btn btn-success btn-sm ml-2"
+                    (click)="openCloudIdModal(modalTemplate, null)"
+                    [disabled]="!f['brandId'].value || !f['identityType'].value || !f['companyId'].value"
+                    *appPermissionIf="'iam-v1.cloudIdInfo-add'">
+              <i class="fa-solid fa-plus mr-1"></i>{{ 'add' | translate | titlecase }}</button>
+          </h5>
+        </div>
+        <div *appPermissionIf="'iam-v1.cloudIdInfo-add'">
+          <div class="card-body text-center"
+               *ngIf="mode === 'add'">
+            <h4 class="mb-0">{{ 'waiting for adding new data' | translate | titlecase }}</h4>
+          </div>
+        </div>
+        <div class="card-body"
+             *ngIf="mode === 'edit'">
+          <div class="form-row mb-0 mb-sm-4">
+            <div class="col-12 col-sm-4 mb-4 mb-sm-0">
+              <label for="payerId">{{ 'Payer ID' }}</label>
+              <input type="text"
+                     class="form-control"
+                     id="payerId"
+                     [(ngModel)]="keyword.payerId"
+                     placeholder="{{ 'please fill input' | translate:{ input: ' Payer ID' } }}">
+            </div>
+            <div class="col-12 col-sm-4 mb-4 mb-sm-0">
+              <label for="customer">{{ 'customer company' | translate | titlecase }}</label>
+              <input type="text"
+                     class="form-control"
+                     id="customer"
+                     [(ngModel)]="keyword.company"
+                     placeholder="{{ 'please fill input' | translate:{ input: 'company chinese english nickname' | translate } | titlecase }}">
+            </div>
+            <div class="col-12 col-sm-4 mb-4 mb-sm-0">
+              <label for="cloudId">{{ cloudIdName }}</label>
+              <input type="text"
+                     class="form-control"
+                     id="cloudId"
+                     [(ngModel)]="keyword.cloudId"
+                     placeholder="{{ 'please fill input' | translate:{ input: cloudIdName } }}">
+            </div>
+          </div>
+          <div>
+            <button class="btn btn-secondary btn-sm mr-2"
+                    type="button"
+                    (click)="resetCloudIdForm()">{{ 'reset' | translate | titlecase }}</button>
+            <button class="btn btn-primary btn-sm"
+                    type="button"
+                    (click)="searchCloudId()"
+                    [disabled]="(!keyword.payerId && !keyword.company && !keyword.cloudId) || ui.isCloudIdLoading">
+              {{ 'search' | translate | titlecase }}
+              <i class="fas fa-spin fa-spinner mr-1"
+                 *ngIf="ui.isRuleLoading"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!---------------------- inTable ---------------------->
+      <in-table class="table table-hover"
+                [data]="cloudIdsTableList"
+                [listViewClass]="'d-none d-md-block'"
+                [cardViewClass]="'d-block d-md-none'"
+                [listHeaderClass]="'thead-light sticky-header-color'"
+                [pageConfig]="tableConfigCloudId.pageConfig"
+                (pageChanged)="pageChange($event)"
+                [sortBy]="tableConfigCloudId.sortBy"
+                (sort)="sort($event)"
+                [isLoading]="ui.isCloudIdLoading"
+                [enableHorizontalScroll]="true"
+                [shownodata]="true"
+                [config]="inTableConfig"
+                [inTableTranslate]="{
+                  'no data found': 'no data found' | translate | titlecase,
+                  'items per page': 'items per page' | translate | titlecase}"
+                (colWidthResized)="util.syncInTableColWidths(cloudIdTable, 'intable-rule-cloudId', true)"
+                (afterViewInit)="util.syncInTableColWidths(cloudIdTable, 'intable-rule-cloudId', false)"
+                #cloudIdTable>
+
+        <!----------- # ----------->
+        <in-table-column label="#"
+                         class="font-weight-bold">
+          <ng-template #tpl
+                       let-index="rowIndex"
+                       let-xxx>
+            {{ ( tableConfigCloudId.pageConfig.currentPage -1 ) * tableConfigCloudId.pageConfig.itemsPerPage + index + 1 }}
+          </ng-template>
+        </in-table-column>
+
+        <!--------------- payerId --------------->
+        <in-table-column class="text-truncate mx-1"
+                         prop="payerId"
+                         label="Payer Id ({{ 'alias' | translate | titlecase }})"
+                         sortKey="payerId">
+          <ng-template #tpl
+                       let-item="item">
+            {{ item.payerId.nickName ? item.payerId.nickName : item.payerId.payerId }}
+          </ng-template>
+        </in-table-column>
+
+        <!--------------- company --------------->
+        <in-table-column class="text-truncate mx-1"
+                         prop="company"
+                         label="{{ 'customer company' | translate | titlecase }}"
+                         sortKey="company">
+          <ng-template #tpl
+                       let-item="item">
+            <span [popover]="item.company?.fullCh ?? ''"
+                  placement="top left"
+                  triggers="mouseenter:mouseleave">
+              {{ item.company?.fullCh ?? '' }}</span>
+          </ng-template>
+        </in-table-column>
+
+        <!--------------- cloudId ---------------->
+        <in-table-column class="text-truncate mx-1"
+                         prop="cloudIds"
+                         label="{{ cloudIdName }} ({{ 'alias' | translate | titlecase }})"
+                         sortKey="cloudIds">
+          <ng-template #tpl
+                       let-item="item"
+                       let-i>
+            <ng-container *ngIf="item.cloudIds.length; else all">
+              <ng-container *ngFor="let cid of item.cloudIds; let i = index">
+                {{ cid }}<span *ngIf="i < item.cloudIds.length - 1">, </span>
+              </ng-container>
+            </ng-container>
+            <ng-template #all>All Cloud Ids</ng-template>
+          </ng-template>
+        </in-table-column>
+
+        <!--------------- 時間 --------------->
+        <in-table-column class="text-truncate mx-1"
+                         prop="time"
+                         label="{{ 'update date' | translate | titlecase }}"
+                         sortKey="time">
+          <ng-template #tpl
+                       let-item="item">
+            {{ item.time | date:'yyyy-MM-dd' }}
+          </ng-template>
+        </in-table-column>
+
+        <!--------------- 動作 --------------->
+        <in-table-column class="text-truncate mx-1 text-center"
+                         label="{{ 'action' | translate | titlecase }}"
+                         [styleColumn]="{'max-width': '100px'}">
+          <ng-template #tpl
+                       let-item="item">
+            <i class="fa-solid fa-pen-to-square fa- btn-fontawesome mr-3"
+               (click)="openCloudIdModal(modalTemplate, item)"
+               *appPermissionIf="'iam-v1.cloudIdInfo-edit'"></i>
+            <i class="fa-solid fa-trash-can btn-fontawesome text-danger"
+               (click)="deleteCloudId(item.id)"
+               *appPermissionIf="'iam-v1.cloudIdInfo-delete'"></i>
+          </ng-template>
+        </in-table-column>
+      </in-table>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== Footer ===================== -->
+<div class="action-button-footer"
+     *ngIf="mode === 'add'">
+  <button class="btn btn-secondary mr-2"
+          type="button"
+          (click)="cancel()"
+          [disabled]="ui.isRoleLoading">{{ 'cancel' | translate | titlecase }}</button>
+  <button class="btn btn-primary"
+          type="button"
+          (click)="addRole()"
+          [disabled]="authForm.invalid || ui.isRoleLoading || ui.ifRoleExist ||
+                      !iamPermission['iam-v1.brands'] ||
+                      !customerPermission['customer-v1.queryCustomers'] ||
+                      !iamPermission['iam-v1.checkName']">
+    {{ 'save' | translate | titlecase }}
+    <i class="fas fa-spin fa-spinner mr-1"
+       *ngIf="ui.isRoleLoading"></i>
+  </button>
+</div>
+
+<!-- =================== 右側編輯視窗 =================== -->
+<ng-template #modalTemplate>
+  <!-------------------- 編輯用戶 -------------------->
+  <app-edit-modal [mode]="mode"
+                  [modalType]="modalType"
+                  [modalTitle]="modalTitle"
+                  [modalList]="modalList"
+                  [modalCloudId]="modalCloudId"
+                  [role]="role"
+                  (updatedResult)="updatedResult($event)"
+                  (closeModal)="closeModal()"></app-edit-modal>
+  <!-- [brandId]="f['brandId'].value"
+                  [identityTypeId]="f['identityType'].value"
+                  [roleId]="roleId" -->
+</ng-template>

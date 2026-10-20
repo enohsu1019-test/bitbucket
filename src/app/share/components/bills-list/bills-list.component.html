@@ -1,0 +1,267 @@
+<div>
+  <!---------------------- 新增 & 搜尋 ---------------------->
+  <div class="card-header bg-primary text-white">
+    <h5 class="mb-0">{{ 'bills' | translate | titlecase }}</h5>
+  </div>
+  <div class="mb-5 card card-body">
+    <!------------------ 表單 ------------------>
+    <form [formGroup]="searchForm">
+      <div class="form-row mb-1">
+        <!-------------- 採購單編號 -------------->
+        <!-- <div class="col-12 col-md-6 col-lg-4 mb-3">
+          <label for="id">{{ 'purchase order number' | translate | titlecase }}</label>
+          <input type="text"
+                 class="form-control"
+                 id="id"
+                 formControlName="id"
+                 placeholder="{{ 'please fill input' | translate:{input: 'purchase order number' | translate} | titlecase }}">
+        </div> -->
+
+        <!-------------- 312編號 -------------->
+        <div class="col-12 col-md-6 col-lg-4 mb-3">
+          <label for="orderErpNumber">312{{ 'no.' | translate | titlecase }}</label>
+          <input type="text"
+                 class="form-control"
+                 id="orderErpNumber"
+                 formControlName="orderErpNumber"
+                 placeholder="{{'請輸入312編號'}}">
+        </div>
+
+        <!-------------- 客戶 -------------->
+        <div class="col-12 col-md-6 col-lg-4 mb-3">
+          <label for="customer">{{ 'customer' | translate | titlecase }}</label>
+          <input type="text"
+                 class="form-control"
+                 id="customer"
+                 formControlName="customer"
+                 placeholder="{{ 'please fill input' | translate:{input: 'customer' | translate} | titlecase }}">
+        </div>
+
+        <!-------------- 品牌 -------------->
+        <div class="col-12 col-md-6 col-lg-4 mb-3">
+          <label for="brandId">{{ 'brands' | translate | titlecase }}</label>
+          <select class="form-control"
+                  id="brandId"
+                  formControlName="brandId">
+            <option value=""
+                    selected>{{ 'all items' | translate | titlecase }}</option>
+            <option *ngFor="let brand of sortListBy(brandList, 'name')"
+                    [ngValue]="brand.brandId">{{ brand.name }}</option>
+          </select>
+        </div>
+
+        <!-------------- 起始日期 -------------->
+        <div class="col-12 col-md-6 col-lg-4 mb-3">
+          <label for="startDate">{{ 'start date' | translate | titlecase }}</label>
+          <input type="text"
+                 class="form-control"
+                 autocomplete="off"
+                 bsDatepicker
+                 placeholder="{{ 'please fill input' | translate:{input: 'start date' | translate} | titlecase }}"
+                 id="startDate"
+                 formControlName="startDate"
+                 [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD' }"
+                 [maxDate]="f['endDate'].value"
+                 (change)="checkDate($event, 'startDate')">
+        </div>
+
+        <!-------------- 結束日期 -------------->
+        <div class="col-12 col-md-6 col-lg-4 mb-3">
+          <label for="endDate">{{ 'end date' | translate | titlecase }}</label>
+          <input type="text"
+                 class="form-control"
+                 autocomplete="off"
+                 bsDatepicker
+                 placeholder="{{ 'please fill input' | translate:{input: 'end date' | translate} | titlecase }}"
+                 id="endDate"
+                 formControlName="endDate"
+                 [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD' }"
+                 [minDate]="f['startDate'].value"
+                 (change)="checkDate($event, 'endDate')">
+        </div>
+
+        <!-- clounId -->
+        <div class="col-12 col-md-6 col-lg-4 mb-3">
+          <label for="customer">{{ cloudIdName }}</label>
+          <input type="text"
+                 class="form-control"
+                 id="clounId"
+                 formControlName="clounId">
+        </div>
+
+
+        <!-------------- 狀態 -------------->
+        <div class="col-12 col-md-6 col-lg-4 mb-3">
+          <label>{{ 'status' | translate | titlecase }}</label>
+          <div>
+            <div class="form-check-inline"
+                 *ngFor="let status of billStatusTypes">
+              <label class="form-check-label">
+                <input type="checkbox"
+                       class="form-check-input mr-0"
+                       value="{{ status }}"
+                       [checked]="filterBillStatus.indexOf(status) > -1"
+                       (change)="toggleSelection(status)">
+                {{ status | translate | titlecase }}</label>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <button class="btn btn-secondary btn-sm mr-2"
+                type="button"
+                (click)="reset()"
+                [disabled]="ui.isSearching">
+          {{ 'reset' | translate | titlecase }}</button>
+        <button class="btn btn-primary btn-sm"
+                type="button"
+                (click)="search()"
+                [disabled]="ui.isSearching || !searchForm.valid">
+          <!-- <i class="fas"
+             [ngClass]="{'fa-spin fa-spinner': ui.isSearching, 'fa-search': !ui.isSearching}"></i> -->
+          {{ 'search' | translate | titlecase }}
+          <i class="fas fa-spin fa-spinner mr-1"
+             *ngIf="ui.isSearching"></i>
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!---------------------- inTable ---------------------->
+  <in-table class="table table-hover"
+            [data]="billList"
+            [listViewClass]="'d-none d-md-block'"
+            [cardViewClass]="'d-block d-md-none'"
+            [listHeaderClass]="'thead-light sticky-header-color'"
+            [pageConfig]="pageConfig"
+            (pageChanged)="pageChange($event)"
+            [sortBy]="sortBy"
+            (sort)="sort($event)"
+            [isLoading]="ui.isSearching"
+            [enableHorizontalScroll]="true"
+            [shownodata]="billList.length === 0 ? true : false"
+            [config]="inTableConfig"
+            [inTableTranslate]="{
+              'no data found': 'no data found' | translate | titlecase,
+              'items per page': 'items per page' | translate | titlecase}"
+            [routerState]="{ billListFilter: filter }"
+            (colWidthResized)="util.syncInTableColWidths(billTable, 'intable-billList-table', true)"
+            (afterViewInit)="util.syncInTableColWidths(billTable, 'intable-billList-table', false)"
+            #billTable>
+    <!-- [rowLinks]="permissions['siBill.billList.getBill'] ? links : null"
+            [routerState]="permissions['siBill.billList.getBill'] ? { billListFilter: currentFilter } : null" -->
+
+    <!----------- # ----------->
+    <in-table-column label="#"
+                     class="font-weight-bold">
+      <ng-template #tpl
+                   let-index="rowIndex"
+                   let-xxx>
+        {{ ( pageConfig.currentPage -1 ) * pageConfig.itemsPerPage + index + 1 }}
+      </ng-template>
+    </in-table-column>
+
+    <!--------------- 312編號 --------------->
+    <in-table-column class="text-truncate mx-1"
+                     prop="orderErpNumber"
+                     label="312{{ 'no.' | translate | titlecase }}"
+                     sortKey="orderErpNumber">
+    </in-table-column>
+
+    <!--------------- 子單編號 --------------->
+    <in-table-column class="text-truncate mx-1"
+                     prop="orderId"
+                     label="{{ 'sub order id' | translate | titlecase }}"
+                     sortKey="orderId">
+      <ng-template #tpl
+                   let-bill="item">
+        <div [popover]="bill.subOrderId"
+             placement="top left"
+             triggers="mouseenter:mouseleave"
+             container="body"
+             placement="top">
+          {{ bill.subOrderId }}</div>
+      </ng-template>
+    </in-table-column>
+
+    <!-- cloudId -->
+    <in-table-column [styleColumn]="{'max-width': '150px'}"
+                     class="text-truncate ml-1 mr-1"
+                     prop="cloudId"
+                     label="{{ 'Account Id' | translate }}">
+      <ng-template #tpl
+                   let-bill="item">
+        <div [popover]="bill.cloudId"
+             placement="top left"
+             triggers="mouseenter:mouseleave"
+             container="body"
+             placement="top">
+          {{ bill.cloudId }}</div>
+      </ng-template>
+    </in-table-column>
+
+    <!------------- 客戶 -------------->
+    <in-table-column class="text-truncate mx-1"
+                     prop="customer"
+                     label="{{ 'customer' | translate | titlecase }}"
+                     sortKey="customer">
+      <ng-template #tpl
+                   let-bill="item">
+
+        <div [popover]="bill.customer.name"
+             placement="top left"
+             triggers="mouseenter:mouseleave"
+             container="body"
+             placement="top">
+          {{ bill.customer.name }}</div>
+      </ng-template>
+    </in-table-column>
+
+    <!--------------- 品牌 --------------->
+    <in-table-column class="text-truncate mx-1"
+                     prop="brand"
+                     label="{{ 'brands' | translate | titlecase }}"
+                     sortKey="brand">
+    </in-table-column>
+
+    <!--------------- 方案 --------------->
+    <in-table-column class="text-truncate mx-1"
+                     prop="solution"
+                     label="{{ 'solution' | translate | titlecase }}"
+                     sortKey="solution">
+    </in-table-column>
+
+    <!--------------- 起始日期 --------------->
+    <in-table-column class="text-truncate mx-1"
+                     prop="startDate"
+                     label="{{ 'start date' | translate | titlecase }}"
+                     sortKey="startDate">
+      <ng-template #tpl
+                   let-bill="item">
+        {{ bill.startDate | date:'yyyy-MM-dd' }}
+      </ng-template>
+    </in-table-column>
+
+    <!--------------- 結束日期 --------------->
+    <in-table-column class="text-truncate mx-1"
+                     prop="endDate"
+                     label="{{ 'end date' | translate | titlecase }}"
+                     sortKey="endDate">
+      <ng-template #tpl
+                   let-bill="item">
+        {{ bill.endDate | date:'yyyy-MM-dd' }}
+      </ng-template>
+    </in-table-column>
+
+    <!--------------- 狀態 --------------->
+    <in-table-column class="text-truncate mx-1"
+                     prop="orderStatus"
+                     label="{{ 'status' | translate | titlecase }}"
+                     sortKey="orderStatus">
+      <ng-template #tpl
+                   let-bill="item">
+        {{ bill.orderStatus | translate }}
+      </ng-template>
+    </in-table-column>
+  </in-table>
+</div>

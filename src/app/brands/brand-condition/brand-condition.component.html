@@ -1,0 +1,68 @@
+<h2 mat-dialog-title>{{'advanced settings' | translate}}</h2>
+
+<mat-dialog-content>
+  <mat-tab-group>
+    <mat-tab *ngIf="data.data" label="{{data.data.type| translate}}">
+      <div class="p-3">
+        <in-table [data]="editDatas.items" [listViewClass]="'d-none d-md-block'" [cardViewClass]="'d-block d-md-none'"
+          [listHeaderClass]="'bg-primary text-white'" [config]="intableConfig" [inTableTranslate]="{
+                        'no data found': 'No Data Found' | translate,
+                        'items per page': 'items per page' | translate
+                      }" #inTable>
+          <in-table-column classValue="text-wrap" label="#">
+            <ng-template #tpl let-index="rowIndex" let-xxx let-biz="item">
+              {{ index + 1}}
+              <i class="fa-solid fa-align-justify"></i>
+            </ng-template>
+          </in-table-column>
+          <!-- 項目 -->
+          <in-table-column classValue="text-wrap" class="text-truncate ml-1 mr-1" prop="label"
+            label="{{ 'item' | translate }}">
+            <ng-template #tpl let-edit="item" let-i>
+              <input (change)="setBoxItemValue(edit)" class="form-control" type="text" [(ngModel)]="edit.label">
+              <span *ngIf="!edit.label" class="form-text text-danger">{{'this field is required'| translate}}</span>
+            </ng-template>
+          </in-table-column>
+
+
+          <!-- 預設勾選 -->
+          <in-table-column class="text-truncate text-center ml-1 mr-1" prop="checked"
+            label="{{ 'default checked' | translate }}">
+            <ng-template #tpl let-edit="item" let-i>
+              <input type="checkbox" class="pt-1 ml-1 mr-1" [(ngModel)]="edit.checked" checked="checked">
+            </ng-template>
+          </in-table-column>
+
+          <!-- 操作-->
+          <in-table-column class="text-truncate ml-1 mr-1" label="{{ 'operation' | translate }}">
+            <ng-template #tpl let-brand="item" let-i>
+              <div class="d-flex flex-row align-items-center">
+                <i class="fas fa-times text-danger" *ngIf="i" style="cursor: pointer;" (click)="deleteBoxItem(i)"></i>
+              </div>
+            </ng-template>
+          </in-table-column>
+
+        </in-table>
+
+        <!-- 允許選擇其他 -->
+        <!-- <input type="checkbox" class="pt-1 ml-1 mr-1" [(ngModel)]="editDatas.allowOther" checked="checked">
+        <label>允許選項：「其他」</label> -->
+
+
+        <button class="btn btn-success col-12 " (click)="addBoxItem()">
+          <i class="fas fa-plus"></i> {{ 'add item' | translate | titlecase}}
+        </button>
+      </div>
+
+    </mat-tab>
+  </mat-tab-group>
+</mat-dialog-content>
+
+
+
+
+
+<div mat-dialog-actions class="d-flex justify-content-end">
+  <button mat-button class="btn btn-secondary" (click)="onNoClick()">{{'cancel' | translate}}</button>
+  <button class="btn btn-primary ml-2" mat-button [mat-dialog-close]="data" cdkFocusInitial>{{'confirm' | translate}}</button>
+</div>

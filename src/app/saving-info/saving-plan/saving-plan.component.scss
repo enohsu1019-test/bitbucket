@@ -1,0 +1,23 @@
+.card-header {
+  background-color: transparent;
+}
+.card-listbar {
+  background-color: #F9F9F9;
+  padding: 5px 10px;
+  margin-bottom: 5px;
+}
+.border1{
+  border: 1px solid;
+}
+.borderBlue{
+  border: 1px solid blue;
+  background-color:rgb(224, 245, 245)
+}
+
+.truncate-cell {
+  max-width:200px; /* feel free to include any other value */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+

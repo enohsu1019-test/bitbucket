@@ -1,0 +1,59 @@
+<!-- 過去24個月已出帳金額(NT$) -->
+
+<div class="shadow-sm mb-4 bg-white rounded cardHeight">
+  <div class="p-3">
+    <div class="card-header p-0 border-primary d-flex justify-content-between" style="height:40px;">
+      <h4 class="font-weight-bold" style="line-height: 40px;">{{ 'Monthly usage this year' | translate | uppercase }}(NT$)
+      </h4>
+    </div>
+    <div class="card-body p-0">
+      <!-- cloud id選單 -->
+      <div class="card-listbar">
+        <div class="row">
+          <span class="btn">{{ 'Payer ID：' }}</span>
+          <angular2-multiselect class="col-3"
+                                [data]="selectList.view.payerId"
+                                [(ngModel)]="selectList.select.payerId"
+                                [settings]="payerIdSettings"
+                                (ngModelChange)="payerChange()">
+          </angular2-multiselect>
+          <span class="btn">{{ 'Account ID：' }}</span>
+          <angular2-multiselect class="col-3"
+                                [data]="selectList.view.accountId"
+                                [(ngModel)]="selectList.select.accountId"
+                                [settings]="cloudIdsettings">
+          </angular2-multiselect>
+          <button class="col-1" (click)="getPastBlls()" class="btn btn-primary" style="height: 35px">{{ "display" | translate }}</button>
+        </div>
+      </div>
+
+      <!-- Dashboard遮罩 -->
+      <div class="h-100 d-flex justify-content-center align-items-center" *ngIf="loading">
+        <i class="fas fa-spin fa-spinner fa-3x text-blue"></i>
+        {{ 'loading data' | translate }}
+      </div>
+
+      <!-- Dashboard查無資料 -->
+      <ng-container *ngIf="!loading && billData.length === 0">
+        <div class="list-group-item flex-column align-items-start" style="text-align: center; height: 400px; border: hidden;">
+          <h3><i class="fa fa-exclamation-circle mr-2"></i>{{ 'Can not find data' | translate }}</h3>
+        </div>
+      </ng-container>
+
+      <!-- Dashboard -->
+      <ng-container *ngIf="!loading && billData.length !== 0">
+        <div class="card-body p-0">
+          <div class="col-12">
+            <canvas baseChart
+                    style="height: 250px;"
+                    [datasets]="dashboardDatasets"
+                    [labels]="dashboardDate"
+                    [options]="options">
+            </canvas>
+          </div>
+        </div>
+      </ng-container>
+
+    </div>
+  </div>
+</div>

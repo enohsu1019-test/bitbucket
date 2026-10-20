@@ -1,0 +1,35 @@
+.custom-dropdown {
+  &.multiselect-disabled {
+    pointer-events: none;
+    .selected-list .c-list .c-token,
+    .selected-list .countplaceholder,
+    .selected-list .c-btn {
+      background: #e9ecef !important;
+    }
+    .selected-list .c-btn {
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+  }
+  .selected-list {
+    .c-list .c-token .c-label {
+      max-width: 160px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-size: 0.9rem;
+    }
+    .countplaceholder {
+      font-size: 0.9rem;
+      right: 30px;
+    }
+  }
+}
+
+.form-check-sticky {
+  position: sticky;
+  top: 0;
+  background: white;
+  z-index: 1;
+}

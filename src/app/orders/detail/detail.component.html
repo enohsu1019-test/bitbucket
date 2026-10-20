@@ -1,0 +1,904 @@
+<ng-template #typeaheadItemTemplateCustomer
+             let-model="item"
+             let-index="index">
+  <div class="w-100">
+    <label *ngIf="!model.notValue">{{model.customerName.fullCh +'/' +model.customerName.fullEn}}</label>
+    <button class="btn btn-warning w-100"
+            *ngIf="model.notValue"
+            (click)="customerSelected = ''; toContact($event)">
+      查無資料(點擊我建立新客戶)</button>
+  </div>
+</ng-template>
+
+<ng-template #typeaheadItemTemplateEndUser
+             let-model="item"
+             let-index="index">
+  <div class="w-100">
+    <label *ngIf="!model.notValue">{{model.customerName.fullCh +'/' +model.customerName.fullEn}}</label>
+    <button class="btn btn-warning w-100"
+            *ngIf="model.notValue"
+            (click)="endUserSelected = ''; toContact($event)">
+      查無資料(點擊我建立新客戶)</button>
+  </div>
+</ng-template>
+<div class="h-100 d-flex justify-content-center align-items-center"
+     *ngIf="ui.isLoadOrder">
+  <i class="fas fa-spin fa-spinner fa-3x text-blue"></i>
+</div>
+
+<div class="mb-5"
+     *ngIf="!ui.isLoadOrder">
+  <tabset class="custom-tabs">
+    <tab heading="{{ '編輯訂單' | translate | titlecase }}">
+      <form [formGroup]="orderForm">
+        <div class="card mb-2">
+          <div class="card-body">
+            <div class="form-group row">
+              <!-- 採購單編號 -->
+              <div class="col-4">
+                <label class="col-form-label">{{ 'purchase order number' | translate }}</label>
+                <input type="text"
+                       class="form-control"
+                       [attr.disabled]="true"
+                       formControlName="orderId">
+              </div>
+              <!-- ERP 訂單編號 -->
+              <div class="col-4">
+                <label class="col-form-label"
+                       [ngClass]="{'required': orderForm.value.salesModel !== 'self use' , '': orderForm.value.salesModel === 'self use'}">312
+                  {{ 'no.' | translate }}</label>
+
+
+                <input type="text"
+                       class="form-control"
+                       formControlName="orderErpNumber">
+                <span class="form-text text-danger"
+                      *ngIf="!orderForm.get('orderErpNumber')?.valid && orderForm.get('orderErpNumber')?.touched">
+                  <ng-container
+                                *ngIf="orderForm.get('orderErpNumber')?.errors && orderForm.get('orderErpNumber')?.errors?.['pattern']">
+                    <span>
+                      {{ 'order-id-number-validation-check-msg' | translate }}
+                    </span>
+                  </ng-container>
+                </span>
+              </div>
+              <!-- 商機編號 -->
+              <div class="col-4">
+                <label class="col-form-label">{{ 'opportunity number' | translate }}</label>
+                <input type="text"
+                       class="form-control"
+                       formControlName="quotationId">
+              </div>
+
+              <!-- 客戶編號 -->
+              <div class="col-4">
+                <label class="col-form-label required">{{ 'customer number' | translate }}</label>
+                <input type="text"
+                       class="form-control"
+                       formControlName="erpCustomerNumber">
+                <span class="form-text text-danger"
+                      *ngIf="!orderForm.get('erpCustomerNumber')?.valid && orderForm.get('erpCustomerNumber')?.touched">
+                  <ng-container *ngIf="orderForm.get('erpCustomerNumber')?.errors">
+                    <span>
+                      {{ '此欄位必填請去ERP新增編號' | translate }}
+                    </span>
+                  </ng-container>
+                </span>
+              </div>
+              <!-- 銷售模式 -->
+              <div class="col-4">
+                <label class="col-form-label">{{ 'sales model' | translate }}</label>
+                <select class="custom-select pt-2"
+                        (change)="changeSalesMode()"
+                        formControlName="salesModel">
+                  <option *ngFor="let salesMode of salesModelDripdown"
+                          [ngValue]="salesMode.value">{{ salesMode.name |
+                    translate}}
+                  </option>
+                </select>
+              </div>
+              <!-- 客戶 -->
+              <div class="col-4">
+                <label class="col-form-label required"
+                       *ngIf="orderForm.value.salesModel === 'DISTRIBUTION'">{{ 'customer(dealer)' | translate
+                  }}</label>
+                <label class="col-form-label required"
+                       *ngIf="orderForm.value.salesModel !== 'DISTRIBUTION'">{{ 'customer' | translate }}</label>
+                <!-- <input type="text" class="form-control" formControlName="customerName"
+                  placeholder="{{'please enter customer' | translate }}"> -->
+                <div class="card-listbar">
+                  <div class=" input-group downdrop p-0">
+                    <input type="text"
+                           class="form-control"
+                           style="font-size: 16px;"
+                           [ngModelOptions]="{standalone: true}"
+                           [typeaheadItemTemplate]="typeaheadItemTemplateCustomer"
+                           [(ngModel)]="customerSelected"
+                           [typeahead]="getCustomerFullTypeHead()"
+                           [typeaheadAsync]="true"
+                           [typeaheadMinLength]="2"
+                           [typeaheadWaitMs]="1000"
+                           [typeaheadOptionsInScrollableView]="5"
+                           [typeaheadOptionsLimit]="3000"
+                           [typeaheadScrollable]="true"
+                           (typeaheadLoading)="changeCustomerLoading($event)"
+                           placeholder="{{ 'Please input keyword of customer name.' | translate }}"
+                           (typeaheadOnSelect)="autoInputCustomer($event)">
+                    <span class="ml-2"
+                          *ngIf="ui.isLoadCustomer"><i class="fas fa-spinner fa-spin"></i></span>
+                  </div>
+                </div>
+              </div>
+              <!-- 客戶地址 -->
+              <div class="col-4">
+                <label class="col-form-label required">{{ 'customer address' | translate }}</label>
+                <select class="custom-select pt-2"
+                        formControlName="customerAddress">
+                  <option [ngValue]="''"
+                          disabled>請選擇</option>
+                  <option *ngFor="let address of customerAddressDropdown"
+                          [ngValue]="address.value">{{ address.name }}
+                  </option>
+                </select>
+              </div>
+              <!-- 最終使用者 -->
+              <div class="col-4"
+                   *ngIf="orderForm.value.salesModel === 'DISTRIBUTION'">
+                <label class="col-form-label required">{{ 'endUser' | translate }}</label>
+                <div class="card-listbar">
+                  <div class=" input-group downdrop p-0">
+                    <input type="text"
+                           class="form-control"
+                           style="font-size: 16px;"
+                           [ngModelOptions]="{standalone: true}"
+                           [typeaheadItemTemplate]="typeaheadItemTemplateEndUser"
+                           [(ngModel)]="endUserSelected"
+                           [typeahead]="getEnbuserFullTypeHead()"
+                           [typeaheadAsync]="true"
+                           [typeaheadMinLength]="2"
+                           [typeaheadWaitMs]="1000"
+                           [typeaheadOptionsInScrollableView]="5"
+                           [typeaheadOptionsLimit]="3000"
+                           [typeaheadScrollable]="true"
+                           (typeaheadLoading)="changeCustomerLoading($event)"
+                           placeholder="{{ 'Please input keyword of end user name.' | translate }}"
+                           (typeaheadOnSelect)="autoInputEndUser($event)">
+                    <span class="ml-2"
+                          *ngIf="ui.isEndUser"><i class="fas fa-spinner fa-spin"></i></span>
+                  </div>
+                </div>
+              </div>
+              <!-- 聯絡人 -->
+              <div class="col-4">
+                <label class="col-form-label required">{{ 'contact person' | translate }}</label>
+                <select class="custom-select pt-2"
+                        formControlName="contactPerson">
+                  <option [ngValue]="''">{{'please select contact person'|translate}}</option>
+                  <option *ngFor="let contact of contactPersonDropdown"
+                          [ngValue]="contact.value">{{ contact.name }}
+                  </option>
+                </select>
+              </div>
+              <!-- 帳單聯絡人 -->
+              <div class="col-4 ">
+                <label class="col-form-label required">{{ 'billing Contact' | translate }}</label>
+                <select class="custom-select pt-2"
+                        formControlName="billingContact">
+                  <option [ngValue]="''">{{'please select contact person'|translate}}</option>
+                  <option *ngFor="let contact of billingContactPersonDropdown"
+                          [ngValue]="contact.value">{{ contact.name }}
+                  </option>
+                </select>
+              </div>
+              <!-- 帳單地扯 -->
+              <div class="col-4 ">
+                <label class="col-form-label required">{{ 'billing address' | translate }}</label>
+                <select class="custom-select pt-2"
+                        formControlName="billingAddress">
+                  <option [ngValue]="''">{{'please select billing address'|translate}}</option>
+                  <option *ngFor="let address of customerAddressDropdown"
+                          [ngValue]="address.value">{{ address.name }}
+                  </option>
+                </select>
+              </div>
+
+              <!-- 訂單狀態 -->
+              <div class="col-4 required">
+                <label class="col-form-label">{{ 'order status' | translate }}</label>
+                <select class="custom-select pt-2"
+                        (change)="statusChange()"
+                        formControlName="status">
+
+                  <!-- <ng-container *ngFor="let status of approvalStatusDropdown">
+                    <option *ngIf="mode === 'add' && status.addMode"
+                            [disabled]="isSales ? status.isSales : false"
+                            [ngValue]="status.value">{{ status.name | translate }}</option>
+                    <option *ngIf="mode === 'edit'"
+                            [disabled]="isSales ? status.isSales : false"
+                            [ngValue]="status.value">{{ status.name | translate }}</option>
+                  </ng-container> -->
+                  <!-- <ng-container *ngFor="let status of approvalStatusDropdown">
+                    <option *ngIf="mode === 'add' && status.addMode"
+                            [disabled]="orderForm.value.status === 'APPROVAL' ? isSales ? true :  status.approvalStatus : isSales ? status.isSales : false"
+                            [ngValue]="status.value">{{ status.name | translate }}</option>
+
+                    <option *ngIf="mode === 'edit'"
+                            [disabled]="orderForm.value.status === 'APPROVAL' ? isSales ? true :  status.approvalStatus : isSales ? status.isSales : false"
+                            [ngValue]="status.value">{{ status.name | translate }}</option>
+
+                  </ng-container> -->
+                  <ng-container *ngFor="let status of approvalStatusDropdown">
+                    <option *ngIf="mode === 'add' && status.addMode"
+                            [disabled]="orderForm.value.status === 'APPROVAL' ? isSales ? true :  status.approvalStatus : isSales ? status.isSales : false"
+                            [ngValue]="status.value">{{ status.name | translate }}</option>
+
+                    <option *ngIf="mode === 'edit'"
+                            [disabled]="orderForm.value.status === 'APPROVAL' ? isSales ? true :  status.approvalStatus : isSales ? status.isSales : false"
+                            [ngValue]="status.value">{{ status.name | translate }}</option>
+
+                  </ng-container>
+                </select>
+              </div>
+            </div> <!-- form-group -->
+          </div> <!-- card-body -->
+        </div> <!-- card -->
+      </form>
+      <div class="card">
+        <div class="card-header bg-primary text-white">
+          {{'brand information list' | translate}}
+        </div>
+        <div class="card-body">
+          <!-- 品牌 -->
+          <div class="row">
+            <div class="col-4">
+              <label class="col-form-label">{{ 'brand' | translate }}</label>
+              <select class="custom-select pt-2"
+                      [disabled]="orderSolutionList.length >= 1"
+                      [(ngModel)]="brandId"
+                      (change)="changeBrand()">
+                <option *ngFor="let brand of brandDropdownDatas"
+                        [ngValue]="brand.brandId">{{ brand.name }}</option>
+              </select>
+            </div>
+            <!-- 方案 -->
+            <div class="col-4">
+              <label class="col-form-label required">{{ 'solution' | translate }}</label>
+              <select class="custom-select pt-2"
+                      [(ngModel)]="solutionId">
+                <option *ngFor="let solution of solutionDropdown"
+                        [ngValue]="solution.value">{{ solution.name }}</option>
+              </select>
+            </div>
+            <div class="col-4">
+              <label class="col-form-label">&nbsp;</label>
+              <div class="">
+                <!-- 新增按鈕 -->
+                <button [disabled]="!brandId || !solutionId"
+                        type="button"
+                        class="btn btn-success mr-2"
+                        (click)="addSolution()">
+                  <i class="fas fa-plus"></i> {{ 'add new solution' | translate | titlecase }}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <mat-expansion-panel *ngFor="let orderSolution of orderSolutionList; let i = index"
+                               [expanded]="panelIndex === i"
+                               multi>
+            <mat-expansion-panel-header style="background-color: #e4eeff;">
+              <mat-panel-title>
+                <label *ngIf="!orderSolution.nameEditStatus"
+                       class="headerFont m-0">{{orderSolution.name}}</label>
+                <input class="form-control col-2 headerFont"
+                       (click)="$event.stopPropagation();"
+                       [(ngModel)]="orderSolution.name"
+                       *ngIf="orderSolution.nameEditStatus ">
+                <!-- 開啟方案名稱輸入匡 -->
+                <i class="fa-solid fa-pen ml-2"
+                   *ngIf="orderForm.value.status === 'DRAFT'"
+                   (click)="changeSolutionName(orderSolution, $event)"></i>
+                <!-- 複製 -->
+                <i class="fa-solid fa-copy ml-2"
+                   *ngIf="orderForm.value.status === 'DRAFT'"
+                   (click)="$event.stopPropagation();copySolution(orderSolution);"></i>
+                <!-- 刪除 -->
+                <i class="fas fa-lg fa-times text-danger ml-2"
+                   (click)="deleteSolution(i, $event)"
+                   *ngIf="orderSolution.initial"></i>
+              </mat-panel-title>
+            </mat-expansion-panel-header>
+            <app-solution-detial [orderId]="orderID"
+                                 [mode]="mode"
+                                 [solutionHeaderData]="orderSolution"
+                                 [orderHeader]="orderHeader"
+                                 [status]="orderForm.value.status"
+                                 [salesModel]="orderForm.value.salesModel"
+                                 [customerId]="newOrderHeader.customer.id"
+                                 (required)="handleSolutionRequired($event)"
+                                 [solutionIndex]="i"
+                                 [solutionName]="orderSolution.name"
+                                 [headerForm]="orderForm"
+                                 [dealer]="customerInfo"
+                                 [endUserName]="endUserName">
+            </app-solution-detial>
+          </mat-expansion-panel>
+        </div>
+      </div>
+    </tab>
+    <tab heading="{{ '帳單列表' | translate | titlecase }}">
+      <router-outlet (activate)="orderID"></router-outlet>
+    </tab>
+    <tab *appPermissionIf="'layout.bills'"
+         heading="{{ '修訂紀錄' | translate | titlecase }}">
+      <app-order-history [orderID]="orderID"
+                         [mode]="mode"></app-order-history>
+    </tab>
+  </tabset>
+</div> <!-- form-group -->
+
+<!-- <div style="height: 100px;" *ngIf="orderSolutionList.length === 0"></div> -->
+
+
+<!-- ===================== Footer ===================== -->
+<div class="action-button-footer1">
+  <a [routerLink]="mode === 'add' ? '../' : '../'"
+     class="btn btn-secondary m-2">
+    <i class="fas fa-undo"></i>
+    {{'back to last page' | translate}}
+  </a>
+
+  <!-- 新增 -->
+  <button class="btn btn-primary m-2"
+          (click)="addOrder()"
+          *ngIf="mode === 'add'"
+          [disabled]="ui.isLoadOrder || !orderForm.valid || solutionRequired
+                  || orderForm.value.status !== 'DRAFT' ? orderSolutionList.length === 0: false ||  ui.isSaveOrder">
+    <i class="fas fa-save"></i>
+    {{ 'add' | translate | titlecase }}
+    {{ 'order' | translate | titlecase }}
+    <i class="fas fa-spin fa-spinner ml-1"
+       *ngIf="ui.isSaveOrder"></i>
+  </button>
+
+  <!-- 檢閱 -->
+  <button class="btn btn-primary m-2"
+          (click)="reviewOrder(reviewTmp)"
+          *ngIf="mode === 'edit' && oriStatus === 'DRAFT' && ( orderForm.get('status')?.value === 'APPROVAL' || orderForm.get('status')?.value === 'REVIEW' )"
+          [disabled]="ui.isLoadOrder || !orderForm.valid || solutionRequired ">
+    <i class="fas fa-fw fa-eye"></i>
+    {{ 'review' | translate | titlecase }}
+  </button>
+
+  <!-- 儲存 -->
+  <button class="btn btn-primary m-2"
+          (click)="saveOrderHeader()"
+          *ngIf="mode === 'edit' && !(oriStatus === 'DRAFT' && ( orderForm.get('status')?.value === 'APPROVAL' || orderForm.get('status')?.value === 'REVIEW' ))"
+          [disabled]="ui.isLoadOrder || !orderForm.valid || solutionRequired || ui.isSaveOrder ">
+    <i class="fas fa-save"></i>
+    {{ 'update order' | translate | titlecase }}
+    <i class="fas fa-spin fa-spinner ml-1"
+       *ngIf="ui.isSaveOrder"></i>
+  </button>
+
+</div>
+
+<!-- 檢閱訂單資料跳窗 -->
+<ng-template #reviewTmp>
+  <div class="card mb-2">
+    <div class="card m-3">
+      <div class="card-header bg-primary text-white">
+        {{ 'order' | translate }}
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <!-- 採購單編號 -->
+          <div class="col-3 mb-3">
+            <label class="col-form-label">{{ 'purchase order number' | translate }}</label>
+            <div>{{ orderForm.get('orderId')?.value }}</div>
+          </div>
+
+          <!-- ERP 訂單編號 -->
+          <div class="col-3 mb-3">
+            <label class="col-form-label">312{{ 'no.' | translate }}</label>
+            <div>{{ orderForm.get('orderErpNumber')?.value }}</div>
+          </div>
+
+          <!-- 商機編號 -->
+          <div class="col-3 mb-3">
+            <label class="col-form-label">{{ 'opportunity number' | translate }}</label>
+            <div>{{ orderForm.get('quotationId')?.value }}</div>
+          </div>
+
+          <!-- 客戶編號 -->
+          <div class="col-3 mb-3">
+            <label class="col-form-label">{{ 'customer number' | translate }}</label>
+            <div>{{ orderForm.get('erpCustomerNumber')?.value }}</div>
+          </div>
+
+          <!-- 銷售模式 -->
+          <div class="col-3 mb-3">
+            <label class="col-form-label">{{ 'sales model' | translate }}</label>
+            <div>{{ orderForm.get('salesModel')?.value | translate }}</div>
+          </div>
+
+          <!-- 客戶 -->
+          <div class="col-3 mb-3">
+            <label class="col-form-label"
+                   *ngIf="orderForm.value.salesModel === 'DISTRIBUTION'">
+              {{ 'customer(dealer)' | translate}}</label>
+            <label class="col-form-label"
+                   *ngIf="orderForm.value.salesModel !== 'DISTRIBUTION'">
+              {{ 'customer' | translate }}</label>
+            <div>{{ customerSelected }}</div>
+          </div>
+
+          <!-- 客戶地址 -->
+          <div class="col-3 mb-3">
+            <label class="col-form-label">{{ 'customer address' | translate }}</label>
+            <div>{{ orderForm.get('customerAddress')?.value }}</div>
+          </div>
+
+          <!-- 最終使用者 -->
+          <div class="col-3 mb-3"
+               *ngIf="orderForm.value.salesModel === 'DISTRIBUTION'">
+            <label class="col-form-label">{{ 'endUser' | translate }}</label>
+            <div>{{ endUserSelected }}</div>
+          </div>
+
+          <!-- 聯絡人 -->
+          <div class="col-3 mb-3">
+            <label class="col-form-label">{{ 'contact person' | translate }}</label>
+            <div>{{ contactName(orderForm.get('contactPerson')?.value) }}</div>
+          </div>
+
+          <!-- 帳單聯絡人 -->
+          <div class="col-3">
+            <label class="col-form-label">{{ 'billing Contact' | translate }}</label>
+            <div>{{ contactName(orderForm.get('billingContact')?.value) }}</div>
+          </div>
+
+          <!-- 帳單地扯 -->
+          <div class="col-3">
+            <label class="col-form-label">{{ 'billing address' | translate }}</label>
+            <div>{{ orderForm.get('billingAddress')?.value }}</div>
+          </div>
+
+          <!-- 訂單狀態 -->
+          <div class="col-3">
+            <label class="col-form-label">{{ 'order status' | translate }}</label>
+            <div>{{ orderForm.get('status')?.value | translate }}</div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <div class="card m-3">
+      <div class="card-header bg-primary text-white">
+        {{ 'brand information list' | translate }}
+      </div>
+
+      <div class="card-body">
+        <div class="row">
+          <!-- 品牌 -->
+          <div class="col-3">
+            <label class="col-form-label">{{ 'brand' | translate }}</label>
+            <div>{{ orderSolutionList[0].brand.name }}</div>
+          </div>
+        </div>
+      </div>
+
+      <ng-container *ngFor="let orderSolution of orderSolutionList">
+        <!-- 方案名稱 -->
+        <div class="card-header"
+             style="background-color: #e4eeff">
+          {{ orderSolution.name }}
+        </div>
+
+        <div class="card-body">
+          <div class="row">
+            <!-- 子單編號 -->
+            <div class="col-3 mb-3">
+              <label class="col-form-label">{{ 'sub order id' | translate }}</label>
+              <div>{{ orderSolution.id }}</div>
+            </div>
+
+            <!-- 負責業務(員編) -->
+            <div class="col-3 mb-3">
+              <label class="col-form-label">{{ 'responsible for business' | translate }}</label>
+              <div>{{ orderSolution.sales.email + orderSolution.sales.name }}({{ orderSolution.sales.employeeId }})
+              </div>
+            </div>
+
+            <!-- 合約狀態 -->
+            <div class="col-3 mb-3">
+              <label class="col-form-label">{{ 'contract status' | translate }}</label>
+              <div>{{ orderSolution.status | translate }}</div>
+            </div>
+
+            <!-- 帳單聯絡人email -->
+            <div class="col-3 mb-3">
+              <label class="col-form-label">{{ 'bill contact' | translate }}email</label>
+              <div>{{ orderSolution.billingContactEmail }}</div>
+            </div>
+
+            <!-- 訂單建單者 -->
+            <div class="col-3 mb-3">
+              <label class="col-form-label">{{ 'order creator' | translate }}</label>
+              <div>{{ orderSolution.creator.name }}</div>
+            </div>
+
+            <!-- ERP 料號 -->
+            <div class="col-3 mb-3">
+              <label class="col-form-label">{{ 'erp serial number' | translate }}</label>
+              <div>{{ orderSolution.erpNumber }}</div>
+            </div>
+
+            <!-- 方案 -->
+            <div class="col-3 mb-3">
+              <label class="col-form-label">{{ 'solution' | translate }}</label>
+              <div>{{ solutionName(solutionId) }}</div>
+            </div>
+
+            <!-- 合約起始日 -->
+            <div class="col-3 mb-3">
+              <label class="col-form-label">{{ 'contract start date' | translate }}</label>
+              <div>{{ orderSolution.startDate }}</div>
+            </div>
+
+            <!-- 合約結束日期 -->
+            <div class="col-3 mb-3">
+              <label class="col-form-label">{{ 'contract end date' | translate }}</label>
+              <div>{{ orderSolution.endDate }}</div>
+            </div>
+
+            <!-- 出帳幣別 -->
+            <div class="col-3 mb-3">
+              <label class="col-form-label">{{ 'currency type' | translate }}</label>
+              <div>{{ orderSolution.currencyType | translate }}</div>
+            </div>
+
+            <!-- 匯率類型 -->
+            <div class="col-3 mb-3">
+              <label class="col-form-label">{{ 'exchange rate type' | translate }}</label>
+              <div>{{ orderSolution.exchangeRateType | translate }}</div>
+            </div>
+
+            <!-- 自訂匯率 -->
+            <div *ngIf="orderSolution.exchangeRateType === 'CUSTOM'"
+                 class="col-3 mb-3">
+              <label class="col-form-label">{{ 'custom exchange rate' | translate }}</label>
+              <div>{{ orderSolution.exchangeRate }}</div>
+            </div>
+
+            <!-- 付費日 -->
+            <div class="col-3"
+                 [ngClass]="{'mb-3': !(orderSolution.exchangeRateType === 'CUSTOM')}">
+              <label class="col-form-label">{{ 'pay day' | translate }}</label>
+              <div>{{ orderSolution.timeInterval }}</div>
+            </div>
+
+            <!-- 付款條件 -->
+            <div class="col-3">
+              <label class="col-form-label">{{ 'payment interval' | translate }}</label>
+              <div>{{ orderSolution.paymentDate }}</div>
+            </div>
+
+          </div>
+        </div>
+
+        <div *ngIf="orderSolution.brand.name === 'Akamai'"
+             class="card-body">
+          <div class="row">
+            <!-- Cloud ID -->
+            <div class="col-3 mb-3">
+              <label class="col-form-label">{{ 'Cloud ID' }}</label>
+              <div>{{ orderSolution.cloudId }}</div>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="orderSolution.brand.name === 'AWS'"
+             class="card-body">
+          <div class="row">
+            <!-- Account ID -->
+            <div class="col-3 mb-3">
+              <label class="col-form-label">{{ 'Account ID' }}</label>
+              <div>{{ orderSolution.cloudId }}</div>
+            </div>
+
+            <!-- Payer ID -->
+            <div class="col-3 mb-3">
+              <label class="col-form-label">{{ 'Payer ID' }}</label>
+              <div>{{ orderSolution.payerId }}</div>
+            </div>
+
+            <!-- 費用類型 -->
+            <div class="col-3 mb-3">
+              <label class="col-form-label">{{ 'chargeType' | translate }}</label>
+              <div>{{ orderSolution.originalInfo['usageType'] }}</div>
+            </div>
+
+            <!-- root email -->
+            <div class="col-3 mb-3">
+              <label class="col-form-label">{{ 'root email' }}</label>
+              <div>{{ orderSolution.originalInfo['rootEmail'] }}</div>
+            </div>
+
+            <!-- 是否邀請帳號 -->
+            <div class="col-3 mb-3">
+              <label class="col-form-label">{{ 'invite account' | translate }}</label>
+              <div>{{ orderSolution.solutionData.data.customerFile[0].value ? 'Yes' : 'No' }}</div>
+            </div>
+
+          </div>
+        </div>
+
+        <div *ngIf="orderSolution.brand.name === 'Cisco'"
+             class="card-body">
+          <div class="row">
+            <!-- Sub ID -->
+            <div class="col-3 mb-3">
+              <label class="col-form-label">{{ 'Sub ID' }}</label>
+              <div>{{ orderSolution.cloudId }}</div>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="orderSolution.brand.name === 'Google'"
+             class="card-body">
+          <div class="row">
+            <!-- Account ID -->
+            <div class="col-3 mb-3">
+              <label class="col-form-label">{{ 'Account ID' }}</label>
+              <div>{{ orderSolution.cloudId }}</div>
+            </div>
+
+            <!-- discount -->
+            <div class="col-3 mb-3">
+              <label class="col-form-label">{{ 'discount' }}</label>
+              <div>{{ orderSolution.solutionData.data.customerFile[0].value }}</div>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="orderSolution.brand.name === 'Microsoft'"
+             class="card-body">
+          <div class="row">
+            <!-- 主要網域 -->
+            <div class="col-3 mb-3">
+              <label class="col-form-label">{{ 'domain' | translate }}</label>
+              <div>{{ orderSolution.cloudId }}</div>
+            </div>
+
+            <!-- root email -->
+            <div class="col-3 mb-3">
+              <label class="col-form-label">{{ 'root email' }}</label>
+              <div>{{ orderSolution.originalInfo['rootEmail'] }}</div>
+            </div>
+
+            <!-- Partner ID -->
+            <div class="col-3 mb-3">
+              <label class="col-form-label">{{ 'Partner ID' }}</label>
+              <div>{{ orderSolution.originalInfo['partnerId'] }}</div>
+            </div>
+          </div>
+        </div>
+
+        <h5 *ngIf="orderSolution.brand.name !== 'Akamai'"
+            class="ml-3">{{ 'order product list' | translate }}</h5>
+
+        <div *ngIf="orderSolution.brand.name !== 'Akamai'"
+             class="card-body">
+          <div style="max-height: 500px; overflow-y: auto;">
+            <in-table [data]="orderSolution.products"
+                      [listViewClass]="'d-none d-md-block'"
+                      [cardViewClass]="'d-block d-md-none'"
+                      [listHeaderClass]="'sticky-header-color'"
+                      [shownodata]="orderSolution.products.length === 0 ? true : false"
+                      [enableHorizontalScroll]="true"
+                      [config]="intableConfig"
+                      [inTableTranslate]="{
+                        'no data found': 'No Data Found' | translate,
+                        'items per page': 'items per page' | translate
+                      }">
+              <in-table-column [styleColumn]="{'max-width': '30px'}"
+                               classValue="text-wrap"
+                               label="#">
+                <ng-template #tpl
+                             let-index="rowIndex"
+                             let-xxx>
+                  {{ index + 1}}
+                </ng-template>
+              </in-table-column>
+
+              <!-- 名稱 -->
+              <in-table-column [styleColumn]="{'min-width': '150px'}"
+                               class="text-truncate ml-1 mr-1 "
+                               prop="name"
+                               label="{{ 'name' | translate }}">
+                <ng-template #tpl
+                             let-product="item"
+                             let-i>
+                  <div [popover]="product.name"
+                       triggers="mouseenter:mouseleave"
+                       placement="top">{{product.name}}</div>
+                </ng-template>
+              </in-table-column>
+
+              <!-- 呈現名稱 -->
+              <in-table-column class="text-truncate ml-1 mr-1 "
+                               [styleColumn]="{'min-width': '100px'}"
+                               prop="showName"
+                               label="{{ 'show name' | translate }}">
+              </in-table-column>
+
+
+              <!-- 料號 -->
+              <in-table-column [styleColumn]="{'min-width': '150px'}"
+                               class="text-truncate ml-1 mr-1 "
+                               prop="originalSku"
+                               label="原廠{{ 'part no' | translate }}">
+                <ng-template #tpl
+                             let-product="item"
+                             let-i>
+                  <div [popover]="product.originalSku"
+                       triggers="mouseenter:mouseleave"
+                       placement="top">{{product.originalSkuName}}</div>
+                </ng-template>
+              </in-table-column>
+
+              <!-- 計價單位 -->
+              <in-table-column class="text-truncate ml-1 mr-1 "
+                               [styleColumn]="{'min-width': '100px'}"
+                               prop="unit"
+                               label="{{ 'sales unit' | translate }}">
+              </in-table-column>
+
+              <!-- 數量 -->
+              <in-table-column class="text-truncate ml-1 mr-1 "
+                               [styleColumn]="{'min-width': '100px'}"
+                               prop="quantity"
+                               label="{{ 'quantity' | translate }}">
+              </in-table-column>
+
+              <!-- 計價週期 -->
+              <in-table-column class="text-truncate ml-1 mr-1 "
+                               [styleColumn]="{'min-width': '150px'}"
+                               prop="leaseModeName"
+                               label="{{ 'pricing cycle' | translate }}">
+                <ng-template #tpl
+                             let-product="item"
+                             let-i>
+                  {{ product.leaseModeName | translate }}
+                </ng-template>
+              </in-table-column>
+
+              <!-- 時間 -->
+              <in-table-column class="text-truncate ml-1 mr-1 "
+                               [styleColumn]="{'min-width': '100px'}"
+                               prop="time"
+                               label="{{ 'time' | translate }}">
+              </in-table-column>
+
+              <!-- 售價計算方式 -->
+              <in-table-column class="text-truncate ml-1 mr-1 "
+                               [styleColumn]="{'min-width': '150px'}"
+                               prop="calculateMethod"
+                               label="{{ 'price calculation method' | translate }}">
+                <ng-template #tpl
+                             let-product="item"
+                             let-i>
+                  {{ product.calculateMethod | translate }}
+                </ng-template>
+              </in-table-column>
+
+              <!-- 費用計算方式 -->
+              <in-table-column class="text-truncate ml-1 mr-1 "
+                               [styleColumn]="{'min-width': '150px'}"
+                               prop="billingMethod"
+                               label="{{ 'billing method' | translate }}">
+                <ng-template #tpl
+                             let-product="item"
+                             let-i>
+                  {{ (product.billingMethod !== '' ? product.billingMethod : 'no extra charge') | translate }}
+                </ng-template>
+              </in-table-column>
+
+              <!-- 乘數 -->
+              <in-table-column class="text-truncate ml-1 mr-1 "
+                               [styleColumn]="{'min-width': '100px'}"
+                               prop="multiplier"
+                               label="{{ 'multiplier' | translate }}">
+              </in-table-column>
+
+              <!-- 成本幣別 -->
+              <in-table-column class="text-truncate ml-1 mr-1 "
+                               [styleColumn]="{'min-width': '100px'}"
+                               prop="originalCurrency"
+                               label="{{ 'cost currency' | translate }}">
+              </in-table-column>
+
+              <!-- 下單成本 -->
+              <in-table-column class="text-truncate ml-1 mr-1 "
+                               [styleColumn]="{'min-width': '100px'}"
+                               prop="originalPrice"
+                               label="{{ 'order cost' | translate }}">
+              </in-table-column>
+
+              <!-- 原廠定價 -->
+              <in-table-column class="text-truncate ml-1 mr-1 "
+                               [styleColumn]="{'min-width': '100px'}"
+                               prop="listPrice"
+                               label="{{'vendor' | translate}}{{ 'list price' | translate }}">
+              </in-table-column>
+
+              <!-- 售價 -->
+              <in-table-column class="text-truncate ml-1 mr-1 "
+                               [styleColumn]="{'min-width': '150px'}"
+                               prop="sellingPrice"
+                               label="{{ 'sell' | translate }}">
+              </in-table-column>
+
+              <!-- 最低消費 -->
+              <in-table-column class="text-truncate ml-1 mr-1 "
+                               [styleColumn]="{'min-width': '100'}"
+                               prop="minimum"
+                               label="{{ 'minimum consumption' | translate }}">
+              </in-table-column>
+
+              <!-- 啟用日 -->
+              <in-table-column class="text-truncate ml-1 mr-1 "
+                               [styleColumn]="{'min-width': '130px'}"
+                               prop="startDate"
+                               label="{{ 'enable date' | translate }}">
+              </in-table-column>
+
+              <!-- 到期日 -->
+              <in-table-column class="text-truncate ml-1 mr-1 "
+                               [styleColumn]="{'min-width': '130px'}"
+                               prop="endDate"
+                               label="{{ 'expiry date' | translate }}">
+              </in-table-column>
+
+              <!-- 試算金額 -->
+              <in-table-column class="text-truncate ml-1 mr-1 "
+                               [styleColumn]="{'min-width': '80px'}"
+                               prop="total"
+                               label="{{ 'trial amount' | translate }}">
+              </in-table-column>
+
+            </in-table>
+          </div>
+
+        </div>
+      </ng-container>
+    </div>
+
+  </div>
+  <div class="mb-2"
+       style="text-align: center;">
+    <button type="button"
+            class="btn btn-lg btn-primary mr-2 mb-2"
+            (click)="confirm(confirmTmp)">{{ 'submit' | translate }}</button>
+    <button type="button"
+            class="btn btn-lg btn-dark mr-2 mb-2"
+            (click)="hidemodal()">{{ 'cancel' | translate }}</button>
+  </div>
+</ng-template>
+
+<!-- 確認執行跳窗 -->
+<ng-template #confirmTmp>
+  <div class="mb-2"
+       style="text-align: center">
+    <h5 class="m-3">{{ 'confirm order info' | translate }}</h5>
+    <button type="button"
+            class="btn btn-lg btn-primary mr-2 mb-2"
+            (click)="saveOrderHeader()">{{ 'yes' | translate }}</button>
+    <button type="button"
+            class="btn btn-lg btn-dark mr-2 mb-2"
+            (click)="hidemodal()">{{ 'no' | translate }}</button>
+  </div>
+</ng-template>

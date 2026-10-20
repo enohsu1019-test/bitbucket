@@ -1,0 +1,220 @@
+<div class="card card-body mb-2">
+  <!------------- 搜尋 Form ------------->
+  <div class="card mb-5">
+    <div class="card-header bg-primary text-white">
+      <h5 class="mb-0">
+        {{ 'ruleGroup_order-v1' | translate | titlecase }} -
+        {{ 'revised record' | translate | titlecase }}
+      </h5>
+    </div>
+    <div class="card-body">
+      <form [formGroup]="historyForm">
+        <div class="form-group row">
+          <!-- 修改人 -->
+          <div class="col-4">
+            <label class="col-form-label">{{ 'revisor' | translate }}</label>
+            <input type="text"
+                   class="form-control"
+                   formControlName="revisor"
+                   placeholder="{{ 'please fill input' | translate:{ input: 'revisor' | translate } | titlecase }}">
+          </div>
+          <!-- 修改時間 -->
+          <div class="col-4">
+            <label class="col-form-label">{{ 'revised date' | translate }}</label>
+            <input type="text"
+                   id="createDate"
+                   formControlName="createDate"
+                   class="form-control"
+                   bsDatepicker
+                   placeholder="{{ 'please fill input' | translate:{ input: 'revised date' | translate } | titlecase }}"
+                   [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD' }"
+                   #drp="bsDatepicker">
+          </div>
+          <!-- 修改欄位關鍵字 -->
+          <div class="col-4">
+            <label class="col-form-label">{{ 'revised column' | translate }}{{ 'keyword' | translate }}</label>
+            <input type="text"
+                   class="form-control"
+                   formControlName="keyword"
+                   placeholder="{{ 'please fill input' | translate:{ input: ('revised column' | translate) + ('keyword' | translate) } | titlecase }}">
+          </div>
+        </div> <!-- form-group -->
+        <div>
+          <button class="btn btn-secondary btn-sm mr-2"
+                  type="button"
+                  (click)="reset()">
+            {{ 'reset' | translate | titlecase }}</button>
+          <button class="btn btn-primary btn-sm"
+                  type="button"
+                  (click)="getOrderHistoryList()">
+            {{ 'search' | translate | titlecase }}
+            <i class="fas fa-spin fa-spinner mr-1"
+               *ngIf="ui.isSearching"></i>
+          </button>
+        </div>
+      </form>
+    </div> <!-- card-body -->
+  </div>
+
+  <!------------- inTable ------------->
+  <in-table class="table table-hover"
+            [data]="historyList"
+            [listViewClass]="'d-none d-md-block'"
+            [cardViewClass]="'d-block d-md-none'"
+            [listHeaderClass]="'thead-light sticky-header-color'"
+            [pageConfig]="pageConfig"
+            (pageChanged)="pageChange($event)"
+            [sortBy]="sortBy"
+            (sort)="sort($event)"
+            [isLoading]="ui.isSearching"
+            [enableHorizontalScroll]="true"
+            [shownodata]="true"
+            [config]="inTableConfig"
+            [inTableTranslate]="{
+              'no data found': 'no data found' | translate | titlecase,
+              'items per page': 'items per page' | translate | titlecase}"
+            (colWidthResized)="util.syncInTableColWidths(orderHistoryTable, 'intable-order-historyList-table', true)"
+            (afterViewInit)="util.syncInTableColWidths(orderHistoryTable, 'intable-order-historyList-table', false)"
+            #orderHistoryTable
+            *appPermissionIf="'product-v1.queryProducts'">
+
+    <!----------- # ----------->
+    <in-table-column label="#"
+                     class="font-weight-bold"
+                     [styleColumn]="{'max-width': '60px'}">
+      <ng-template #tpl
+                   let-index="rowIndex"
+                   let-xxx>
+        {{ ( pageConfig.currentPage -1 ) * pageConfig.itemsPerPage + index + 1 }}
+      </ng-template>
+    </in-table-column>
+
+    <!--------------- 修改人 --------------->
+    <in-table-column class="text-truncate mx-1"
+                     prop="revisor"
+                     label="{{ 'revisor' | translate | titlecase }}"
+                     [styleColumn]="{'width': '100px'}">
+      <ng-template #tpl
+                   let-item="item">
+        {{ item.user.name }}
+      </ng-template>
+    </in-table-column>
+
+    <!--------------- 修改欄位 --------------->
+    <in-table-column class="text-truncate mx-1"
+                     prop="revisor"
+                     label="{{ 'revised column' | translate | titlecase }}"
+                     [styleColumn]="{'width': '150px'}">
+      <ng-template #tpl
+                   let-order="item">
+        <div *ngFor="let item of order.tranceNote; let i=index"
+             [ngClass]="{'border-bottom': i < order.tranceNote.length-1}"
+             class="p-1 traceNote"
+             [style.min-height]="item.field !== 'products' ? '1.5rem' : ((1.5*item.oldData?.length + 0.5) + 'rem')"
+             popover="{{ item.message | translate }}"
+             triggers="mouseenter:mouseleave"
+             container="body"
+             placement="top">
+          {{ item.message | translate }}
+        </div>
+      </ng-template>
+    </in-table-column>
+
+    <!--------------- 原本資料 --------------->
+    <in-table-column class="text-truncate mx-1"
+                     prop="revisor"
+                     label="{{ 'old data' | translate | titlecase }}">
+      <ng-template #tpl
+                   let-order="item">
+        <div *ngFor="let item of order.tranceNote; let i=index"
+             [ngClass]="{'border-bottom': i < order.tranceNote.length-1}"
+             class="p-1 traceNote text-truncate">
+          <div *ngIf="item.field !== 'products'"
+               [popover]="oldData"
+               triggers="mouseenter:mouseleave"
+               container="body"
+               placement="top">
+            {{ item.oldData | translate }}
+          </div>
+          <div *ngIf="item.field === 'products'"
+               [style.min-height]="(1.5*item.oldData?.length) + 'rem'"
+               [popover]="oldData"
+               triggers="mouseenter:mouseleave"
+               container="body"
+               placement="top">
+            <div *ngFor="let product of item.oldData">
+              {{ product.field | translate }}: {{ product.data | translate }}
+            </div>
+          </div>
+
+          <!-- popover template -->
+          <ng-template #oldData>
+            <ng-container *ngIf="item.field !== 'products'">
+              {{ item.oldData | translate }}
+            </ng-container>
+            <div *ngIf="item.field === 'products'"
+                 [style.min-height]="(1.5*item.oldData?.length) + 'rem'">
+              <div *ngFor="let product of item.oldData">
+                {{ product.field | translate }}: {{ product.data | translate }}
+              </div>
+            </div>
+          </ng-template>
+        </div>
+      </ng-template>
+    </in-table-column>
+
+    <!--------------- 修改資料 --------------->
+    <in-table-column class="text-truncate mx-1"
+                     prop="revisor"
+                     label="{{ 'revised data' | translate | titlecase }}">
+      <ng-template #tpl
+                   let-order="item">
+        <div *ngFor="let item of order.tranceNote; let i=index"
+             [ngClass]="{'border-bottom': i < order.tranceNote.length-1}"
+             class="p-1 traceNote text-truncate">
+          <div *ngIf="item.field !== 'products'"
+               [popover]="newData"
+               triggers="mouseenter:mouseleave"
+               container="body"
+               placement="top">
+            {{ item.newData | translate }}
+          </div>
+          <div *ngIf="item.field === 'products'"
+               [style.min-height]="(1.5*item.newData?.length) + 'rem'"
+               [popover]="newData"
+               triggers="mouseenter:mouseleave"
+               container="body"
+               placement="top">
+            <div *ngFor="let product of item.newData">
+              {{ product.field | translate }}: {{ product.data | translate }}
+            </div>
+          </div>
+
+          <!-- popover template -->
+          <ng-template #newData>
+            <ng-container *ngIf="item.field !== 'products'">
+              {{ item.newData | translate }}
+            </ng-container>
+            <div *ngIf="item.field === 'products'"
+                 [style.min-height]="(1.5*item.newData?.length) + 'rem'">
+              <div *ngFor="let product of item.newData">
+                {{ product.field | translate }}: {{ product.data | translate }}
+              </div>
+            </div>
+          </ng-template>
+        </div>
+      </ng-template>
+    </in-table-column>
+
+    <!--------------- 修改時間 --------------->
+    <in-table-column class="text-truncate mx-1"
+                     prop="createTime"
+                     label="{{ 'revised date' | translate | titlecase }}"
+                     [styleColumn]="{'max-width': '180px'}">
+      <ng-template #tpl
+                   let-item="item">
+        {{ item.createTime | date:'yyyy-MM-dd HH:mm' }}
+      </ng-template>
+    </in-table-column>
+  </in-table>
+</div>

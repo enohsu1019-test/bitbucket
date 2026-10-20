@@ -1,0 +1,83 @@
+<div class="modal-header sticky-header bg-primary text-white align-items-center">
+  <h4 class="modal-title pull-left">{{ title }}</h4>
+  <button type="button"
+          class="close pull-right"
+          (click)="closeBsModal()">
+    <i class="fas fa-times text-white"></i>
+  </button>
+</div>
+
+<!-- loading -->
+<div *ngIf="isLoading" class="card-body">
+  <h5 class="text-center"><i class="fas fa-spin fa-spinner"></i>Loading...</h5>
+</div>
+
+<section *ngIf="!isLoading" class="step-container">
+
+  <div class="mb-4">
+    <div class="status-bar"
+         [style.width.%]="(100*(steps.length-1)/steps.length)">
+      <div class="current-status"
+           [style.width.%]="(100*selectedIndex/(steps.length - 1))"></div>
+    </div>
+    <ul class="step-bar">
+      <li *ngFor="let step of steps; let idx = index;"
+          class="section"
+          [ngClass]="{'current': selectedIndex === idx, 'visited': idx <= selectedIndex}"
+          [attr.data-content]="idx + 1"
+          [style.width.%]="(100/steps.length)">
+        <ng-container *ngIf="step.stepLabel; else showLabelText"
+                      [ngTemplateOutlet]="step.stepLabel.template">
+        </ng-container>
+        <ng-template #showLabelText>
+          {{ step.label }}
+        </ng-template>
+      </li>
+    </ul>
+  </div>
+
+  <header class="mb-4">
+    <h2>{{ "step" | translate | titlecase }} {{ selectedIndex + 1 }}/{{ steps.length }}</h2>
+  </header>
+
+  <div [style.display]="selected ? 'block' : 'none'">
+    <ng-container [ngTemplateOutlet]="selected ? selected.content : null"></ng-container>
+  </div>
+
+  <hr class="mt-5 mb-2">
+
+  <footer class="example-step-navigation-bar d-flex justify-content-between">
+    <!-- 取消 -->
+    <button *ngIf="selectedIndex === 0"
+            class="btn btn-step btn-secondary"
+            type="button"
+            cdkStepperPrevious
+            (click)="closeBsModal()">
+      {{ 'cancel' | translate | titlecase }}
+    </button>
+    <!-- 上一步 -->
+    <button *ngIf="selectedIndex > 0"
+            class="btn btn-step btn-secondary"
+            type="button"
+            cdkStepperPrevious
+            (click)="onStepChanged()">
+      {{ 'previous step' | translate | titlecase }}
+    </button>
+    <!-- 下一步 -->
+    <button *ngIf="selectedIndex < (steps.length - 1)"
+            class="btn btn-step btn-primary ml-2"
+            type="button"
+            cdkStepperNext
+            (click)="onStepChanged()"
+            [disabled]="attributeForm.controls['title'].invalid || attributeForm.controls['variable'].invalid">
+      {{ 'next step' | translate | titlecase }}
+    </button>
+    <!-- 確認 -->
+    <button *ngIf="selectedIndex === (steps.length - 1)"
+            class="btn btn-step btn-primary ml-2"
+            type="submit"
+            (click)="submitData()">
+      {{ 'confirm' | translate | titlecase }}
+    </button>
+  </footer>
+</section>

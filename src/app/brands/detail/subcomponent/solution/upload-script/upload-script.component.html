@@ -1,0 +1,44 @@
+<div class="card-body">
+  <div >
+    <div class="col-6 mb-3">
+      <label class="col-form-label">{{ 'add script' | translate }}</label>
+      <!-- <p style="font-size: 24px;" *ngIf="solutionName"> {{solutionName}}</p> -->
+      <div class="row">
+        <input class="form-control  form-control-lg col-8 btn btn-light" type="file" accept=".js, .css, .html, .txt, .jpg, .jpeg, .png, .gif" (change)="test($event)">
+        <button class="ml-3 btn btn-success" (click)="uploadScript(fileData)">{{'script upload' | translate}}</button>
+      </div>
+    </div>
+
+
+    <in-table [data]="intableDatas" [listViewClass]="'d-none d-md-block'" [cardViewClass]="'d-block d-md-none'"
+        [isLoading]="ui.isLoading"
+        [listHeaderClass]="'bg-primary text-white'" [config]="intableConfig" [inTableTranslate]="{
+                        'no data found': 'not found' | translate,
+                        'items per page': 'no data found' | translate
+                      }" #inTable>
+        <in-table-column classValue="text-wrap" label="#">
+          <ng-template #tpl let-index="rowIndex" let-xxx let-price="item">
+            {{ index + 1}}
+            <i *ngIf="price.draggable" class="fas fa-align-justify"></i>
+          </ng-template>
+
+        </in-table-column>
+        <!-- 檔案名稱 -->
+        <in-table-column class="text-truncate ml-1 mr-1 " label="{{ 'script name' | translate }}">
+          <ng-template #tpl let-script="item" let-i>
+           <label>{{script.filename}}</label>
+          </ng-template>
+        </in-table-column>
+
+        <!-- 動作-->
+        <in-table-column class="text-truncate ml-1 mr-1 " label="{{ 'operation' | translate }}">
+          <ng-template #tpl let-script="item" let-i>
+            <div class="d-flex align-items-center m-0">
+              <i class="fas  fa-times text-danger"
+                 style="cursor: pointer;" (click)="deleteScriptFile(script, i)"></i>
+            </div>
+          </ng-template>
+        </in-table-column>
+      </in-table>
+
+</div>

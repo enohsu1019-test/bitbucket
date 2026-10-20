@@ -1,0 +1,159 @@
+<div class="card" style="border-top: none">
+  <div class="card-body">
+    <div style="max-height: 600px; overflow-y: auto;">
+      <in-table [data]="intableDatas" [listViewClass]="'d-none d-md-block'" [cardViewClass]="'d-block d-md-none'"
+        [listHeaderClass]="'bg-primary text-white'" [config]="intableConfig" [inTableTranslate]="{
+                        'no data found': 'No Data Found' | translate,
+                        'items per page': 'items per page' | translate
+                      }" #inTable>
+        <in-table-column classValue="text-wrap" label="#">
+          <ng-template #tpl let-index="rowIndex" let-xxx let-brand="item">
+            {{ index + 1}}
+            <div style="height:25px;" *ngIf="!brand.defaultName || !brand.key"></div>
+          </ng-template>
+
+        </in-table-column>
+        <!-- 欄位標題 -->
+        <in-table-column class="text-truncate ml-1 mr-1 " prop="defaultName" label="{{ 'field title' | translate }}">
+          <ng-template #tpl let-brand="item" let-i>
+            <div class=" ">
+              <input class="form-control" type="text" [(ngModel)]="brand.defaultName">
+              <span *ngIf="!brand.defaultName || !brand.key" class="form-text text-danger">{{'this field is required'|
+                translate}}</span>
+            </div>
+          </ng-template>
+        </in-table-column>
+
+        <!-- key -->
+        <in-table-column class="text-truncate ml-1 mr-1 " prop="key" label="{{ 'key' | translate }}">
+          <ng-template #tpl let-brand="item" let-i>
+            <div class=" ">
+              <input class="form-control" type="text" [(ngModel)]="brand.key" [disabled]="!brand.initial">
+              <span *ngIf="!brand.defaultName || !brand.key || !brand.key" class="form-text text-danger">{{'this field is required'|
+                translate}}</span>
+            </div>
+          </ng-template>
+        </in-table-column>
+
+        <!-- 資料格式 -->
+        <in-table-column class="text-truncate ml-1 mr-1 " prop="type" label="{{ 'data format' | translate }}">
+          <ng-template #tpl let-brand="item" let-i>
+
+            <mat-form-field>
+              <mat-select [(ngModel)]="brand.type" (selectionChange)="handleTypeChange(brand, i)">
+                <mat-option *ngFor="let type of typeDropdown" [value]="type">
+                  {{ type | translate}}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+
+            <div style="height:25px;" *ngIf="!brand.defaultName || !brand.key"></div>
+          </ng-template>
+        </in-table-column>
+
+        <!-- 功能 -->
+        <in-table-column class="text-truncate ml-1 mr-1 " prop="function" label="{{ 'function' | translate }}">
+          <ng-template #tpl let-brand="item" let-i>
+            <mat-select [(ngModel)]="brand.function">
+              <mat-option *ngFor="let function of brand.functionDropdowns" [value]="function">
+                {{ function | translate}}
+              </mat-option>
+            </mat-select>
+            <div style="height:25px;" *ngIf="!brand.defaultName || !brand.key"></div>
+          </ng-template>
+        </in-table-column>
+        <!-- 必填 -->
+        <in-table-column class="text-truncate text-center ml-1 mr-1 " [styleColumn]="{'max-width': '50px'}"
+          prop="require" label="{{ 'require' | translate }}">
+          <ng-template #tpl let-brand="item" let-i>
+            <input type="checkbox" class="pt-1 ml-1 mr-1" [(ngModel)]="brand.require" checked="checked">
+            <div style="height:25px;" *ngIf="!brand.defaultName || !brand.key"></div>
+          </ng-template>
+        </in-table-column>
+
+        <!-- 匯出-->
+        <!-- <in-table-column class="text-truncate text-center ml-1 mr-1 " [styleColumn]="{'max-width': '50px'}"
+          prop="export" label="{{ 'export' | translate }}">
+          <ng-template #tpl let-brand="item" let-i>
+            <input type="checkbox" class="pt-1 ml-1 mr-1" [(ngModel)]="brand.export" checked="checked">
+            <div style="height:25px;" *ngIf="!brand.defaultName || !brand.key"></div>
+          </ng-template>
+        </in-table-column> -->
+
+        <!-- 匯出顯示標體-->
+        <!-- <in-table-column class="text-truncate ml-1 mr-1 " prop="customName"
+          label="{{ 'export show title' | translate }}">
+          <ng-template #tpl let-brand="item" let-i>
+            <input class="form-control" type="text" [(ngModel)]="brand.customName">
+            <div style="height:25px;" *ngIf="!brand.defaultName || !brand.key"></div>
+          </ng-template>
+        </in-table-column> -->
+
+        <!-- 動作-->
+        <in-table-column class="text-truncate ml-1 mr-1 " label="{{ 'operation' | translate }}">
+          <ng-template #tpl let-brand="item" let-i>
+            <div class="d-flex align-items-center m-0" style="height: 88px;">
+              <i class="fas fa-cogs text-primary mr-2" *ngIf="brand.settingStatus" style="cursor: pointer;"
+                (click)="openDialog(brand, i)" [popover]="'進階設定'" triggers="mouseenter:mouseleave" placement="top"></i>
+              <i class="fas fa-lg text-primary mr-2" *ngIf="brand.settingStatus"
+                (click)="brand.settingViewStatus = !brand.settingViewStatus;"
+                [ngClass]="{'fa-chevron-circle-right': !brand.settingViewStatus, 'fa-chevron-circle-down': brand.settingViewStatus}"
+                style="cursor: pointer;" [popover]="'顯示清單'" triggers="mouseenter:mouseleave" placement="top"></i>
+              <i class="fas fa-lg fa-times text-danger" [popover]="'刪除'" triggers="mouseenter:mouseleave"
+                placement="top" style="cursor: pointer;" (click)="deleteFieldItem(i)"></i>
+            </div>
+            <div style="height:25px;" *ngIf="!brand.defaultName || !brand.key"></div>
+          </ng-template>
+        </in-table-column>
+
+        <!-- <in-table-row-footer>
+          <ng-template #tpl let-brand="item" let-i>
+            <div class="ml-5 mr-2 mt-2 mb-2 advance-setting" *ngIf="brand.settingViewStatus">
+              <mat-tab-group>
+                <mat-tab label="{{brand.type | translate}}">
+                  <in-table class="p-3" [data]="brand.advancedSetting.contents.items"
+                    [listViewClass]="'d-none d-md-block'" [cardViewClass]="'d-block d-md-none'"
+                    [listHeaderClass]="'bg-primary text-white'" [config]="intableEditConfig" [inTableTranslate]="{
+                        'no data found': 'No Data Found' | translate,
+                        'items per page': 'items per page' | translate
+                      }" #inTable>
+                    <in-table-column classValue="text-wrap" label="#">
+                      <ng-template #tpl let-index="rowIndex" let-xxx let-biz="item">
+                        {{ index + 1}}
+                      </ng-template>
+                    </in-table-column>
+
+                    <in-table-column classValue="text-wrap" class="text-truncate ml-1 mr-1" prop="label"
+                      label="{{ 'item' | translate }}">
+                      <ng-template #tpl let-edit="item" let-i>
+                        {{edit.label}}
+                        <span *ngIf="!edit.label" class="form-text text-danger">{{'this field is required'|
+                          translate}}</span>
+                      </ng-template>
+                    </in-table-column>
+
+
+
+                    <in-table-column class="text-truncate text-center ml-1 mr-1" prop="checked"
+                      label="{{ 'default checked' | translate }}">
+                      <ng-template #tpl let-edit="item" let-i>
+                        <input type="checkbox" class="pt-1 ml-1 mr-1" [(ngModel)]="edit.checked" checked="checked"
+                          [attr.disabled]="true">
+                      </ng-template>
+                    </in-table-column>
+                  </in-table>
+                </mat-tab>
+              </mat-tab-group>
+            </div>
+          </ng-template>
+        </in-table-row-footer> -->
+
+      </in-table>
+    </div>
+
+    <button class="btn btn-success col-12 " (click)="addFieldItem()">
+      <i class="fas fa-plus"></i> {{ 'add field' | translate | titlecase}}
+    </button>
+
+  </div>
+</div>

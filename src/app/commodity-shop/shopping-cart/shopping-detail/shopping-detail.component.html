@@ -1,0 +1,222 @@
+<div>
+  <form [formGroup]="searchForm">
+    <div class="row">
+      <!---------------- 客戶(公司名稱) ----------------->
+      <div class="col-12 col-sm-6 col-md-4 mb-4">
+        <label for="">
+          {{ 'customer' | translate | titlecase }}
+          ({{ 'company name' | translate | titlecase }})
+        </label>
+        <ng-container *ngIf="this.mode === 'edit'">
+          <input type="text"
+                 class="form-control"
+                 formControlName="customerName">
+          <!-- [ngClass]="{'custom-form-control': mode === 'prev'}" -->
+        </ng-container>
+        <ng-container *ngIf="mode === 'prev' || mode === 'view'">
+          <div class="prev-info">{{ cartFormValue.customer.name }}</div>
+        </ng-container>
+      </div>
+
+      <!------------------ 客戶地址 -------------------->
+      <div class="col-12 col-sm-6 col-md-4 mb-4">
+        <label for="customerLocationId">{{ 'customer address' | translate | titlecase }}</label>
+        <ng-container *ngIf="this.mode === 'edit'">
+          <select class="form-control"
+                  id="customerLocationId"
+                  formControlName="customerLocationId">
+            <option *ngFor="let opt of customerAddDDL"
+                    [value]="opt.locationId">{{ opt.name }} ({{ opt?.address ?? '' }})</option>
+          </select>
+        </ng-container>
+        <ng-container *ngIf="mode === 'prev' || mode === 'view'">
+          <div class="prev-info">{{ cartFormValue.customerAddress }}</div>
+        </ng-container>
+      </div>
+
+      <!----------------- 最終使用者 ------------------->
+      <div class="col-12 col-sm-6 col-md-4 mb-4">
+        <label for="enduserId">{{ 'enduser' | translate | titlecase }}</label>
+        <ng-container *ngIf="this.mode === 'edit'">
+          <select class="form-control"
+                  id="enduserId"
+                  formControlName="enduserId">
+            <option *ngFor="let opt of endUserDDL"
+                    [value]="opt.customerId">
+              {{ opt.customerName.allName ? opt.customerName.allName : opt.customerName.fullCh }}
+            </option>
+          </select>
+        </ng-container>
+        <ng-container *ngIf="mode === 'prev' || mode === 'view'">
+          <div class="prev-info">{{ cartFormValue.endUser.name }}</div>
+        </ng-container>
+      </div>
+
+      <!------------------- 聯絡人 -------------------->
+      <div class="col-12 col-sm-6 col-md-4 mb-4">
+        <label for="contactId">{{ 'contact' | translate | titlecase }}</label>
+        <ng-container *ngIf="this.mode === 'edit'">
+          <select class="form-control"
+                  id="contactId"
+                  formControlName="contactId">
+            <option *ngFor="let opt of contactDDL"
+                    [value]="opt.contactId">
+              {{ opt.chineseName ? opt.chineseName: (opt.englishName ? opt.englishName : '') | translate }}
+            </option>
+          </select>
+        </ng-container>
+        <ng-container *ngIf="mode === 'prev' || mode === 'view'">
+          <div class="prev-info">{{ cartFormValue.customerContact.name }}</div>
+        </ng-container>
+      </div>
+
+      <!----------------- 帳單聯絡人 ------------------>
+      <div class="col-12 col-sm-6 col-md-4 mb-4">
+        <label for="billingContactId">{{ 'bill contact' | translate | titlecase }}</label>
+        <ng-container *ngIf="this.mode === 'edit'">
+          <select class="form-control"
+                  id="billingContactId"
+                  formControlName="billingContactId"
+                  (change)="setContactEmail()">
+            <option *ngFor="let opt of contactDDL"
+                    [value]="opt.contactId">
+              {{ opt.chineseName ? opt.chineseName: (opt.englishName ? opt.englishName : '') | translate }}
+            </option>
+          </select>
+        </ng-container>
+        <ng-container *ngIf="mode === 'prev' || mode === 'view'">
+          <div class="prev-info">{{ cartFormValue.billingContact.name }}</div>
+        </ng-container>
+      </div>
+
+      <!-------------- 帳單聯絡人 EMAIL ---------------->
+      <div class="col-12 col-sm-6 col-md-4 mb-4">
+        <label for="billingContactIdEmail">{{ 'bill contact email' | translate }}</label>
+        <ng-container *ngIf="this.mode === 'edit'">
+          <input type="text"
+                 class="form-control"
+                 id="billingContactIdEmail"
+                 formControlName="billingContactIdEmail">
+        </ng-container>
+        <ng-container *ngIf="mode === 'prev' || mode === 'view'">
+          <div class="prev-info">{{ cartFormValue.billingContactEmail }}</div>
+        </ng-container>
+      </div>
+
+      <!---------------- 指定業務＋分機 ----------------->
+      <div class="col-12 col-sm-6 col-md-4 mb-4">
+        <label for="">
+          {{ 'assigned sales' | translate | titlecase }} +
+          {{ 'contact extension' | translate | titlecase }}
+        </label>
+        <span class="text-danger small pl-2"
+              *ngIf="this.mode === 'edit' && !salesDDL.length">
+          {{ 'Please report to the administrator.' | translate | titlecase }}
+        </span>
+        <ng-container *ngIf="this.mode === 'edit'">
+          <angular2-multiselect [data]="salesDDL"
+                                [(ngModel)]="selectedSales"
+                                [settings]="selectSettings"
+                                (onSelect)="onSalesSelect($event)"
+                                (onDeSelect)="onSalesDeSelect()"
+                                [ngModelOptions]="{standalone: true}"
+                                [ngClass]="{'multiselect-disabled': ui.isSalesLoading,
+                                            'multiselect-invalid': ui.isSalesValid}">
+            <!-- <c-search>
+            <ng-template>
+              <input type="text"
+                     (keyup.enter)="getSalesList($event)"
+                     placeholder="{{ 'please fill input' | translate:{input: 'keyword' | translate} | titlecase }}:
+                                  {{ 'chinese name' | translate }}、{{ 'nickname' | translate }}、{{ 'english name' | translate }}、{{ 'email' | translate }}、{{ 'staff id' | translate }}"
+                     style="border: none;width: 100%; height: 100%;outline: none;" />
+            </ng-template>
+          </c-search> -->
+          </angular2-multiselect>
+        </ng-container>
+        <ng-container *ngIf="mode === 'prev' || mode === 'view'">
+          <div class="prev-info">{{ cartFormValue.salesperson.name }}</div>
+        </ng-container>
+      </div>
+
+      <!------------------ cloudId ------------------->
+      <div class="col-12 col-sm-6 col-md-4 mb-4">
+        <label for="cloudId">{{ 'Cloud ID'}}</label>
+        <ng-container *ngIf="this.mode === 'edit'">
+          <input type="text"
+                 class="form-control"
+                 id="cloudId"
+                 formControlName="cloudId">
+        </ng-container>
+        <ng-container *ngIf="mode === 'prev' || mode === 'view'">
+          <div class="prev-info">{{ cartFormValue.cloudId }}</div>
+        </ng-container>
+      </div>
+
+      <!------------------ 帳單地址 ------------------->
+      <div class="col-12 col-sm-6 col-md-4 mb-4">
+        <label for="">{{ 'bill Address' | translate | titlecase }}</label>
+        <ng-container *ngIf="this.mode === 'edit'">
+          <select class="form-control"
+                  id="billingLocationId"
+                  formControlName="billingLocationId">
+            <option *ngFor="let opt of customerAddDDL"
+                    [value]="opt.locationId">{{ opt.name }} ({{ opt?.address ?? '' }})</option>
+          </select>
+        </ng-container>
+        <ng-container *ngIf="mode === 'prev' || mode === 'view'">
+          <div class="prev-info">{{ cartFormValue.billingAddress }}</div>
+        </ng-container>
+      </div>
+
+      <!----/////////////////// CISCO 專用欄位 ///////////////////----->
+      <ng-container *appPermissionIf="'layout.product.shoppingCart.ciscoInput'">
+
+        <!-------------- (only CISCO) DID --------------->
+        <div class="col-12 col-sm-6 col-md-4 mb-4">
+          <label for="">{{ 'DID' }}
+            ({{ 'only for this brand' | translate : {brand: 'Cisco'} }})</label>
+          <ng-container *ngIf="this.mode === 'edit'">
+            <input type="text"
+                   class="form-control"
+                   id="ciscoDid"
+                   formControlName="ciscoDid">
+          </ng-container>
+          <ng-container *ngIf="mode === 'prev' || mode === 'view'">
+            <div class="prev-info">{{ cartFormValue.did }}</div>
+          </ng-container>
+        </div>
+
+        <!-------- (only CISCO) 開通 email 聯絡人 --------->
+        <div class="col-12 col-sm-6 col-md-4 mb-4">
+          <label for="">{{ 'contact who enabled email' | translate | titlecase }}
+            ({{ 'only for this brand' | translate : {brand: 'Cisco'} }})</label>
+          <ng-container *ngIf="this.mode === 'edit'">
+            <input type="text"
+                   class="form-control"
+                   id="ciscoContactEmail"
+                   formControlName="ciscoContactEmail">
+          </ng-container>
+          <ng-container *ngIf="mode === 'prev' || mode === 'view'">
+            <div class="prev-info">{{ cartFormValue.openContactEmail }}</div>
+          </ng-container>
+        </div>
+      </ng-container>
+
+      <!------------------ 付款方式 ------------------->
+      <div *ngIf="!this.ui.isCloudRole" class="col-12 col-sm-6 col-md-4 mb-4">
+        <label for="">{{ 'payment way' | translate }}</label>
+        <ng-container *ngIf="this.mode === 'edit'">
+          <select class="form-control"
+                  id="paymentWay"
+                  formControlName="paymentWay">
+            <option *ngFor="let opt of paymentMethodList"
+                    [value]="opt.value">{{ opt.name | translate }}</option>
+          </select>
+        </ng-container>
+        <ng-container *ngIf="mode === 'prev' || mode === 'view'">
+          <div class="prev-info">{{ cartFormValue.paymentMethod | translate }}</div>
+        </ng-container>
+      </div>
+    </div>
+  </form>
+</div>

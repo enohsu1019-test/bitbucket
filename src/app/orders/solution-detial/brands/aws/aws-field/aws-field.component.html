@@ -1,0 +1,63 @@
+<div class="form-group row">
+  <!-- Account ID -->
+  <div class="col-4">
+    <label class="col-form-label required">{{'Account ID'| translate }}</label>
+    <input type="text"
+           class="form-control"
+           [attr.disabled]="status !== 'DRAFT'? true: null"
+           (change)="checkBlankCharacters();"
+           [(ngModel)]="solutionHeaderData.cloudId">
+  </div>
+
+  <!-- payerId -->
+  <div class="col-4">
+    <label class="col-form-label">{{ 'payerId' | translate }}</label>
+    <select class="custom-select pt-2"
+            [(ngModel)]="solutionHeaderData.payerId"
+            (ngModelChange)="handleRequired()">
+      <option [ngValue]="''">請選擇payerId</option>
+      <option *ngFor="let payerId of payerIdDropdown"
+              [ngValue]="payerId.value">{{ payerId.name }}
+      </option>
+    </select>
+  </div>
+
+  <!-- 費用類型 -->
+  <div class="col-4">
+    <label class="col-form-label">{{ 'chargeType' | translate }}</label>
+    <!-- <select class="custom-select pt-2"
+            [disabled]="status !== 'DRAFT'"
+            [(ngModel)]="originalInfoDatas['usageType']"
+            (ngModelChange)="handleRequired()">
+      <option [ngValue]="''">請選擇費用類型</option>
+      <option *ngFor="let costTyped of costTypedDropdown"
+              [ngValue]="costTyped.value">{{ costTyped.name }}
+      </option>
+    </select> -->
+    <angular2-multiselect [data]="costTypedView"
+                          [(ngModel)]="costTypedDatas"
+                          [settings]="settings"
+                          (onClose)="closeCostTypedDropdown()">
+    </angular2-multiselect>
+  </div>
+
+  <!-- root email -->
+  <div class="col-4">
+    <label class="col-form-label">{{'root email' | translate }}</label>
+    <input type="text"
+
+           class="form-control"
+           (change)="outputValue()"
+           [(ngModel)]="originalInfoDatas['rootEmail']">
+  </div>
+
+
+  <!-- 開放Billing權限 -->
+  <div class="col-4">
+    <p class="col-form-label">{{ 'Full Access(開放Billing權限)' | translate }}</p>
+    <input type="checkbox"
+
+           (change)="outputValue()"
+           [(ngModel)]="customerFiles[0].value">
+  </div>
+</div>

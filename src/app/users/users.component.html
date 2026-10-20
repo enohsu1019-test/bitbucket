@@ -1,0 +1,248 @@
+<div>
+  <!---------------------- 新增 & 搜尋 ---------------------->
+  <div class="mb-5 card">
+    <!------------------ 新增 ------------------>
+    <div class="card-header bg-primary text-white">
+      <h5 class="mb-0">{{ 'user management' | translate | titlecase }}
+        <button class="btn btn-success btn-sm ml-2"
+                [routerLink]="['add']"
+                *appPermissionIf="'user-v1.create'">
+          <i class="fa-solid fa-plus fa-sm mr-1"></i>{{ 'add' | translate | titlecase }}</button>
+      </h5>
+    </div>
+    <!------------------ 表單 ------------------>
+    <div class="card-body"
+         *appPermissionIf="'user-v1.user-query'">
+      <form [formGroup]="userSearchForm">
+        <div class="form-row mb-1">
+
+          <!------------ email ------------>
+          <div class="col-12 col-sm-4 mb-3">
+            <label for="email">{{ 'email' | translate | titlecase }}</label>
+            <input type="text"
+                   class="form-control"
+                   id="email"
+                   formControlName="email"
+                   placeholder="{{ 'please input' | translate | titlecase }}">
+          </div>
+
+          <!------------ 角色 ------------>
+          <div class="col-12 col-sm-4 mb-3">
+            <label for="roleName">{{ 'role' | translate | titlecase }}</label>
+            <input type="text"
+                   class="form-control"
+                   id="roleName"
+                   formControlName="roleName"
+                   placeholder="{{ 'please input' | translate | titlecase }}">
+          </div>
+
+          <!------------ 暱稱 ------------>
+          <div class="col-12 col-sm-4 mb-3">
+            <label for="nickName">{{ 'nickname' | translate | titlecase }}</label>
+            <input type="text"
+                   class="form-control"
+                   id="nickName"
+                   formControlName="nickName"
+                   placeholder="{{ 'please input' | translate | titlecase }}">
+          </div>
+
+          <!------------ 公司 ------------>
+          <div class="col-12 col-sm-4 mb-3">
+            <label for="company">{{ 'company' | translate | titlecase }}</label>
+            <input type="text"
+                   class="form-control"
+                   id="company"
+                   formControlName="company"
+                   placeholder="{{ 'please input' | translate | titlecase }}">
+          </div>
+
+          <!------------ 統一編號 ------------>
+          <div class="col-12 col-sm-4 mb-3">
+            <label for="serialNumber">{{ 'serial number' | translate | titlecase }}</label>
+            <input type="text"
+                   class="form-control"
+                   id="serialNumber"
+                   formControlName="serialNumber"
+                   placeholder="{{ 'please input' | translate | titlecase }}">
+          </div>
+
+          <!------------ 狀態 ------------>
+          <div class="col-12 col-sm-4 mb-3">
+            <label for="enabled">{{ 'status' | translate | titlecase }}</label>
+            <div class="custom-control custom-switch custom-switch-success custom-switch-form">
+              <input class="custom-control-input"
+                     type="checkbox"
+                     id="enabled"
+                     formControlName="enabled"
+                     #enabled>
+              <label class="custom-control-label"
+                     for="enabled">
+                {{ (enabled.checked ? 'valid' : 'invalid') | translate | titlecase}}
+              </label>
+            </div>
+          </div>
+        </div>
+        <div>
+          <button class="btn btn-secondary btn-sm mr-2"
+                  type="button"
+                  (click)="reset();"
+                  [disabled]="ui.isSearching">
+            {{ 'reset' | translate | titlecase }}</button>
+          <button class="btn btn-primary btn-sm"
+                  type="button"
+                  (click)="getUserList()"
+                  [disabled]="ui.isSearching">
+            {{ 'search' | translate | titlecase }}
+            <i class="fas fa-spin fa-spinner mr-1"
+               *ngIf="ui.isSearching"></i>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!---------------------- inTable ---------------------->
+  <in-table class="table table-hover"
+            [data]="userList"
+            [listViewClass]="'d-none d-md-block'"
+            [cardViewClass]="'d-block d-md-none'"
+            [listHeaderClass]="'thead-light sticky-header-color'"
+            [pageConfig]="pageConfig"
+            (pageChanged)="pageChange($event)"
+            [sortBy]="sortBy"
+            (sort)="sort($event)"
+            [isLoading]="ui.isSearching"
+            [enableHorizontalScroll]="true"
+            [shownodata]="true"
+            [config]="inTableConfig"
+            [inTableTranslate]="{
+              'no data found': 'no data found' | translate | titlecase,
+              'items per page': 'items per page' | translate | titlecase}"
+            (colWidthResized)="util.syncInTableColWidths(authTable, 'intable-user-table', true)"
+            (afterViewInit)="util.syncInTableColWidths(authTable, 'intable-user-table', false)"
+            #authTable
+            *appPermissionIf="'user-v1.user-query'">
+
+    <!----------- # ----------->
+    <in-table-column label="#"
+                     class="font-weight-bold">
+      <ng-template #tpl
+                   let-index="rowIndex"
+                   let-xxx>
+        {{ ( pageConfig.currentPage -1 ) * pageConfig.itemsPerPage + index + 1 }}
+      </ng-template>
+    </in-table-column>
+
+    <!--------------- 帳號 --------------->
+    <!-- <in-table-column class="text-truncate mx-1"
+                     prop="account"
+                     label="{{ 'account' | translate | titlecase }}"
+                     sortKey="account">
+    </in-table-column> -->
+
+    <!------------- 電子信箱 ------------->
+    <in-table-column class="text-truncate mx-1"
+                     prop="email"
+                     label="{{ 'email' | translate | titlecase }}"
+                     sortKey="email">
+    </in-table-column>
+
+    <!-------------- 角色 ------------->
+    <in-table-column class="text-truncate mx-1"
+                     prop="roles"
+                     label="{{ 'role' | translate | titlecase }}"
+                     sortKey="roles"
+                     [styleColumn]="{'white-space': 'unset'}">
+      <ng-template #tpl
+                   let-item="item"
+                   let-i>
+        <div class="d-flex flex-wrap">
+          <span *ngFor="let role of item.roles; let i = index" class="mr-1">
+            {{ role.name }}
+            <ng-container *ngIf="i < item.roles.length - 1">, </ng-container>
+          </span>
+        </div>
+      </ng-template>
+    </in-table-column>
+
+    <!-------------- 公司名稱 ------------->
+    <in-table-column class="text-truncate mx-1"
+                     prop="companyName"
+                     label="{{ 'company' | translate | titlecase }}"
+                     sortKey="companyName">
+      <ng-template #tpl
+                   let-item="item">
+        <div [popover]="item.company?.fullCh"
+             placement="top left"
+             triggers="mouseenter:mouseleave">
+          {{ item.company?.fullCh }}</div>
+      </ng-template>
+    </in-table-column>
+
+    <!--------------- 暱稱 --------------->
+    <in-table-column class="text-truncate mx-1"
+                     prop="nickName"
+                     label="{{ 'nickname' | translate | titlecase }}"
+                     sortKey="nickName">
+    </in-table-column>
+
+    <!--------------- 狀態 --------------->
+    <in-table-column class="text-truncate mx-1"
+                     prop="enabled"
+                     label="{{ 'status' | translate | titlecase }}"
+                     sortKey="enabled">
+      <ng-template #tpl
+                   let-item="item">
+        <!-- <div class="custom-control custom-switch custom-switch-success custom-switch-form">
+          <input class="custom-control-input"
+                 type="checkbox"
+                 [checked]="item.enabled"
+                 [id]="'enabled' + item.id"
+                 disabled>
+          <label class="custom-control-label text-body"
+                 [for]="'enabled' + item.id">
+            {{ (item.enabled ? 'valid' : 'invalid') | translate | titlecase}}
+          </label>
+        </div> -->
+        <i class="fas fa-xl"
+           [ngClass]="{'fa-check-circle text-success': item.enabled,
+                       'fa-times-circle text-danger': !item.enabled}"></i>
+      </ng-template>
+    </in-table-column>
+
+    <!--------------- 時間 --------------->
+    <in-table-column class="text-truncate mx-1"
+                     prop="updateTime"
+                     label="{{ 'update date' | translate | titlecase }}"
+                     sortKey="updateTime">
+      <ng-template #tpl
+                   let-item="item">
+        {{ item.updateTime | date:'yyyy-MM-dd' }}
+      </ng-template>
+    </in-table-column>
+
+    <!--------------- 動作 --------------->
+    <in-table-column class="text-truncate mx-1 text-center"
+                     label="{{ 'action' | translate | titlecase }}"
+                     [styleColumn]="{'max-width': '80px'}"
+                     *ngIf="this.userPermission['user-v1.update'] ||
+                            this.userPermission['user-v1.one'] ||
+                            this.userPermission['user-v1.deleteIam']">
+      <ng-template #tpl
+                   let-item="item">
+        <i class="fa-solid fa-pen-to-square fa- btn-fontawesome mr-3"
+           [routerLink]="'./'+ item.id"
+           (click)="toUserDetail($event, item.id, item.email)"
+           *appPermissionIf="'user-v1.one'"></i>
+        <i class="fa-solid fa-trash-can btn-fontawesome text-danger"
+           (click)="deleteUser(item.id, item.roles)"
+           *appPermissionIf="'user-v1.deleteIam'"></i>
+      </ng-template>
+    </in-table-column>
+  </in-table>
+
+  <div *ngIf="!this.userPermission['user-v1.user-query'] && !this.userPermission['user-v1.create']"
+       class="text-center p-4 h5">
+    {{ 'please enable related permission first' | translate | titlecase }}
+  </div>
+</div>

@@ -1,0 +1,32 @@
+<div class="mb-4 d-flex flex-wrap flex-md-nowrap">
+  <div class="commodity-img mr-md-4 mb-4 mb-md-0"
+       [ngStyle]="{'min-height': commodity?.defaultImage ? 'unset' : '325px' }">
+    <i class="fas fa-image fa-6x"
+       *ngIf="!commodity?.defaultImage"></i>
+    <img *ngIf="commodity?.defaultImage"
+         [src]="commodity?.defaultImage">
+  </div>
+  <div class="w-100 d-flex flex-column">
+    <div class="h3 mb-2">{{ commodity?.productName ? commodity?.productName : ('commodity name' | translate | titlecase) }}</div>
+    <div class="mb-4">{{ commodity?.description ? commodity?.description : ('commodity describe setting' | translate | titlecase) }}</div>
+    <div class="mb-3"><b>{{ 'suggested price' | translate | titlecase }} {{ commodity?.currency }} {{ commodity?.sellingPrice ?? 0 }}</b></div>
+    <div class="mb-3">
+      <button type="button"
+              class="btn btn-warning text-white"
+              (click)="goToCart();">
+
+        <!-- [routerLink]="mode === 'cart' ? ['/', 'main', 'commodity-shop', 'cart'] : '' " -->
+        {{ 'buy the program' | translate | titlecase }}
+      </button>
+    </div>
+    <div class="mb-4">
+      <span *ngFor="let tag of tagList" class="tag-radius text-primary border border-primary pl-3 pt-1 pr-3 pb-1 mr-1">
+        {{ tag }}
+      </span>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="commodity?.pageSetting?.content">
+  <app-commodity-shop-preview [content]="commodity?.pageSetting?.content"></app-commodity-shop-preview>
+</div>

@@ -1,0 +1,15 @@
+.cancleIcon {
+  padding-bottom: 16px;
+  cursor: pointer;
+}
+
+.multiselect-width {
+  min-width: 50%;
+}
+
+::ng-deep .multiselect-width > .cuppa-dropdown > .selected-list > .c-btn {
+  overflow:hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+

@@ -1,0 +1,20 @@
+<div class="form-group row">
+  <!-- Account ID -->
+  <div class="col-4">
+    <label class="col-form-label required">{{'Account ID'| translate }}</label>
+    <input type="text"
+           class="form-control"
+           [attr.disabled]="status !== 'DRAFT'? true: null"
+           (change)="checkBlankCharacters()"
+           [(ngModel)]="solutionHeaderData.cloudId">
+  </div>
+
+  <!-- 公司名稱 -->
+  <div class="col-4">
+    <label class="col-form-label">{{'title'| translate }}</label>
+    <input type="text"
+           class="form-control"
+           (change)="outputValue()"
+           [(ngModel)]="customerFiles[0].value">
+  </div>
+</div>

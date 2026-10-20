@@ -1,0 +1,37 @@
+.login-menu {
+  overflow: scroll;
+  max-height: 22em;
+}
+.login-item {
+  display: block;
+  font-size: small;
+  font-style: italic;
+}
+
+ul.horizontal-list {
+  list-style: none;
+  display: contents;
+}
+
+ul.horizontal-list li {
+  display: inline-block;
+  a {
+    color: #fff;
+  }
+  a:hover {
+    color: rgb(187, 213, 255);
+  }
+}
+
+ul.horizontal-list li:not(:last-child) {
+  border-right: 1px solid #fff;
+}
+
+ul.horizontal-list li {
+  padding: 0 1rem;
+}
+
+ul.horizontal-list li {
+  // min-width: 12rem;
+  text-align: center;
+}

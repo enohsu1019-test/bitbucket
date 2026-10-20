@@ -1,0 +1,60 @@
+<div class="card mb-4">
+  <h4 class="card-header bg-primary text-white">
+    {{ 'register' | translate | titlecase }}
+  </h4>
+  <div class="card-body">
+    <form [formGroup]="registerForm">
+      <div class="row">
+        <mat-form-field class="col-12 col-md-4" dense appearance="outline">
+          <mat-label>{{ 'company' | translate }}</mat-label>
+          <input matInput formControlName="company" required>
+        </mat-form-field>
+        <mat-form-field class="col-12 col-md-4" dense appearance="outline">
+          <mat-label>{{ 'department' | translate }}</mat-label>
+          <input matInput formControlName="department">
+        </mat-form-field>
+        <mat-form-field class="col-12 col-md-4" dense appearance="outline">
+          <mat-label>{{ 'job title' | translate }}</mat-label>
+          <input matInput formControlName="job">
+        </mat-form-field>
+      </div>
+      <div class="row">
+        <mat-form-field class="col-12 col-md-4" dense appearance="outline">
+          <mat-label>{{ 'name' | translate }}</mat-label>
+          <input matInput formControlName="name" required>
+        </mat-form-field>
+        <mat-form-field class="col-12 col-md-8" dense appearance="outline">
+          <mat-label>{{ 'email' | translate }}</mat-label>
+          <input matInput formControlName="email" type="email" required>
+        </mat-form-field>
+      </div>
+      <div class="row">
+        <mat-form-field class="col-12 col-md-4" dense appearance="outline">
+          <mat-label>{{ 'mobile' | translate }}</mat-label>
+          <input matInput appNumeric formControlName="mobilePhone" required>
+        </mat-form-field>
+        <mat-form-field class="col-12 col-md-4" dense appearance="outline">
+          <mat-label>{{ 'phone' | translate }}</mat-label>
+          <input matInput appNumeric formControlName="phone" required>
+        </mat-form-field>
+        <mat-form-field class="col-12 col-md-4" dense appearance="outline">
+          <mat-label>{{ 'contact extension' | translate }}</mat-label>
+          <input matInput appNumeric formControlName="ext" type="tel">
+          <span matPrefix class="prefix">#</span>
+        </mat-form-field>
+      </div>
+    </form>
+  </div>
+</div>
+
+
+<div class="action-button-footer">
+  <button class="btn btn-secondary mr-2" type="button" (click)="cancel()">
+    {{ 'cancel' | translate | titlecase }}
+  </button>
+  <button class="btn btn-primary" type="button" (click)="save()" [disabled]="registerForm.invalid || isLoading">
+    {{ 'save' | translate | titlecase }}
+    <i class="fas fa-spin fa-spinner mr-1"
+       *ngIf="isLoading"></i>
+  </button>
+</div>

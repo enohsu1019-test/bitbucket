@@ -1,0 +1,23 @@
+.headerFont{
+  font-family: 'Montserrat';
+  font-style: normal;
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 17px;
+  /* identical to box height */
+
+  color: #5F5F5F;
+}
+
+.action-button-footer1 {
+
+  margin: 0 -0.5rem;
+  padding: 0.75rem 1.5rem;
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 999;
+  display: flex;
+  justify-content: flex-end;
+}

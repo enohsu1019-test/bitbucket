@@ -1,0 +1,53 @@
+.custom-control-input:checked~.custom-control-label::before {
+  color: #fff;
+  border-color: green;
+  background-color: green;
+  cursor: pointer;
+}
+
+.custom-control-input:not(:checked) ~ .custom-control-label::before {
+  background-color: red;
+  cursor: pointer;
+  border: none;
+}
+
+.custom-control-input:not(:checked)~.custom-control-label::after {
+  background-color: white;
+  cursor: pointer;
+}
+
+.border-bottom-color {
+  border-color: white white #ced4da white;
+}
+
+.tooLong {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.dialogLoading {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  padding-left: 50%;
+  padding-top: 25%;
+  z-index: 10;
+}
+
+.dialogLoading > i {
+  font-size: 50px;;
+}
+
+.input-width {
+  display: flex;
+}
+
+::ng-deep .dropdown-width > typeahead-container {
+  max-width: inherit;
+}
+
+::ng-deep .dropdown-width > typeahead-container.dropdown-menu {
+  max-height: 330px !important;
+}
+

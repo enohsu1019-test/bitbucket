@@ -1,0 +1,28 @@
+<nav class="navbar navbar-inverse navbar-fixed-top flex-column" role="navigation">
+  <ul class="sidebar-nav">
+    <li class="sidebar-brand d-flex align-item-center">
+      <a routerLink="/" [state]="{ route: { internal: true }}" class="flex-grow-1">
+        {{ 'CMP' | translate }}
+      </a>
+      <a class="pr-2 pointer" (click)="toggle(false)">
+        <i class="fas fa-chevron-left fa-lg text-color-lightgray"></i>
+      </a>
+    </li>
+  </ul>
+  <ul class="nav flex-column" style="margin-top: 65px;width: 100%;">
+    <ng-container *ngFor="let list of menu; let idx = index;">
+      <li class="nav-item" id="{{ list.id }}">
+        <a class="nav-link" [routerLink]="list.route !== '' ? './' + list.route : null" routerLinkActive="active" [routerLinkActiveOptions]="{'exact': true}" (click)="subShow(idx)">
+          <i class="fa-fw" [ngClass]="list.icon"></i> {{ list.label | translate }}
+          <i *ngIf="list.children.length !== 0" class="fas chevron menuIcon" [ngClass]="{'fa-chevron-right': !list.subShow, 'fa-chevron-down': list.subShow}"></i>
+        </a>
+        <ng-container *ngFor="let child of list.children">
+          <a *ngIf="child.subShow" class="nav-link subChild" [routerLink]="'./' + child.route" routerLinkActive="active" [routerLinkActiveOptions]="{'exact': true}">
+            <i class="fa-fw" [ngClass]="child.icon"></i> {{ child.label | translate }}
+          </a>
+        </ng-container>
+      </li>
+    </ng-container>
+  </ul>
+
+</nav>

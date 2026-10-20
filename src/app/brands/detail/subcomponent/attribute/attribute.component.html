@@ -1,0 +1,225 @@
+<div class="card"
+     style="border-top: none">
+  <div class="card-body">
+    <in-table [data]="attributeList"
+              [listViewClass]="'d-none d-md-block'"
+              [cardViewClass]="'d-block d-md-none'"
+              [listHeaderClass]="'sticky-header-color'"
+              [isLoading]="ui.isListLoading"
+              [shownodata]="attributeList.length === 0 ? true : false"
+              [inTableTranslate]="{
+                'no data found': 'No Data Found' | translate,
+                'items per page': 'items per page' | translate
+              }">
+
+      <!-- # -->
+      <in-table-column label="#">
+        <ng-template #tpl
+                     let-index="rowIndex"
+                     let-xxx>
+          {{index + 1}}
+        </ng-template>
+      </in-table-column>
+
+      <!-- 欄位標題 -->
+      <in-table-column class="text-truncate ml-1 mr-1"
+                       prop="title"
+                       label="{{ 'field title' | translate }}">
+        <ng-template #tpl
+                     let-attribute="item"
+                     let-i>
+          {{ attribute.name }}
+        </ng-template>
+      </in-table-column>
+
+      <!-- 資料格式 -->
+      <in-table-column class="text-truncate ml-1 mr-1"
+                       prop="format.type"
+                       label="{{ 'data format' | translate }}">
+        <ng-template #tpl
+                      let-attribute="item"
+                      let-i>
+          {{ attribute.type | translate }}
+        </ng-template>
+      </in-table-column>
+
+      <!-- 是否必填 -->
+      <in-table-column class="text-truncate ml-1 mr-1"
+                       prop="require"
+                       label="{{ 'whether to required' | translate }}">
+        <ng-template #tpl
+                     let-attribute="item"
+                     let-i>
+          <!-- 有編輯權限 -->
+          <input *appPermissionIf="'brand-v1.updateProductAttribute'"
+                 type="checkbox"
+                 [(ngModel)]="attribute.required"
+                 (ngModelChange)="changeCheckbox(i, 'required')"
+                 [disabled]="attribute.hidden">
+          <!-- 無編輯權限 -->
+          <span *ngIf="!this.attributePermission['brand-v1.updateProductAttribute']"
+                class="pl-3">
+            {{ attribute.required ? 'v' : '' }}
+          </span>
+        </ng-template>
+      </in-table-column>
+
+      <!-- 是否隱藏 -->
+      <in-table-column class="text-truncate ml-1 mr-1"
+                       prop="hide"
+                       label="{{ 'whether to hide' | translate }}">
+        <ng-template #tpl
+                     let-attribute="item"
+                     let-i>
+          <!-- 有編輯權限 -->
+          <input *appPermissionIf="'brand-v1.updateProductAttribute'"
+                 type="checkbox"
+                 [(ngModel)]="attribute.hidden"
+                 (ngModelChange)="changeCheckbox(i, 'hidden')">
+          <!-- 無編輯權限 -->
+          <span *ngIf="!this.attributePermission['brand-v1.updateProductAttribute']"
+                class="pl-3">
+            {{ attribute.hidden ? 'v' : '' }}
+          </span>
+        </ng-template>
+      </in-table-column>
+
+      <!-- 動作-->
+      <in-table-column *appPermissionIf="'brand-v1.getProductAttribute'"
+                       class="text-truncate ml-1 mr-1"
+                       label="{{ 'operation' | translate }}">
+        <ng-template #tpl
+                     let-attribute="item"
+                     let-i>
+          <div class="d-flex align-items-center m-0">
+            <div class="btn btn-sm text-primary"
+                 (click)="showModal(editTemp, i)">
+              <i class="fas fa-edit fa-lg"></i>
+            </div>
+          </div>
+        </ng-template>
+      </in-table-column>
+    </in-table>
+
+    <!-- 新增按鈕 -->
+    <button *appPermissionIf="'brand-v1.addProductAttribute'"
+            class="btn btn-success col-12 "
+            (click)="showModal(editTemp)">
+      <i class="fas fa-plus"></i> {{ 'add field' | translate | titlecase}}
+    </button>
+  </div>
+</div>
+
+<ng-template #editTemp>
+  <form [formGroup]="attributeForm">
+    <div class="right-drawer-h100 right-drawer-scrollbar">
+      <!-- 新增/編輯頁面 -->
+      <app-stepper [title]="('commodity attribute management' | translate | titlecase) + ' ' + ('setting' | translate | titlecase)"
+                   [isLoading]="ui.isInfoLoading"
+                   (submitEvent)="submitData($event)"
+                   [attributeForm]="attributeForm">
+        <!-- step.1 -->
+        <cdk-step>
+          <ng-template cdkStepLabel>{{ 'basic info' | translate | titlecase }}</ng-template>
+          <!-- 標題 -->
+          <label for="title"
+                 class="required">{{ 'field title' | translate | titlecase }}</label>
+          <input type="text"
+                 class="form-control mb-3 required"
+                 id="title"
+                 formControlName="title"
+                 placeholder="{{ 'please fill input' | translate:{ input: 'STRING' | translate } | titlecase }}">
+
+          <!-- 內部變數 -->
+          <label for="titleVariable"
+                 class="required">{{ 'title internal variable' | translate | titlecase }}</label>
+          <input type="text"
+                 class="form-control mb-3 required"
+                 id="variable"
+                 formControlName="variable"
+                 pattern="[A-Za-z]*"
+                 placeholder="{{ 'please input' | translate | titlecase }}">
+
+          <!-- 描述(選填) -->
+          <label for="describe">{{ 'describe' | translate | titlecase }}({{ 'optional' | translate | titlecase }})</label>
+          <input type="text"
+                 class="form-control mb-3 required"
+                 id="describe"
+                 formControlName="describe"
+                 placeholder="{{ 'please input' | translate | titlecase }}">
+        </cdk-step>
+
+        <!-- step.2 -->
+        <cdk-step>
+          <ng-template cdkStepLabel>{{ 'field type' | translate | titlecase }}</ng-template>
+          <label for="format"
+                 class="required">{{ 'data format' | translate | titlecase }}</label>
+          <select class="form-control"
+                  id="dataType"
+                  formControlName="dataType"
+                  (change)="changeType()">
+            <option selected
+                    disabled
+                    [value]="undefined">{{ 'please select' | translate | titlecase }}</option>
+            <option *ngFor="let opt of formatList"
+                    [value]="opt.value">{{ opt.name | translate }}</option>
+          </select>
+
+          <!-- 單選或多選 -->
+          <ng-container *ngIf="attribute.type === AttributeType.single ||
+                               attribute.type === AttributeType.multiple">
+            <div class="row pt-3 pb-2 w-100 mx-auto">
+              <div class="col-1 mb-1"></div>
+              <!-- 選項標題 -->
+              <div class="col-5 mb-1">{{ 'title name' | translate | titlecase }}</div>
+              <!-- 內部變數 -->
+              <div class="col-6 mb-1">{{ 'internal variable' | translate | titlecase }}</div>
+            </div>
+            <div class="col-12 px-0 row w-100 mx-auto"
+                 cdkDropList
+                 (cdkDropListDropped)="onOptionOrderChange($event)">
+              <div *ngFor="let item of attribute.options; let index = index;"
+                   class="col-12 row"
+                   cdkDrag>
+                <div class="col-1 drag-bar"
+                     cdkDragHandle
+                     cdkDragLockAxis="y">
+                  <i class="fas fa-bars"
+                     style="vertical-align: -webkit-baseline-middle;"></i>
+                </div>
+                <!-- 選項標題 -->
+                <div class="col-5 form-group">
+                  <input class="form-control"
+                         [(ngModel)]="attribute.options[index].name"
+                         [ngModelOptions]="{standalone: true}">
+                </div>
+                <!-- 內部變數 -->
+                <div class="col-5 form-group">
+                  <input class="form-control"
+                         [(ngModel)]="attribute.options[index].internalVariableName"
+                         [ngModelOptions]="{standalone: true}">
+                </div>
+                <div *ngIf="attribute.options.length > 1"
+                     class="col-1 pointer"
+                     (click)="removeOption(index)">
+                  <i class="fa-solid fa-trash-can text-danger"
+                     style="vertical-align: -webkit-baseline-middle;"></i>
+                </div>
+              </div>
+            </div>
+
+            <!-- 新增選項 -->
+            <button *ngIf="attribute.type === AttributeType.single ||
+                           attribute.type === AttributeType.multiple"
+                    type="button"
+                    class="btn btn-link m-2"
+                    (click)="addOption()">
+              <i class="fas fa-plus mr-1"></i>
+              {{ "add option" | translate | titlecase }}
+            </button>
+          </ng-container>
+        </cdk-step>
+      </app-stepper>
+    </div>
+  </form>
+</ng-template>
